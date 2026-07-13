@@ -1,0 +1,30 @@
+[
+  {
+    "id": "cmp-001",
+    "name": "Diezmo",
+    "slug": "diezmo",
+    "description": "Contribución del diezmo para el sostenimiento de la obra de Dios.",
+    "type": "diezmo"
+  },
+  {
+    "id": "cmp-002",
+    "name": "Ofrenda",
+    "slug": "ofrenda",
+    "description": "Ofrenda voluntaria para apoyar las actividades de la iglesia.",
+    "type": "ofrenda"
+  },
+  {
+    "id": "cmp-003",
+    "name": "Obra social",
+    "slug": "obra-social",
+    "description": "Donación destinada a proyectos sociales y de ayuda comunitaria.",
+    "type": "obra-social"
+  },
+  {
+    "id": "cmp-004",
+    "name": "Propósito de fe",
+    "slug": "proposito-de-fe",
+    "description": "Aporte para cumplir un propósito de fe personal o familiar.",
+    "type": "proposito-de-fe"
+  }
+]

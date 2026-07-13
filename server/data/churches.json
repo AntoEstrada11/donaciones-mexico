@@ -1,0 +1,98 @@
+[
+  {
+    "id": "chr-001",
+    "name": "Querétaro Centro",
+    "city": "Querétaro",
+    "state": "Querétaro",
+    "address": "Av. Constituyentes 123, Centro Histórico",
+    "slug": "queretaro-centro"
+  },
+  {
+    "id": "chr-002",
+    "name": "Metepec Centro",
+    "city": "Metepec",
+    "state": "Estado de México",
+    "address": "Av. Estado de México 456, Centro",
+    "slug": "metepec-centro"
+  },
+  {
+    "id": "chr-003",
+    "name": "Naucalpan Centro",
+    "city": "Naucalpan",
+    "state": "Estado de México",
+    "address": "Av. Lomas Verdes 789, Parque Industrial",
+    "slug": "naucalpan-centro"
+  },
+  {
+    "id": "chr-004",
+    "name": "Ecatepec Rancho San Francisco",
+    "city": "Ecatepec",
+    "state": "Estado de México",
+    "address": "Av. Central 321, Rancho San Francisco",
+    "slug": "ecatepec-rancho-san-francisco"
+  },
+  {
+    "id": "chr-005",
+    "name": "Tultitlán Centro",
+    "city": "Tultitlán",
+    "state": "Estado de México",
+    "address": "Calle Hidalgo 55, Centro",
+    "slug": "tultitlan-centro"
+  },
+  {
+    "id": "chr-006",
+    "name": "Veracruz Centro",
+    "city": "Veracruz",
+    "state": "Veracruz",
+    "address": "Blvd. Manuel Ávila Camacho 200, Centro",
+    "slug": "veracruz-centro"
+  },
+  {
+    "id": "chr-007",
+    "name": "Oaxaca Centro",
+    "city": "Oaxaca",
+    "state": "Oaxaca",
+    "address": "Calle Independencia 88, Centro",
+    "slug": "oaxaca-centro"
+  },
+  {
+    "id": "chr-008",
+    "name": "Mazatlán Centro",
+    "city": "Mazatlán",
+    "state": "Sinaloa",
+    "address": "Av. del Mar 1500, Centro",
+    "slug": "mazatlan-centro"
+  },
+  {
+    "id": "chr-009",
+    "name": "Colima Centro",
+    "city": "Colima",
+    "state": "Colima",
+    "address": "Av. Constitución 400, Centro",
+    "slug": "colima-centro"
+  },
+  {
+    "id": "chr-010",
+    "name": "Tehuacán Centro",
+    "city": "Tehuacán",
+    "state": "Puebla",
+    "address": "Av. Reforma 120, Centro",
+    "slug": "tehuacan-centro"
+  },
+  {
+    "id": "chr-011",
+    "name": "Nezahualcóyotl Centro",
+    "city": "Nezahualcóyotl",
+    "state": "Estado de México",
+    "address": "Av. Chimalhuacán 600, Centro",
+    "slug": "nezahualcoyotl-centro"
+  },
+  {
+    "id": "chr-012",
+    "name": "Atizapán Centro",
+    "city": "Atizapán de Zaragoza",
+    "state": "Estado de México",
+    "address": "Av. Adolfo López Mateos 900, Centro",
+    "slug": "atizapan-centro"
+  }
+]

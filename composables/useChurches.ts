@@ -1,0 +1,90 @@
+import type { Ref } from 'vue'
+import type { ChurchesApiResponse } from '~/types'
+
+const CACHE_TTL = 15 * 60 * 1000 // 15 minutos
+
+function cacheKey(lat: number, lng: number) {
+  return `churches:${lat.toFixed(2)}:${lng.toFixed(2)}`
+}
+
+function readCache(lat: number, lng: number): ChurchesApiResponse | null {
+  if (!import.meta.client) return null
+
+  try {
+    const raw = sessionStorage.getItem(cacheKey(lat, lng))
+    if (!raw) return null
+
+    const { savedAt, data } = JSON.parse(raw) as {
+      savedAt: number
+      data: ChurchesApiResponse
+    }
+
+    if (Date.now() - savedAt > CACHE_TTL) {
+      sessionStorage.removeItem(cacheKey(lat, lng))
+      return null
+    }
+
+    return data
+  }
+  catch {
+    return null
+  }
+}
+
+function writeCache(lat: number, lng: number, data: ChurchesApiResponse) {
+  if (!import.meta.client) return
+
+  try {
+    sessionStorage.setItem(cacheKey(lat, lng), JSON.stringify({
+      savedAt: Date.now(),
+      data,
+    }))
+  }
+  catch {
+    // sessionStorage lleno o bloqueado — ignorar
+  }
+}
+
+async function fetchChurches(
+  apiUrl: string,
+  latitude: number,
+  longitude: number,
+): Promise<ChurchesApiResponse> {
+  const cached = readCache(latitude, longitude)
+  if (cached) return cached
+
+  const response = await $fetch<ChurchesApiResponse>(apiUrl, {
+    query: { latitude, longitude },
+  })
+
+  writeCache(latitude, longitude, response)
+  return response
+}
+
+export function useChurches(coords: Ref<{ latitude: number, longitude: number }>) {
+  const config = useRuntimeConfig()
+
+  const dataKey = computed(
+    () => `churches-${coords.value.latitude.toFixed(2)}-${coords.value.longitude.toFixed(2)}`,
+  )
+
+  const { data, pending, error, refresh } = useAsyncData(
+    dataKey,
+    () => fetchChurches(
+      config.public.churchesApiUrl,
+      coords.value.latitude,
+      coords.value.longitude,
+    ),
+    {
+      watch: [coords],
+      getCachedData(key) {
+        const nuxtCached = useNuxtData<ChurchesApiResponse>(key).data.value
+        if (nuxtCached) return nuxtCached
+
+        return readCache(coords.value.latitude, coords.value.longitude) ?? undefined
+      },
+    },
+  )
+
+  return { data, pending, error, refresh }
+}
