@@ -1,0 +1,36 @@
+---
+description: Documentar y consultar conocimiento del proyecto con OKF (knowledge/)
+alwaysApply: true
+---
+
+# Norma OKF
+
+Mantén y usa un bundle Open Knowledge Format en `knowledge/` del proyecto activo.
+
+## Fuente canónica
+
+- Spec + instructivo + plantilla:
+  `IA/conocimiento/okf/` (`SPEC.md`, `INSTRUCTIVO.md`, `template/knowledge/`)
+- Si el proyecto no tiene `knowledge/`, cópiala desde `template/knowledge/` y rellénala.
+
+## Antes de implementar
+
+1. Leer `knowledge/index.md` si existe.
+2. Preferir hechos del bundle sobre inventar arquitectura, comandos o contratos.
+
+## Después de cambios relevantes
+
+Actualizar OKF en el mismo trabajo cuando cambie: APIs, datos, deploy, auth, playbooks o decisiones.
+
+1. Crear/editar conceptos con frontmatter YAML y `type` obligatorio.
+2. Refrescar `index.md` del directorio tocado.
+3. Añadir entrada en `knowledge/log.md` (fecha ISO, newest first).
+4. Nunca guardar secretos en `knowledge/`.
+
+## Tipos habituales
+
+`System` · `API Endpoint` · `Data File` · `Playbook` · `Decision` · `Reference` · `Integration`
+
+## Links
+
+Preferir paths absolutos de bundle: `/playbooks/ejemplo.md`.
