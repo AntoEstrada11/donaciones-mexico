@@ -12,32 +12,61 @@ interface Campaign {
 const { data: campaigns, pending } = await useFetch<Campaign[]>('/api/campaigns')
 
 const steps = computed(() => [
-  { title: t('home.step1Title'), desc: t('home.step1Desc'), icon: '⛪' },
-  { title: t('home.step2Title'), desc: t('home.step2Desc'), icon: '💝' },
-  { title: t('home.step3Title'), desc: t('home.step3Desc'), icon: '🔒' },
+  { title: t('home.step1Title'), desc: t('home.step1Desc'), n: '1' },
+  { title: t('home.step2Title'), desc: t('home.step2Desc'), n: '2' },
+  { title: t('home.step3Title'), desc: t('home.step3Desc'), n: '3' },
+])
+
+const trustItems = computed(() => [
+  { title: t('home.trustAuthTitle'), desc: t('home.trustAuthDesc') },
+  { title: t('home.trustDataTitle'), desc: t('home.trustDataDesc') },
+  { title: t('home.trustResetTitle'), desc: t('home.trustResetDesc') },
 ])
 </script>
 
 <template>
   <div>
     <!-- Hero -->
-    <section class="bg-brand text-white">
-      <div class="mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">
-        <div class="max-w-2xl">
-          <h1 class="text-3xl font-bold leading-tight md:text-5xl">
-            {{ t('home.heroTitle') }}
-          </h1>
-          <p class="mt-4 text-base text-white/80 md:text-lg">
-            {{ t('home.heroSubtitle') }}
+    <section class="relative overflow-hidden bg-brand text-white">
+      <div
+        class="pointer-events-none absolute inset-0 opacity-30"
+        style="background: radial-gradient(ellipse at 20% 20%, #1a4a7a 0%, transparent 55%), radial-gradient(ellipse at 90% 80%, #002244 0%, transparent 50%);"
+        aria-hidden="true"
+      />
+      <div class="relative mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">
+        <p class="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-accent">
+          {{ t('header.tagline') }}
+        </p>
+        <h1 class="max-w-2xl text-3xl font-bold leading-tight md:text-5xl">
+          {{ t('home.heroTitle') }}
+        </h1>
+        <p class="mt-4 max-w-xl text-base text-white/80 md:text-lg">
+          {{ t('home.heroSubtitle') }}
+        </p>
+        <div class="mt-8 flex flex-wrap gap-4">
+          <NuxtLink to="/iglesias" class="btn-primary bg-accent text-ink hover:bg-accent-dark">
+            {{ t('home.ctaDonate') }}
+          </NuxtLink>
+          <NuxtLink to="/registro" class="btn-secondary border-white/30 bg-transparent text-white hover:bg-white/10">
+            {{ t('home.ctaAccount') }}
+          </NuxtLink>
+        </div>
+        <p class="mt-6 text-xs text-white/60">
+          {{ t('home.heroSecureNote') }}
+        </p>
+      </div>
+    </section>
+
+    <!-- Trust -->
+    <section class="border-b border-gray-200 bg-white">
+      <div class="mx-auto grid max-w-6xl gap-8 px-4 py-10 md:grid-cols-3 md:px-6">
+        <div v-for="item in trustItems" :key="item.title">
+          <h2 class="text-sm font-semibold text-brand">
+            {{ item.title }}
+          </h2>
+          <p class="mt-1 text-sm text-gray-600">
+            {{ item.desc }}
           </p>
-          <div class="mt-8 flex flex-wrap gap-4">
-            <NuxtLink to="/iglesias" class="btn-primary bg-accent text-ink hover:bg-accent-dark">
-              {{ t('home.ctaDonate') }}
-            </NuxtLink>
-            <NuxtLink to="/iglesias" class="btn-secondary border-white/30 bg-transparent text-white hover:bg-white/10">
-              {{ t('home.ctaChurches') }}
-            </NuxtLink>
-          </div>
         </div>
       </div>
     </section>
@@ -49,15 +78,15 @@ const steps = computed(() => [
       </h2>
       <div class="grid gap-8 md:grid-cols-3">
         <div
-          v-for="(step, i) in steps"
-          :key="i"
+          v-for="step in steps"
+          :key="step.n"
           class="text-center"
         >
           <div
-            class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-brand-light text-2xl"
+            class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-brand text-lg font-bold text-white"
             aria-hidden="true"
           >
-            {{ step.icon }}
+            {{ step.n }}
           </div>
           <h3 class="mb-2 font-semibold text-ink">
             {{ step.title }}
@@ -84,7 +113,7 @@ const steps = computed(() => [
           <article
             v-for="campaign in campaigns"
             :key="campaign.id"
-            class="card text-center"
+            class="rounded-lg border border-gray-100 bg-surface p-6 text-center"
           >
             <h3 class="mb-2 font-semibold text-brand">
               {{ campaign.name }}
@@ -97,29 +126,49 @@ const steps = computed(() => [
       </div>
     </section>
 
+    <!-- CTA account -->
+    <section class="bg-brand-light/40 py-14">
+      <div class="mx-auto max-w-3xl px-4 text-center md:px-6">
+        <h2 class="section-title">
+          {{ t('home.accountTitle') }}
+        </h2>
+        <p class="mt-3 text-sm text-gray-600 md:text-base">
+          {{ t('home.accountDesc') }}
+        </p>
+        <div class="mt-8 flex flex-wrap justify-center gap-4">
+          <NuxtLink to="/registro" class="btn-primary">
+            {{ t('nav.register') }}
+          </NuxtLink>
+          <NuxtLink to="/login" class="btn-secondary">
+            {{ t('nav.login') }}
+          </NuxtLink>
+        </div>
+      </div>
+    </section>
+
     <!-- Recurring + SPEI -->
     <section class="mx-auto max-w-6xl px-4 py-14 md:px-6">
-      <div class="grid gap-6 md:grid-cols-2">
-        <article class="card border-dashed">
+      <div class="grid gap-8 md:grid-cols-2">
+        <article>
           <h3 class="mb-2 font-semibold text-ink">
             {{ t('home.recurringTitle') }}
           </h3>
-          <p class="mb-4 text-sm text-gray-600">
+          <p class="mb-3 text-sm text-gray-600">
             {{ t('home.recurringDesc') }}
           </p>
-          <span class="inline-block rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-500">
+          <span class="text-xs font-medium text-gray-500">
             {{ t('home.recurringSoon') }}
           </span>
         </article>
 
-        <article class="card bg-brand-light border-brand/20">
+        <article>
           <h3 class="mb-2 font-semibold text-brand">
             {{ t('home.speiTitle') }}
           </h3>
-          <p class="mb-4 text-sm text-gray-600">
+          <p class="mb-3 text-sm text-gray-600">
             {{ t('home.speiDesc') }}
           </p>
-          <span class="inline-block rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-500">
+          <span class="text-xs font-medium text-gray-500">
             {{ t('home.recurringSoon') }}
           </span>
         </article>

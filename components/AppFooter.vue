@@ -42,7 +42,10 @@ const year = new Date().getFullYear()
       </div>
 
       <div class="mt-8 border-t border-gray-100 pt-6 text-center text-xs text-gray-400">
-        {{ t('footer.rights', { year }) }}
+        <p>{{ t('footer.security') }}</p>
+        <p class="mt-2">
+          {{ t('footer.rights', { year }) }}
+        </p>
       </div>
     </div>
   </footer>

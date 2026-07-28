@@ -1,37 +1,29 @@
+import { serverSupabaseUser } from '#supabase/server'
 import type { DonorProfile } from '~/types'
 
-export default defineEventHandler(async (event) => {
-  const session = requireSession(event)
-  const user = await findUserByEmail(session.email)
-
-  if (!user) {
-    throw createError({ statusCode: 401, statusMessage: 'Usuario no encontrado' })
+export default defineEventHandler(async (event): Promise<DonorProfile> => {
+  const user = await serverSupabaseUser(event)
+  if (!user?.id) {
+    throw createError({ statusCode: 401, statusMessage: 'No autenticado' })
   }
 
-  if (isOdooConfigured()) {
-    const partner = await readOdooPartner(user.odooPartnerId)
+  const profile = await getProfileByUserId(user.id)
+  if (!profile) {
+    throw createError({ statusCode: 404, statusMessage: 'Perfil no encontrado' })
+  }
+
+  if (isOdooConfigured() && profile.odoo_partner_id) {
+    const partner = await readOdooPartner(profile.odoo_partner_id)
     if (partner) {
       return {
         ...partner,
-        email: user.email,
-        profileComplete: partner.profileComplete || user.profileComplete,
-      } satisfies DonorProfile
+        id: profile.id,
+        email: profile.email,
+        profileComplete: partner.profileComplete || profile.profile_complete,
+        source: 'odoo',
+      }
     }
   }
 
-  const profile: DonorProfile = {
-    odooPartnerId: user.odooPartnerId,
-    name: user.name,
-    email: user.email,
-    phone: user.phone ?? null,
-    street: null,
-    city: null,
-    state: null,
-    zip: null,
-    rfc: null,
-    profileComplete: user.profileComplete,
-    source: 'mock',
-  }
-
-  return profile
+  return mapProfileToDonor(profile)
 })

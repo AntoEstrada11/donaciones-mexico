@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import type { DonorProfile } from '~/types'
 
+definePageMeta({ middleware: 'auth' })
+
 const { t } = useI18n()
-const { isLoggedIn, fetchProfile, updateProfile, user } = useAuth()
+const { fetchProfile, updateProfile, user } = useAuth()
 
 const profile = ref<DonorProfile | null>(null)
 const loading = ref(true)
@@ -21,11 +23,6 @@ const form = reactive({
 })
 
 onMounted(async () => {
-  if (!isLoggedIn.value) {
-    await navigateTo('/login?redirect=/perfil')
-    return
-  }
-
   try {
     profile.value = await fetchProfile()
     form.name = profile.value.name
@@ -55,6 +52,7 @@ async function onSubmit() {
   }
   catch (e: unknown) {
     const msg = (e as { data?: { statusMessage?: string } })?.data?.statusMessage
+      || (e as Error)?.message
     error.value = msg || t('profile.saveError')
   }
   finally {
@@ -84,10 +82,8 @@ async function onSubmit() {
           <span class="font-medium text-ink">{{ t('profile.email') }}:</span>
           {{ profile.email }}
         </p>
-        <p class="mt-1">
-          <span class="font-medium text-ink">Odoo partner:</span>
-          #{{ profile.odooPartnerId }}
-          <span class="text-gray-500">({{ profile.source }})</span>
+        <p class="mt-1 text-xs text-gray-500">
+          {{ profile.profileComplete ? t('profile.complete') : t('profile.incomplete') }}
         </p>
         <p v-if="user" class="mt-1 text-xs text-gray-500">
           {{ t('profile.noOdooLogin') }}

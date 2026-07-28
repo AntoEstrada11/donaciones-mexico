@@ -1,16 +1,36 @@
 <script setup lang="ts">
 const { t } = useI18n()
-const { register, isLoggedIn } = useAuth()
+const { register, isLoggedIn, authReady } = useAuth()
 const route = useRoute()
 
 const email = ref('')
 const password = ref('')
+const confirmPassword = ref('')
 const loading = ref(false)
 const error = ref('')
+const info = ref('')
+const showPassword = ref(false)
+
+const storedFallback = ref('/perfil')
+
+const redirectTarget = computed(() =>
+  safeRedirectPath(route.query.redirect, storedFallback.value),
+)
+
+watch([isLoggedIn, authReady], ([logged, ready]) => {
+  if (ready && logged) {
+    navigateTo(redirectTarget.value)
+  }
+}, { immediate: true })
 
 onMounted(() => {
-  if (isLoggedIn.value) {
-    navigateTo('/perfil')
+  if (typeof route.query.redirect === 'string') {
+    const safe = safeRedirectPath(route.query.redirect, '/perfil')
+    rememberAuthRedirect(safe)
+    storedFallback.value = safe
+  }
+  else {
+    storedFallback.value = consumeAuthRedirect('/perfil')
   }
 })
 
@@ -19,26 +39,49 @@ async function onSubmit() {
     error.value = t('register.required')
     return
   }
+  if (password.value.length < 8) {
+    error.value = t('register.passwordWeak')
+    return
+  }
+  if (password.value !== confirmPassword.value) {
+    error.value = t('register.passwordMismatch')
+    return
+  }
 
   loading.value = true
   error.value = ''
+  info.value = ''
 
   try {
-    await register({
+    rememberAuthRedirect(redirectTarget.value)
+    const result = await register({
       email: email.value.trim(),
       password: password.value,
+      emailRedirectPath: redirectTarget.value,
     })
-    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/perfil'
-    await navigateTo(redirect)
+
+    if (result.needsEmailConfirmation) {
+      info.value = t('register.checkEmail')
+      return
+    }
+
+    await navigateTo(redirectTarget.value)
   }
   catch (e: unknown) {
-    const msg = (e as { data?: { statusMessage?: string } })?.data?.statusMessage
+    const msg = (e as { data?: { statusMessage?: string }, statusMessage?: string })?.data?.statusMessage
+      || (e as { statusMessage?: string })?.statusMessage
+      || (e as Error)?.message
     error.value = msg || t('register.error')
   }
   finally {
     loading.value = false
   }
 }
+
+const loginLink = computed(() => {
+  const r = safeRedirectPath(route.query.redirect, '')
+  return r ? `/login?redirect=${encodeURIComponent(r)}` : '/login'
+})
 </script>
 
 <template>
@@ -75,20 +118,47 @@ async function onSubmit() {
           <label for="password" class="mb-1 block text-sm font-medium text-ink">
             {{ t('register.password') }}
           </label>
+          <div class="relative">
+            <input
+              id="password"
+              v-model="password"
+              :type="showPassword ? 'text' : 'password'"
+              autocomplete="new-password"
+              required
+              minlength="8"
+              class="w-full rounded-lg border border-gray-300 px-4 py-3 pr-12 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+              :placeholder="t('register.passwordHint')"
+            >
+            <button
+              type="button"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500"
+              @click="showPassword = !showPassword"
+            >
+              {{ showPassword ? t('common.hide') : t('common.show') }}
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label for="confirm" class="mb-1 block text-sm font-medium text-ink">
+            {{ t('register.confirmPassword') }}
+          </label>
           <input
-            id="password"
-            v-model="password"
+            id="confirm"
+            v-model="confirmPassword"
             type="password"
             autocomplete="new-password"
             required
-            minlength="6"
+            minlength="8"
             class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
-            :placeholder="t('register.passwordHint')"
           >
         </div>
 
-        <p v-if="error" class="text-sm text-red-600">
+        <p v-if="error" class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
           {{ error }}
+        </p>
+        <p v-if="info" class="rounded-md bg-green-50 px-3 py-2 text-sm text-green-800" role="status">
+          {{ info }}
         </p>
 
         <button
@@ -103,14 +173,16 @@ async function onSubmit() {
 
       <p class="mt-4 text-center text-sm text-gray-600">
         {{ t('register.hasAccount') }}
-        <NuxtLink to="/login" class="font-medium text-brand hover:underline">
+        <NuxtLink :to="loginLink" class="font-medium text-brand hover:underline">
           {{ t('nav.login') }}
         </NuxtLink>
       </p>
 
-      <p class="mt-3 text-center text-xs text-gray-400">
-        {{ t('register.note') }}
-      </p>
+      <ul class="mt-5 space-y-1 text-xs text-gray-500">
+        <li>• {{ t('security.emailUnique') }}</li>
+        <li>• {{ t('security.phoneLater') }}</li>
+        <li>• {{ t('security.odooNote') }}</li>
+      </ul>
     </div>
   </div>
 </template>

@@ -2,9 +2,16 @@
 import type { Campaign, Donation } from '~/types'
 
 const { t } = useI18n()
-const { selectedChurch, hydrated, clearChurch } = useDonation()
-const { addDonationToHistory } = useAuth()
-
+const {
+  selectedChurch,
+  draft,
+  hydrated,
+  clearChurch,
+  updateDraft,
+  clearDraft,
+} = useDonation()
+const { isLoggedIn, authReady } = useAuth()
+const route = useRoute()
 const router = useRouter()
 
 watch(hydrated, (ready) => {
@@ -15,13 +22,27 @@ watch(hydrated, (ready) => {
 
 const { data: campaigns, pending: campaignsPending } = await useFetch<Campaign[]>('/api/campaigns')
 
-const selectedCampaignId = ref<string | null>(null)
-const amount = ref<number | null>(null)
-const customAmount = ref('')
-const paymentMethod = ref<'spei' | 'card'>('spei')
+const selectedCampaignId = computed({
+  get: () => draft.value.campaignId,
+  set: (v: string | null) => updateDraft({ campaignId: v }),
+})
+const amount = computed({
+  get: () => draft.value.amount,
+  set: (v: number | null) => updateDraft({ amount: v }),
+})
+const customAmount = computed({
+  get: () => draft.value.customAmount,
+  set: (v: string) => updateDraft({ customAmount: v }),
+})
+const paymentMethod = computed({
+  get: () => draft.value.paymentMethod,
+  set: (v: 'spei' | 'card') => updateDraft({ paymentMethod: v }),
+})
+
 const submitting = ref(false)
-const success = ref(false)
+const successDonation = ref<Donation | null>(null)
 const submitError = ref('')
+const confirmingPaid = ref(false)
 
 const presetAmounts = [100, 200, 500, 1000]
 
@@ -46,16 +67,32 @@ const canSubmit = computed(() =>
 )
 
 function selectPreset(value: number) {
-  amount.value = value
-  customAmount.value = ''
+  updateDraft({ amount: value, customAmount: '' })
 }
 
 function onCustomInput() {
-  amount.value = null
+  updateDraft({ amount: null })
+}
+
+function loginRedirect() {
+  const path = safeRedirectPath(route.fullPath, '/donaciones')
+  rememberAuthRedirect(path)
+  return `/login?redirect=${encodeURIComponent(path)}`
+}
+
+function registerRedirect() {
+  const path = safeRedirectPath(route.fullPath, '/donaciones')
+  rememberAuthRedirect(path)
+  return `/registro?redirect=${encodeURIComponent(path)}`
 }
 
 async function submitDonation() {
   if (!canSubmit.value || !selectedChurch.value || !selectedCampaignId.value || !finalAmount.value) return
+
+  if (authReady.value && !isLoggedIn.value) {
+    await navigateTo(loginRedirect())
+    return
+  }
 
   submitting.value = true
   submitError.value = ''
@@ -65,29 +102,54 @@ async function submitDonation() {
       method: 'POST',
       body: {
         churchId: selectedChurch.value.id,
+        churchName: selectedChurch.value.name,
         campaignId: selectedCampaignId.value,
         amount: finalAmount.value,
         method: paymentMethod.value,
       },
     })
 
-    addDonationToHistory(donation)
-    success.value = true
+    clearDraft()
+    successDonation.value = donation
   }
-  catch {
-    submitError.value = t('donation.submitError')
+  catch (e: unknown) {
+    const status = (e as { statusCode?: number, status?: number })?.statusCode
+      || (e as { status?: number })?.status
+    if (status === 401) {
+      await navigateTo(loginRedirect())
+      return
+    }
+    const msg = (e as { data?: { statusMessage?: string } })?.data?.statusMessage
+      || (e as Error)?.message
+    submitError.value = msg || t('donation.submitError')
   }
   finally {
     submitting.value = false
   }
 }
 
+async function markAsPaid() {
+  if (!successDonation.value) return
+  confirmingPaid.value = true
+  try {
+    successDonation.value = await $fetch<Donation>(`/api/donations/${successDonation.value.id}`, {
+      method: 'PATCH',
+      body: { status: 'paid' },
+    })
+  }
+  catch (e: unknown) {
+    submitError.value = (e as { data?: { statusMessage?: string } })?.data?.statusMessage
+      || t('donation.submitError')
+  }
+  finally {
+    confirmingPaid.value = false
+  }
+}
+
 function startNewDonation() {
-  success.value = false
-  selectedCampaignId.value = null
-  amount.value = null
-  customAmount.value = ''
-  paymentMethod.value = 'spei'
+  successDonation.value = null
+  clearDraft()
+  submitError.value = ''
 }
 </script>
 
@@ -101,7 +163,7 @@ function startNewDonation() {
       {{ t('common.loading') }}
     </div>
 
-    <template v-else-if="success">
+    <template v-else-if="successDonation">
       <div class="card text-center">
         <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-3xl text-green-600">
           ✓
@@ -110,8 +172,59 @@ function startNewDonation() {
           {{ t('donation.successTitle') }}
         </h1>
         <p class="mb-6 text-gray-600">
-          {{ t('donation.successDesc') }}
+          {{ successDonation.status === 'paid' ? t('donation.successPaid') : t('donation.successDesc') }}
         </p>
+
+        <div
+          v-if="successDonation.method === 'spei' && successDonation.status === 'pending'"
+          class="mb-6 rounded-lg border border-brand/20 bg-brand-light/50 p-4 text-left text-sm"
+        >
+          <h2 class="mb-3 font-semibold text-brand">
+            {{ t('donation.speiInstructionsTitle') }}
+          </h2>
+          <dl class="space-y-2">
+            <div class="flex justify-between gap-4">
+              <dt class="text-gray-600">{{ t('donation.speiBank') }}</dt>
+              <dd class="text-right font-medium text-ink">{{ t('footer.bank') }}</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="text-gray-600">CLABE</dt>
+              <dd class="font-mono font-medium text-ink">127180001112050753</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="text-gray-600">{{ t('donation.speiConcept') }}</dt>
+              <dd class="font-mono font-bold text-brand">{{ successDonation.paymentReference }}</dd>
+            </div>
+            <div class="flex justify-between gap-4">
+              <dt class="text-gray-600">{{ t('donation.summaryAmount') }}</dt>
+              <dd class="font-bold text-ink">
+                ${{ successDonation.amount.toLocaleString('es-MX') }} MXN
+              </dd>
+            </div>
+          </dl>
+          <p class="mt-3 text-xs text-gray-500">
+            {{ t('donation.speiHint') }}
+          </p>
+          <button
+            type="button"
+            class="btn-secondary mt-4 w-full"
+            :disabled="confirmingPaid"
+            @click="markAsPaid"
+          >
+            {{ confirmingPaid ? t('donation.confirmingPaid') : t('donation.confirmTransfer') }}
+          </button>
+        </div>
+
+        <div
+          v-else-if="successDonation.method === 'card' && successDonation.status === 'pending'"
+          class="mb-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-left text-sm text-amber-900"
+        >
+          <p>{{ t('donation.cardPendingNote') }}</p>
+          <p class="mt-2 font-mono text-xs">
+            {{ t('donation.reference') }}: {{ successDonation.paymentReference }}
+          </p>
+        </div>
+
         <div class="flex flex-wrap justify-center gap-3">
           <NuxtLink to="/historial" class="btn-primary">
             {{ t('donation.viewHistory') }}
@@ -133,7 +246,21 @@ function startNewDonation() {
         </p>
       </header>
 
-      <!-- Iglesia seleccionada -->
+      <div
+        v-if="authReady && !isLoggedIn"
+        class="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+      >
+        <p>{{ t('donation.loginRequired') }}</p>
+        <div class="mt-2 flex flex-wrap gap-3">
+          <NuxtLink :to="loginRedirect()" class="font-medium text-brand hover:underline">
+            {{ t('nav.login') }}
+          </NuxtLink>
+          <NuxtLink :to="registerRedirect()" class="font-medium text-brand hover:underline">
+            {{ t('nav.register') }}
+          </NuxtLink>
+        </div>
+      </div>
+
       <section class="card mb-6">
         <p class="mb-1 text-xs font-semibold uppercase tracking-wider text-brand">
           {{ t('donation.selectedChurch') }}
@@ -153,7 +280,6 @@ function startNewDonation() {
         </button>
       </section>
 
-      <!-- Tipo de donación -->
       <section class="mb-6">
         <h2 class="mb-3 font-semibold text-ink">
           {{ t('donation.campaignLabel') }}
@@ -184,7 +310,6 @@ function startNewDonation() {
         </div>
       </section>
 
-      <!-- Monto -->
       <section class="mb-6">
         <h2 class="mb-3 font-semibold text-ink">
           {{ t('donation.amountLabel') }}
@@ -221,7 +346,6 @@ function startNewDonation() {
         </div>
       </section>
 
-      <!-- Método de pago -->
       <section class="mb-8">
         <h2 class="mb-3 font-semibold text-ink">
           {{ t('donation.methodLabel') }}
@@ -260,7 +384,6 @@ function startNewDonation() {
         </div>
       </section>
 
-      <!-- Resumen -->
       <section v-if="selectedCampaign && finalAmount" class="card mb-6 bg-brand-light/50">
         <h2 class="mb-2 font-semibold text-ink">
           {{ t('donation.summary') }}
@@ -294,7 +417,7 @@ function startNewDonation() {
         :disabled="!canSubmit"
         @click="submitDonation"
       >
-        {{ submitting ? t('donation.submitting') : t('donation.submit') }}
+        {{ submitting ? t('donation.submitting') : (isLoggedIn ? t('donation.submit') : t('donation.submitLogin')) }}
       </button>
 
       <p class="mt-4 text-center text-xs text-gray-400">

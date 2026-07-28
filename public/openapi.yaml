@@ -1,0 +1,461 @@
+openapi: 3.0.3
+info:
+  title: Donaciones México API
+  description: |
+    API interna de la plataforma de donaciones (Nuxt / Nitro).
+
+    **Autenticación:** las rutas marcadas con seguridad requieren sesión de
+    Supabase Auth (cookies del mismo origen). Inicie sesión en `/login` y
+    luego use "Try it out" desde `/docs` en el mismo navegador.
+
+    Auth de usuario (registro/login/reset) se hace con el cliente Supabase
+    en el frontend, no con estas rutas REST.
+  version: 1.0.0
+  contact:
+    name: Donaciones México
+    email: donaciones@mx.universal.org
+
+servers:
+  - url: http://localhost:3000
+    description: Desarrollo local
+  - url: /
+    description: Mismo origen (producción / preview)
+
+tags:
+  - name: Público
+    description: Sin sesión
+  - name: Auth
+    description: Bootstrap de perfil / Odoo (requiere sesión)
+  - name: Perfil
+    description: Datos del donante
+  - name: Donaciones
+    description: Crear y consultar donaciones del usuario
+
+paths:
+  /api/campaigns:
+    get:
+      tags: [Público]
+      summary: Listar campañas / tipos de donación
+      operationId: getCampaigns
+      responses:
+        '200':
+          description: Catálogo de campañas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Campaign'
+              example:
+                - id: cmp-001
+                  name: Diezmo
+                  slug: diezmo
+                  description: Contribución del diezmo…
+                  type: diezmo
+
+  /api/churches:
+    get:
+      tags: [Público]
+      summary: Listar iglesias (proxy API Universal)
+      operationId: getChurches
+      parameters:
+        - name: latitude
+          in: query
+          schema:
+            type: number
+            format: double
+            example: 19.392531016453
+        - name: longitude
+          in: query
+          schema:
+            type: number
+            format: double
+            example: -99.18114903857942
+      responses:
+        '200':
+          description: Resultados paginados de iglesias
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChurchesApiResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '502':
+          description: Error al consultar la API externa
+
+  /api/auth/bootstrap:
+    post:
+      tags: [Auth]
+      summary: Asegurar perfil + odoo_partner_id
+      description: |
+        Crea la fila en `profiles` si falta y asocia un contacto Odoo
+        (`res.partner`). Body vacío.
+      operationId: postAuthBootstrap
+      security:
+        - SessionCookie: []
+      responses:
+        '200':
+          description: Perfil listo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DonorProfile'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/me:
+    get:
+      tags: [Perfil]
+      summary: Obtener perfil del usuario autenticado
+      operationId: getMe
+      security:
+        - SessionCookie: []
+      responses:
+        '200':
+          description: Perfil (Supabase y/o merge Odoo)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DonorProfile'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Perfil no encontrado
+    patch:
+      tags: [Perfil]
+      summary: Actualizar perfil
+      operationId: patchMe
+      security:
+        - SessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DonorProfileUpdate'
+            example:
+              name: Juan Pérez
+              phone: '5512345678'
+              street: Av. Reforma 100
+              city: Ciudad de México
+              state: CDMX
+              zip: '06600'
+              rfc: XAXX010101000
+      responses:
+        '200':
+          description: Perfil actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DonorProfile'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Perfil no encontrado
+        '409':
+          description: Teléfono ya registrado
+
+  /api/donations:
+    get:
+      tags: [Donaciones]
+      summary: Historial de donaciones del usuario
+      operationId: getDonations
+      security:
+        - SessionCookie: []
+      responses:
+        '200':
+          description: Lista ordenada por fecha descendente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Donation'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+    post:
+      tags: [Donaciones]
+      summary: Registrar una donación
+      description: |
+        Crea una donación `pending` ligada al `user_id` de la sesión.
+        Genera `paymentReference` (SPEI/CARD). Valida `campaignId` contra el catálogo.
+      operationId: postDonation
+      security:
+        - SessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DonationCreate'
+            example:
+              churchId: '12345'
+              churchName: Templo Central
+              campaignId: cmp-001
+              amount: 500
+              method: spei
+      responses:
+        '200':
+          description: Donación creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Donation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /api/donations/{id}:
+    patch:
+      tags: [Donaciones]
+      summary: Actualizar estado (demo — marcar pagada)
+      description: |
+        Solo permite `{ "status": "paid" }` si la donación es del usuario
+        y está en `pending`. En producción debería ser admin/webhook.
+      operationId: patchDonation
+      security:
+        - SessionCookie: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [paid]
+            example:
+              status: paid
+      responses:
+        '200':
+          description: Donación actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Donation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Donación no encontrada
+        '409':
+          description: Ya no está pendiente
+
+components:
+  securitySchemes:
+    SessionCookie:
+      type: apiKey
+      in: cookie
+      name: sb-access-token
+      description: |
+        Sesión de Supabase gestionada por `@nuxtjs/supabase`.
+        El nombre exacto de la cookie puede variar (`sb-<ref>-auth-token`).
+        En la práctica: inicie sesión en la app y pruebe desde el mismo origen.
+
+  schemas:
+    Campaign:
+      type: object
+      required: [id, name, slug, description, type]
+      properties:
+        id:
+          type: string
+          example: cmp-001
+        name:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        type:
+          type: string
+
+    DonorProfile:
+      type: object
+      required:
+        - id
+        - odooPartnerId
+        - name
+        - email
+        - profileComplete
+        - source
+      properties:
+        id:
+          type: string
+          format: uuid
+        odooPartnerId:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+          nullable: true
+        street:
+          type: string
+          nullable: true
+        city:
+          type: string
+          nullable: true
+        state:
+          type: string
+          nullable: true
+        zip:
+          type: string
+          nullable: true
+        rfc:
+          type: string
+          nullable: true
+        profileComplete:
+          type: boolean
+        source:
+          type: string
+          enum: [supabase, odoo, mock]
+
+    DonorProfileUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        phone:
+          type: string
+          description: Se normaliza a dígitos; debe ser único
+        street:
+          type: string
+        city:
+          type: string
+        state:
+          type: string
+        zip:
+          type: string
+        rfc:
+          type: string
+
+    Donation:
+      type: object
+      required:
+        - id
+        - userId
+        - churchId
+        - campaignId
+        - amount
+        - currency
+        - status
+        - method
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        userId:
+          type: string
+          format: uuid
+        churchId:
+          type: string
+        churchName:
+          type: string
+          nullable: true
+        campaignId:
+          type: string
+        campaignName:
+          type: string
+          nullable: true
+        amount:
+          type: number
+        currency:
+          type: string
+          example: MXN
+        status:
+          type: string
+          enum: [paid, pending, failed, cancelled]
+        method:
+          type: string
+          enum: [spei, card]
+        paymentReference:
+          type: string
+          nullable: true
+          example: SPEI-A1B2C3-X9Y8Z7
+        createdAt:
+          type: string
+          format: date-time
+
+    DonationCreate:
+      type: object
+      required: [churchId, campaignId, amount]
+      properties:
+        churchId:
+          type: string
+        churchName:
+          type: string
+          maxLength: 200
+        campaignId:
+          type: string
+          description: Debe existir en el catálogo (ej. cmp-001 … cmp-004)
+        amount:
+          type: number
+          exclusiveMinimum: 0
+          maximum: 500000
+        method:
+          type: string
+          enum: [spei, card]
+          default: spei
+
+    ChurchesApiResponse:
+      type: object
+      properties:
+        results:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        pagination:
+          type: object
+          additionalProperties: true
+
+    ErrorMessage:
+      type: object
+      properties:
+        statusCode:
+          type: integer
+        statusMessage:
+          type: string
+        message:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Solicitud inválida
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+    Unauthorized:
+      description: No autenticado / sin sesión
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'
+    ServerError:
+      description: Error interno
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorMessage'

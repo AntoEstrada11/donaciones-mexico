@@ -27,8 +27,8 @@ function closeMobile() {
   mobileOpen.value = false
 }
 
-function handleLogout() {
-  logout()
+async function handleLogout() {
+  await logout()
   closeMobile()
   navigateTo('/')
 }

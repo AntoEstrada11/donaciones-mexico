@@ -137,6 +137,7 @@ export async function readOdooPartner(partnerId: number): Promise<DonorProfile |
   const stateName = Array.isArray(stateId) ? String(stateId[1]) : null
 
   return {
+    id: '',
     odooPartnerId: Number(row.id),
     name: String(row.name || ''),
     email: String(row.email || ''),

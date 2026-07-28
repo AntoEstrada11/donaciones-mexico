@@ -41,19 +41,18 @@ function writeCache(lat: number, lng: number, data: ChurchesApiResponse) {
     }))
   }
   catch {
-    // sessionStorage lleno o bloqueado — ignorar
+    // sessionStorage lleno o bloqueado
   }
 }
 
 async function fetchChurches(
-  apiUrl: string,
   latitude: number,
   longitude: number,
 ): Promise<ChurchesApiResponse> {
   const cached = readCache(latitude, longitude)
   if (cached) return cached
 
-  const response = await $fetch<ChurchesApiResponse>(apiUrl, {
+  const response = await $fetch<ChurchesApiResponse>('/api/churches', {
     query: { latitude, longitude },
   })
 
@@ -62,25 +61,18 @@ async function fetchChurches(
 }
 
 export function useChurches(coords: Ref<{ latitude: number, longitude: number }>) {
-  const config = useRuntimeConfig()
-
   const dataKey = computed(
     () => `churches-${coords.value.latitude.toFixed(2)}-${coords.value.longitude.toFixed(2)}`,
   )
 
   const { data, pending, error, refresh } = useAsyncData(
     dataKey,
-    () => fetchChurches(
-      config.public.churchesApiUrl,
-      coords.value.latitude,
-      coords.value.longitude,
-    ),
+    () => fetchChurches(coords.value.latitude, coords.value.longitude),
     {
       watch: [coords],
       getCachedData(key) {
         const nuxtCached = useNuxtData<ChurchesApiResponse>(key).data.value
         if (nuxtCached) return nuxtCached
-
         return readCache(coords.value.latitude, coords.value.longitude) ?? undefined
       },
     },

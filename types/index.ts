@@ -23,37 +23,30 @@ export interface Campaign {
 
 export interface Donation {
   id: string
+  userId: string
   churchId: string
+  churchName: string | null
   campaignId: string
+  campaignName: string | null
   amount: number
   currency: string
   status: 'paid' | 'pending' | 'failed' | 'cancelled'
-  method: string
+  method: 'spei' | 'card'
+  paymentReference: string | null
   createdAt: string
 }
 
 export interface AuthResponse {
-  token: string
-  name: string
-  email: string
-  odooPartnerId: number
-  profileComplete: boolean
-}
-
-/** Usuario de la app (no es usuario de Odoo). El id es el correo. */
-export interface AppUser {
   id: string
   email: string
   name: string
-  phone?: string
-  passwordHash: string
   odooPartnerId: number
   profileComplete: boolean
-  createdAt: string
 }
 
-/** Perfil público que ve el donante (datos de res.partner). */
+/** Perfil del donante (Supabase profiles + sync Odoo). */
 export interface DonorProfile {
+  id: string
   odooPartnerId: number
   name: string
   email: string
@@ -64,7 +57,7 @@ export interface DonorProfile {
   zip: string | null
   rfc: string | null
   profileComplete: boolean
-  source: 'odoo' | 'mock'
+  source: 'supabase' | 'odoo' | 'mock'
 }
 
 export interface ChurchApiItem {

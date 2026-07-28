@@ -1,34 +1,17 @@
 <script setup lang="ts">
-import type { Campaign, Donation } from '~/types'
+import type { Donation } from '~/types'
+
+definePageMeta({ middleware: 'auth' })
 
 const { t } = useI18n()
-const { isLoggedIn, getLocalHistory } = useAuth()
 
-const localHistory = ref<Donation[]>([])
-const authReady = ref(false)
-
-onMounted(() => {
-  authReady.value = true
-  if (!isLoggedIn.value) {
-    navigateTo('/login?redirect=/historial')
-    return
-  }
-  localHistory.value = getLocalHistory()
-})
-
-const { data: campaigns } = await useFetch<Campaign[]>('/api/campaigns')
-
-const campaignMap = computed(() => {
-  const map = new Map<string, string>()
-  for (const c of campaigns.value ?? []) {
-    map.set(c.id, c.name)
-  }
-  return map
+const { data: history, pending, error, refresh } = await useFetch<Donation[]>('/api/donations', {
+  key: 'user-donations',
 })
 
 const statusLabels: Record<Donation['status'], string> = {
   paid: 'donation.statusPaid',
-  pending: 'donation.statusPending',
+  pending: 'donation.statusPendingTransfer',
   failed: 'donation.statusFailed',
   cancelled: 'donation.statusCancelled',
 }
@@ -40,6 +23,8 @@ const statusColors: Record<Donation['status'], string> = {
   cancelled: 'bg-gray-100 text-gray-600',
 }
 
+const markingId = ref<string | null>(null)
+
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('es-MX', {
     day: 'numeric',
@@ -49,6 +34,24 @@ function formatDate(iso: string) {
     minute: '2-digit',
   })
 }
+
+async function markPaid(donation: Donation) {
+  markingId.value = donation.id
+  try {
+    await $fetch(`/api/donations/${donation.id}`, {
+      method: 'PATCH',
+      body: { status: 'paid' },
+    })
+    await refresh()
+  }
+  finally {
+    markingId.value = null
+  }
+}
+
+onMounted(() => {
+  refresh()
+})
 </script>
 
 <template>
@@ -62,35 +65,45 @@ function formatDate(iso: string) {
       </p>
     </header>
 
-    <div v-if="!authReady" class="py-12 text-center text-gray-500">
+    <div v-if="pending" class="py-12 text-center text-gray-500">
       {{ t('common.loading') }}
     </div>
 
-    <template v-else>
-      <div v-if="localHistory.length === 0" class="card py-12 text-center">
-        <p class="text-gray-500">
-          {{ t('history.empty') }}
-        </p>
-        <NuxtLink to="/iglesias" class="btn-primary mt-4 inline-flex">
-          {{ t('history.cta') }}
-        </NuxtLink>
-      </div>
+    <div v-else-if="error" class="card py-8 text-center text-sm text-red-600">
+      {{ t('common.error') }}
+    </div>
 
-      <div v-else class="space-y-4">
-        <article
-          v-for="donation in localHistory"
-          :key="donation.id"
-          class="card flex flex-wrap items-center justify-between gap-4"
-        >
+    <div v-else-if="!history?.length" class="card py-12 text-center">
+      <p class="text-gray-500">
+        {{ t('history.empty') }}
+      </p>
+      <NuxtLink to="/iglesias" class="btn-primary mt-4 inline-flex">
+        {{ t('history.cta') }}
+      </NuxtLink>
+    </div>
+
+    <div v-else class="space-y-4">
+      <article
+        v-for="donation in history"
+        :key="donation.id"
+        class="card"
+      >
+        <div class="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p class="font-semibold text-ink">
-              {{ campaignMap.get(donation.campaignId) ?? donation.campaignId }}
+              {{ donation.campaignName || donation.campaignId }}
+            </p>
+            <p class="text-sm text-gray-500">
+              {{ donation.churchName || donation.churchId }}
             </p>
             <p class="text-sm text-gray-500">
               {{ formatDate(donation.createdAt) }} · {{ donation.method.toUpperCase() }}
             </p>
+            <p v-if="donation.paymentReference" class="mt-1 font-mono text-xs text-brand">
+              {{ t('donation.reference') }}: {{ donation.paymentReference }}
+            </p>
           </div>
-          <div class="flex items-center gap-4">
+          <div class="flex flex-col items-end gap-2">
             <span class="font-bold text-brand">
               ${{ donation.amount.toLocaleString('es-MX') }} MXN
             </span>
@@ -100,9 +113,18 @@ function formatDate(iso: string) {
             >
               {{ t(statusLabels[donation.status]) }}
             </span>
+            <button
+              v-if="donation.status === 'pending' && donation.method === 'spei'"
+              type="button"
+              class="text-xs font-medium text-brand hover:underline"
+              :disabled="markingId === donation.id"
+              @click="markPaid(donation)"
+            >
+              {{ markingId === donation.id ? t('donation.confirmingPaid') : t('donation.confirmTransfer') }}
+            </button>
           </div>
-        </article>
-      </div>
-    </template>
+        </div>
+      </article>
+    </div>
   </div>
 </template>

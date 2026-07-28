@@ -1,16 +1,37 @@
 <script setup lang="ts">
 const { t } = useI18n()
-const { login, isLoggedIn } = useAuth()
+const { login, isLoggedIn, authReady } = useAuth()
 const route = useRoute()
 
 const email = ref('')
 const password = ref('')
 const loading = ref(false)
 const error = ref('')
+const showPassword = ref(false)
+
+const storedFallback = ref('/perfil')
+
+const redirectTarget = computed(() =>
+  safeRedirectPath(route.query.redirect, storedFallback.value),
+)
+
+watch([isLoggedIn, authReady], ([logged, ready]) => {
+  if (ready && logged) {
+    navigateTo(redirectTarget.value)
+  }
+}, { immediate: true })
 
 onMounted(() => {
-  if (isLoggedIn.value) {
-    navigateTo('/perfil')
+  if (route.query.error === 'callback') {
+    error.value = t('login.callbackError')
+  }
+  if (typeof route.query.redirect === 'string') {
+    const safe = safeRedirectPath(route.query.redirect, '/perfil')
+    rememberAuthRedirect(safe)
+    storedFallback.value = safe
+  }
+  else {
+    storedFallback.value = consumeAuthRedirect('/perfil')
   }
 })
 
@@ -25,17 +46,23 @@ async function onSubmit() {
 
   try {
     await login(email.value.trim(), password.value)
-    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/perfil'
-    await navigateTo(redirect)
+    await navigateTo(redirectTarget.value)
   }
   catch (e: unknown) {
-    const msg = (e as { data?: { statusMessage?: string } })?.data?.statusMessage
+    const msg = (e as { statusMessage?: string, data?: { statusMessage?: string } })?.data?.statusMessage
+      || (e as { statusMessage?: string })?.statusMessage
+      || (e as Error)?.message
     error.value = msg || t('login.error')
   }
   finally {
     loading.value = false
   }
 }
+
+const registerLink = computed(() => {
+  const r = safeRedirectPath(route.query.redirect, '')
+  return r ? `/registro?redirect=${encodeURIComponent(r)}` : '/registro'
+})
 </script>
 
 <template>
@@ -62,26 +89,43 @@ async function onSubmit() {
             v-model="email"
             type="email"
             autocomplete="email"
+            required
             class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
             :placeholder="t('login.emailPlaceholder')"
           >
         </div>
 
         <div>
-          <label for="password" class="mb-1 block text-sm font-medium text-ink">
-            {{ t('login.password') }}
-          </label>
-          <input
-            id="password"
-            v-model="password"
-            type="password"
-            autocomplete="current-password"
-            class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
-            :placeholder="t('login.passwordPlaceholder')"
-          >
+          <div class="mb-1 flex items-center justify-between">
+            <label for="password" class="block text-sm font-medium text-ink">
+              {{ t('login.password') }}
+            </label>
+            <NuxtLink to="/recuperar" class="text-xs font-medium text-brand hover:underline">
+              {{ t('login.forgot') }}
+            </NuxtLink>
+          </div>
+          <div class="relative">
+            <input
+              id="password"
+              v-model="password"
+              :type="showPassword ? 'text' : 'password'"
+              autocomplete="current-password"
+              required
+              minlength="8"
+              class="w-full rounded-lg border border-gray-300 px-4 py-3 pr-12 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+              :placeholder="t('login.passwordPlaceholder')"
+            >
+            <button
+              type="button"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 hover:text-ink"
+              @click="showPassword = !showPassword"
+            >
+              {{ showPassword ? t('common.hide') : t('common.show') }}
+            </button>
+          </div>
         </div>
 
-        <p v-if="error" class="text-sm text-red-600">
+        <p v-if="error" class="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">
           {{ error }}
         </p>
 
@@ -97,9 +141,13 @@ async function onSubmit() {
 
       <p class="mt-4 text-center text-sm text-gray-600">
         {{ t('login.noAccount') }}
-        <NuxtLink to="/registro" class="font-medium text-brand hover:underline">
+        <NuxtLink :to="registerLink" class="font-medium text-brand hover:underline">
           {{ t('nav.register') }}
         </NuxtLink>
+      </p>
+
+      <p class="mt-4 text-center text-xs text-gray-400">
+        {{ t('security.connectionNote') }}
       </p>
     </div>
   </div>

@@ -1,145 +1,184 @@
-import type { AuthResponse, Donation, DonorProfile } from '~/types'
-
-const USER_KEY = 'auth-user'
-const HISTORY_KEY = 'donation-history'
+import type { AuthResponse, DonorProfile } from '~/types'
 
 export interface AuthUser {
-  token: string
-  name: string
+  id: string
   email: string
+  name: string
   odooPartnerId: number
   profileComplete: boolean
 }
 
-function readStoredUser(): AuthUser | null {
-  if (!import.meta.client) return null
-  try {
-    const raw = sessionStorage.getItem(USER_KEY)
-    return raw ? JSON.parse(raw) as AuthUser : null
+function siteUrl() {
+  const config = useRuntimeConfig()
+  if (import.meta.client) {
+    return window.location.origin
   }
-  catch {
-    return null
-  }
-}
-
-function persistUser(user: AuthUser | null) {
-  if (!import.meta.client) return
-  if (!user) {
-    sessionStorage.removeItem(USER_KEY)
-    return
-  }
-  sessionStorage.setItem(USER_KEY, JSON.stringify(user))
-}
-
-function readLocalHistory(): Donation[] {
-  if (!import.meta.client) return []
-  try {
-    const raw = sessionStorage.getItem(HISTORY_KEY)
-    return raw ? JSON.parse(raw) as Donation[] : []
-  }
-  catch {
-    return []
-  }
-}
-
-function authHeaders(token: string) {
-  return { Authorization: `Bearer ${token}` }
+  return String(config.public.siteUrl || 'http://localhost:3000')
 }
 
 export function useAuth() {
+  const supabase = useSupabaseClient()
+  const supabaseUser = useSupabaseUser()
   const user = useState<AuthUser | null>('auth-user', () => null)
+  const authReady = useState('auth-ready', () => false)
 
-  if (import.meta.client && !user.value) {
-    user.value = readStoredUser()
-  }
+  const isLoggedIn = computed(() => !!supabaseUser.value?.id && !!user.value)
 
-  const isLoggedIn = computed(() => !!user.value?.token)
-
-  function setSession(response: AuthResponse) {
-    user.value = {
-      token: response.token,
-      name: response.name,
-      email: response.email,
-      odooPartnerId: response.odooPartnerId,
-      profileComplete: response.profileComplete,
+  async function refreshProfile() {
+    if (!supabaseUser.value?.id) {
+      user.value = null
+      return null
     }
-    persistUser(user.value)
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', supabaseUser.value.id)
+      .maybeSingle()
+
+    if (error || !data) {
+      user.value = {
+        id: supabaseUser.value.id,
+        email: supabaseUser.value.email || '',
+        name: supabaseUser.value.email?.split('@')[0] || 'Donante',
+        odooPartnerId: 0,
+        profileComplete: false,
+      }
+      return null
+    }
+
+    user.value = {
+      id: data.id,
+      email: data.email,
+      name: data.name || data.email.split('@')[0],
+      odooPartnerId: data.odoo_partner_id || 0,
+      profileComplete: Boolean(data.profile_complete),
+    }
+
+    return data
   }
+
+  async function ensureBootstrap() {
+    if (!supabaseUser.value) return
+    try {
+      await $fetch('/api/auth/bootstrap', { method: 'POST' })
+      await refreshProfile()
+    }
+    catch {
+      await refreshProfile()
+    }
+  }
+
+  watch(supabaseUser, async (u) => {
+    if (u) {
+      await refreshProfile()
+      if (user.value && !user.value.odooPartnerId) {
+        await ensureBootstrap()
+      }
+    }
+    else {
+      user.value = null
+    }
+    authReady.value = true
+  }, { immediate: true })
 
   async function register(payload: {
     email: string
     password: string
     name?: string
+    emailRedirectPath?: string
   }) {
-    const response = await $fetch<AuthResponse>('/api/auth/register', {
-      method: 'POST',
-      body: payload,
+    const email = payload.email.trim().toLowerCase()
+    const name = payload.name?.trim() || email.split('@')[0]
+    const afterConfirm = safeRedirectPath(payload.emailRedirectPath, '/perfil')
+    const callbackUrl = `${siteUrl()}/auth/callback?redirect=${encodeURIComponent(afterConfirm)}`
+
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password: payload.password,
+      options: {
+        data: { name },
+        emailRedirectTo: callbackUrl,
+      },
     })
-    setSession(response)
-    return response
+
+    if (error) {
+      throw new Error(error.message)
+    }
+
+    if (data.session) {
+      await ensureBootstrap()
+    }
+
+    return {
+      needsEmailConfirmation: !data.session,
+      email,
+    }
   }
 
   async function login(email: string, password: string) {
-    const response = await $fetch<AuthResponse>('/api/auth/login', {
-      method: 'POST',
-      body: { email, password },
+    const { error } = await supabase.auth.signInWithPassword({
+      email: email.trim().toLowerCase(),
+      password,
     })
-    setSession(response)
-    return response
+
+    if (error) {
+      throw new Error(error.message)
+    }
+
+    await refreshProfile()
+    if (user.value && !user.value.odooPartnerId) {
+      await ensureBootstrap()
+    }
   }
 
-  function logout() {
+  async function logout() {
+    await supabase.auth.signOut()
     user.value = null
-    persistUser(null)
+  }
+
+  async function requestPasswordReset(email: string) {
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+      redirectTo: `${siteUrl()}/auth/actualizar-password`,
+    })
+    if (error) {
+      throw new Error(error.message)
+    }
+  }
+
+  async function updatePassword(newPassword: string) {
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
+    if (error) {
+      throw new Error(error.message)
+    }
   }
 
   async function fetchProfile(): Promise<DonorProfile> {
-    if (!user.value?.token) {
-      throw new Error('No autenticado')
-    }
-    return await $fetch<DonorProfile>('/api/me', {
-      headers: authHeaders(user.value.token),
-    })
+    return await $fetch<DonorProfile>('/api/me')
   }
 
   async function updateProfile(payload: Partial<DonorProfile>) {
-    if (!user.value?.token) {
-      throw new Error('No autenticado')
-    }
     const profile = await $fetch<DonorProfile>('/api/me', {
       method: 'PATCH',
-      headers: authHeaders(user.value.token),
       body: payload,
     })
-    user.value = {
-      ...user.value,
-      name: profile.name,
-      profileComplete: profile.profileComplete,
-    }
-    persistUser(user.value)
+    await refreshProfile()
     return profile
-  }
-
-  function addDonationToHistory(donation: Donation) {
-    if (!import.meta.client) return
-    const history = readLocalHistory()
-    history.unshift(donation)
-    sessionStorage.setItem(HISTORY_KEY, JSON.stringify(history))
-  }
-
-  function getLocalHistory(): Donation[] {
-    return readLocalHistory()
   }
 
   return {
     user,
+    authReady,
     isLoggedIn,
     register,
     login,
     logout,
+    requestPasswordReset,
+    updatePassword,
     fetchProfile,
     updateProfile,
-    addDonationToHistory,
-    getLocalHistory,
+    refreshProfile,
   }
 }
+
+export type { AuthResponse }

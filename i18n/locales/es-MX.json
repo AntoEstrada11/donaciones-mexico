@@ -23,13 +23,16 @@
     "bank": "Banco Azteca — IGLESIA UNIVERSAL DEL REINO DE DIOS OFES A.R.",
     "concept": "Concepto: Donativo",
     "rights": "© {year} Iglesia Universal del Reino de Dios — México",
-    "blessing": "¡Que Dios le bendiga abundantemente!"
+    "blessing": "¡Que Dios le bendiga abundantemente!",
+    "security": "Sitio con autenticación segura. Sus contraseñas no se almacenan en texto plano ni se comparten con sistemas externos."
   },
   "home": {
-    "heroTitle": "Haga parte de nuestros patrocinadores",
-    "heroSubtitle": "Su donación apoya la obra de Dios en México. Elija su iglesia, seleccione el tipo de donación y contribuya de forma segura en línea.",
+    "heroTitle": "Donaciones seguras para la obra en México",
+    "heroSubtitle": "Elija su iglesia, el tipo de donación y contribuya con tranquilidad. Su cuenta está protegida con autenticación moderna.",
+    "heroSecureNote": "Acceso con correo y contraseña · Recuperación segura · Datos protegidos",
     "ctaDonate": "Hacer una donación",
     "ctaChurches": "Ver iglesias",
+    "ctaAccount": "Crear cuenta segura",
     "howTitle": "¿Cómo hago mi donación?",
     "step1Title": "Seleccione su iglesia",
     "step1Desc": "Elija la iglesia más cercana a usted de nuestro directorio nacional.",
@@ -43,7 +46,15 @@
     "recurringSoon": "Próximamente",
     "speiTitle": "¿Prefiere transferencia SPEI?",
     "speiDesc": "Consulte nuestro tutorial paso a paso para donar vía transferencia bancaria.",
-    "speiCta": "Ver tutorial SPEI"
+    "speiCta": "Ver tutorial SPEI",
+    "trustAuthTitle": "Cuenta protegida",
+    "trustAuthDesc": "Inicio de sesión y registro con Supabase Auth. Sesiones cifradas en el navegador.",
+    "trustDataTitle": "Datos bajo control",
+    "trustDataDesc": "Su perfil solo es visible para usted. El teléfono y el correo son identificadores únicos.",
+    "trustResetTitle": "Recuperación segura",
+    "trustResetDesc": "Si olvida su contraseña, reciba un enlace por correo para restablecerla.",
+    "accountTitle": "Gestione su perfil de donante",
+    "accountDesc": "Cree una cuenta con su correo, complete sus datos y consulte su historial cuando lo necesite."
   },
   "churches": {
     "title": "Seleccione su iglesia",
@@ -70,21 +81,33 @@
     "summaryCampaign": "Tipo",
     "summaryAmount": "Total",
     "submit": "Confirmar donación",
+    "submitLogin": "Iniciar sesión para donar",
     "submitting": "Procesando…",
     "submitError": "No se pudo procesar la donación. Intente de nuevo.",
+    "loginRequired": "Para registrar la donación en su cuenta e historial, debe iniciar sesión. Su selección de iglesia se conservará.",
     "successTitle": "¡Donación registrada!",
-    "successDesc": "Su donación ha sido registrada correctamente. Recibirá instrucciones de pago por correo.",
+    "successDesc": "Quedó ligada a su cuenta como pendiente de pago. Siga las instrucciones SPEI o consulte el historial.",
+    "successPaid": "Transferencia confirmada. La donación aparece como pagada en su historial.",
     "viewHistory": "Ver historial",
     "newDonation": "Nueva donación",
-    "mockNote": "Modo demostración — sin cobro real.",
+    "mockNote": "Sin pasarela bancaria aún: SPEI con referencia única. Puede confirmar la transferencia en demo.",
+    "speiInstructionsTitle": "Datos para transferir (SPEI)",
+    "speiBank": "Beneficiario / banco",
+    "speiConcept": "Concepto (obligatorio)",
+    "speiHint": "Use exactamente este concepto para identificar su donación. El estado quedará pendiente hasta confirmar.",
+    "cardPendingNote": "El cobro con tarjeta aún no está conectado a una pasarela. Su intención quedó registrada como pendiente.",
+    "reference": "Referencia",
+    "confirmTransfer": "Ya realicé la transferencia",
+    "confirmingPaid": "Confirmando…",
     "statusPaid": "Pagada",
     "statusPending": "Pendiente",
+    "statusPendingTransfer": "Pendiente de transferencia",
     "statusFailed": "Fallida",
     "statusCancelled": "Cancelada"
   },
   "login": {
     "title": "Iniciar sesión",
-    "subtitle": "Acceda a su cuenta para ver su perfil e historial.",
+    "subtitle": "Acceda de forma segura a su cuenta para ver su perfil e historial.",
     "email": "Correo electrónico",
     "emailPlaceholder": "correo{'@'}ejemplo.com",
     "password": "Contraseña",
@@ -93,23 +116,47 @@
     "submitting": "Ingresando…",
     "required": "Ingrese correo y contraseña.",
     "error": "No se pudo iniciar sesión. Intente de nuevo.",
-    "noAccount": "¿No tiene cuenta?"
+    "callbackError": "No se pudo confirmar el enlace. Intente iniciar sesión o solicite uno nuevo.",
+    "noAccount": "¿No tiene cuenta?",
+    "forgot": "¿Olvidó su contraseña?"
   },
   "register": {
     "title": "Crear cuenta",
-    "subtitle": "Regístrese con su correo. Después podrá completar teléfono y datos en su perfil.",
+    "subtitle": "Use su correo como identificador. Luego complete teléfono y datos en el perfil.",
     "name": "Nombre completo",
     "email": "Correo electrónico",
     "phone": "Teléfono",
     "phonePlaceholder": "55 0000 0000",
     "password": "Contraseña",
-    "passwordHint": "Mínimo 6 caracteres",
+    "passwordHint": "Mínimo 8 caracteres",
+    "confirmPassword": "Confirmar contraseña",
+    "passwordWeak": "La contraseña debe tener al menos 8 caracteres.",
+    "passwordMismatch": "Las contraseñas no coinciden.",
     "submit": "Registrarme",
     "submitting": "Creando cuenta…",
     "required": "Correo y contraseña son requeridos.",
     "error": "No se pudo crear la cuenta. Intente de nuevo.",
     "hasAccount": "¿Ya tiene cuenta?",
-    "note": "El correo es su identificador único. El teléfono también debe ser único cuando lo agregue."
+    "checkEmail": "Revisamos su correo: confirme el enlace para activar la cuenta.",
+    "note": "El correo es único. El teléfono también lo será cuando lo agregue."
+  },
+  "reset": {
+    "title": "Recuperar contraseña",
+    "subtitle": "Le enviaremos un enlace seguro a su correo para crear una nueva contraseña.",
+    "emailRequired": "Ingrese su correo electrónico.",
+    "submit": "Enviar enlace",
+    "sending": "Enviando…",
+    "sent": "Si el correo existe, recibirá un enlace para restablecer la contraseña. Revise también spam.",
+    "error": "No se pudo enviar el enlace. Intente de nuevo.",
+    "updateTitle": "Nueva contraseña",
+    "updateSubtitle": "Elija una contraseña segura para su cuenta.",
+    "newPassword": "Nueva contraseña",
+    "updateSubmit": "Guardar contraseña",
+    "updating": "Guardando…",
+    "updated": "Contraseña actualizada. Redirigiendo…",
+    "updateError": "No se pudo actualizar la contraseña.",
+    "invalidLink": "El enlace no es válido o expiró.",
+    "tryAgain": "Solicitar uno nuevo"
   },
   "profile": {
     "title": "Mi perfil",
@@ -126,17 +173,27 @@
     "saving": "Guardando…",
     "saved": "Perfil actualizado correctamente.",
     "saveError": "No se pudo guardar el perfil.",
-    "noOdooLogin": "No tiene usuario de ingreso a Odoo; solo el personal administrativo puede ver esta información allí."
+    "noOdooLogin": "No tiene usuario de ingreso a Odoo; solo el personal administrativo puede ver esta información allí.",
+    "complete": "Perfil completo",
+    "incomplete": "Complete al menos nombre y teléfono para finalizar su perfil."
+  },
+  "security": {
+    "connectionNote": "Conexión protegida con autenticación Supabase. No compartimos su contraseña con Odoo.",
+    "emailUnique": "Su correo es el identificador único de la cuenta",
+    "phoneLater": "El teléfono se agrega después y también debe ser único",
+    "odooNote": "En Odoo solo existe como contacto; sin acceso de usuario"
   },
   "history": {
     "title": "Historial de donaciones",
-    "subtitle": "Consulte sus donaciones recientes.",
-    "empty": "Aún no tiene donaciones registradas.",
+    "subtitle": "Donaciones de su cuenta. Las pendientes de SPEI pueden confirmarse cuando haya transferido.",
+    "empty": "Aún no tiene donaciones registradas en su cuenta.",
     "cta": "Hacer una donación"
   },
   "common": {
     "loading": "Cargando…",
     "error": "Ocurrió un error. Intente de nuevo.",
-    "back": "Regresar"
+    "back": "Regresar",
+    "show": "Ver",
+    "hide": "Ocultar"
   }
 }
