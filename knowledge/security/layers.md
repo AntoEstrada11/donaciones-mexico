@@ -1,28 +1,36 @@
 ---
 type: Reference
 title: Capas de seguridad
-description: Controles de auth y defensa; solo nombres de variables, nunca valores.
+description: Controles de auth, acceso a datos y variables de entorno; solo nombres, nunca valores.
 tags: [security]
-timestamp: 2026-07-20T00:00:00Z
+timestamp: 2026-08-07T00:00:00Z
 ---
 
 # Controles
 
 | Capa | Implementación | Env (nombre) |
 |------|----------------|--------------|
-| Firma de sesión | HMAC-SHA256 token (`data.sig`), TTL 7 días | `NUXT_AUTH_SECRET` |
-| Contraseñas | scrypt + salt por usuario | — (en `users.json`) |
-| Sesión API | Header `Authorization: Bearer` + `requireSession` | — |
-| Odoo | JSON-RPC con usuario de integración | `NUXT_ODOO_URL`, `NUXT_ODOO_DB`, `NUXT_ODOO_USERNAME`, `NUXT_ODOO_PASSWORD` |
-| Público | URL iglesias, coords default | `runtimeConfig.public.*` (sin secretos) |
+| Firma de sesión | HMAC-SHA256 (`data.sig`), TTL 7 días, `sub` = uuid del usuario | `NUXT_AUTH_SECRET` |
+| Contraseñas | scrypt con salt por usuario, comparación en tiempo constante | — (columna `password_hash`) |
+| Sesión API | Header `Authorization: Bearer` + `requireSession` / `optionalSession` | — |
+| Base de datos | Usuario dedicado de aplicación, puerto publicado solo en `127.0.0.1` | `DATABASE_URL`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` |
+| Público | URL de iglesias y coordenadas por defecto | `runtimeConfig.public.*` (sin secretos) |
+
+# Manejo de datos personales
+
+- Los datos de contacto y fiscales viven en `donor_profiles`, separados de la tabla de acceso.
+- Borrar un donante elimina su perfil en cascada pero conserva las donaciones con `user_id` nulo.
+- El RFC se almacena en claro; si se emiten CFDI conviene evaluar cifrado de columna con `pgcrypto`.
 
 # Prohibido en este bundle
 
-Valores de API keys, passwords, tokens o connection strings.
+Valores de contraseñas, cadenas de conexión, tokens o llaves. Solo nombres de variables.
 
 # Limitaciones actuales
 
-- Token casero (no JWT estándar / no cookies HttpOnly).
-- `GET/POST /api/donations` sin exigir sesión.
-- Modo mock Odoo si faltan las cuatro vars Odoo.
-- Secret por defecto en código solo para desarrollo (`dev-secret-change-me`).
+- Token propio, no JWT estándar ni cookie `HttpOnly`; vive en `sessionStorage`.
+- Rotar `NUXT_AUTH_SECRET` invalida todas las sesiones activas.
+- `POST /api/donations` acepta peticiones sin sesión por diseño; no hay límite de tasa.
+- El secreto por defecto en `nuxt.config.ts` (`dev-secret-change-me`) es solo para desarrollo.
+- Sin cifrado en reposo más allá del que ofrezca el disco del host.
+- La validación de campos (montos, RFC, etc.) mitiga basura de entrada; no sustituye rate limiting ni WAF. Ver [/data/field-limits.md](/data/field-limits.md).

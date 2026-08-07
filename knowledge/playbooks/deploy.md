@@ -1,9 +1,9 @@
 ---
 type: Playbook
 title: Desplegar
-description: Build de producción Nuxt/Nitro y verificación básica.
+description: Build de producción Nuxt/Nitro con la base PostgreSQL en el mismo host.
 tags: [deploy]
-timestamp: 2026-07-20T00:00:00Z
+timestamp: 2026-08-06T00:00:00Z
 ---
 
 # Trigger
@@ -12,14 +12,27 @@ Publicar o actualizar el entorno de staging/producción.
 
 # Steps
 
-1. Definir en el host las env: `NUXT_AUTH_SECRET` y, si aplica, las cuatro `NUXT_ODOO_*`.
-2. `npm ci` (o `npm install`).
-3. `npm run build`.
-4. Arrancar el output Nitro del host (típico: `node .output/server/index.mjs`) o el adaptador del proveedor.
-5. Smoke: login/registro, `/api/campaigns`, `/iglesias`, crear donación en `/donaciones`.
+1. Definir las variables de entorno del host: `NUXT_AUTH_SECRET` (uno largo y propio del entorno) y `DATABASE_URL`, más `POSTGRES_*` si la base corre con el compose del repo.
+2. Levantar o confirmar la base: `docker compose up -d`
+3. `npm ci`
+4. `npm run db:migrate` — antes de publicar el código nuevo.
+5. `npm run build`
+6. Arrancar el output de Nitro: `node .output/server/index.mjs`, o el adaptador del proveedor.
+7. Smoke: registro, login, `/api/campaigns`, `/iglesias`, alta de donación y `/historial`.
+
+# Orden importa
+
+Las migraciones van antes de publicar el código: el binario nuevo espera tablas nuevas. Si una migración es destructiva, respaldar primero (ver [/playbooks/db-backup.md](/playbooks/db-backup.md)).
+
+# Checklist de seguridad
+
+- `NUXT_AUTH_SECRET` distinto al de desarrollo. Cambiarlo cierra todas las sesiones abiertas.
+- Puerto 5432 publicado solo en `127.0.0.1`, nunca hacia Internet.
+- Usuario de base dedicado a la aplicación, no superusuario.
+- El volumen `db-data` debe sobrevivir a los redespliegues.
+- Respaldo programado activo antes de recibir donaciones reales.
 
 # Notas
 
-- Asegurar volumen/escritura para `server/data/users.json` si el filesystem del host es efímero.
-- No commitear `.env` ni `users.json`.
-- Pasarelas de pago reales aún no están en el alcance.
+- No commitear `.env`.
+- Las pasarelas de pago reales aún no están en el alcance; las donaciones quedan en `pending`.

@@ -14,9 +14,22 @@ onMounted(() => {
   }
 })
 
+function onEmailInput(event: Event) {
+  email.value = sanitizeEmailInput((event.target as HTMLInputElement).value)
+}
+
+function onPasswordInput(event: Event) {
+  password.value = sanitizePasswordInput((event.target as HTMLInputElement).value)
+}
+
 async function onSubmit() {
   if (!email.value.trim() || !password.value.trim()) {
     error.value = t('login.required')
+    return
+  }
+
+  if (!isValidEmail(email.value)) {
+    error.value = t('validation.email')
     return
   }
 
@@ -59,11 +72,14 @@ async function onSubmit() {
           </label>
           <input
             id="email"
-            v-model="email"
+            :value="email"
             type="email"
             autocomplete="email"
+            required
+            :maxlength="FIELD_LIMITS.email.max"
             class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
             :placeholder="t('login.emailPlaceholder')"
+            @input="onEmailInput"
           >
         </div>
 
@@ -73,11 +89,14 @@ async function onSubmit() {
           </label>
           <input
             id="password"
-            v-model="password"
+            :value="password"
             type="password"
             autocomplete="current-password"
+            required
+            :maxlength="FIELD_LIMITS.password.max"
             class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
             :placeholder="t('login.passwordPlaceholder')"
+            @input="onPasswordInput"
           >
         </div>
 

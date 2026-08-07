@@ -2,7 +2,7 @@
 import type { DonorProfile } from '~/types'
 
 const { t } = useI18n()
-const { isLoggedIn, fetchProfile, updateProfile, user } = useAuth()
+const { isLoggedIn, fetchProfile, updateProfile } = useAuth()
 
 const profile = ref<DonorProfile | null>(null)
 const loading = ref(true)
@@ -44,7 +44,61 @@ onMounted(async () => {
   }
 })
 
+function onNameInput(event: Event) {
+  form.name = sanitizeNameInput((event.target as HTMLInputElement).value)
+}
+
+function onPhoneInput(event: Event) {
+  form.phone = sanitizePhoneInput((event.target as HTMLInputElement).value)
+}
+
+function onStreetInput(event: Event) {
+  form.street = sanitizeStreetInput((event.target as HTMLInputElement).value)
+}
+
+function onCityInput(event: Event) {
+  form.city = sanitizeCityInput((event.target as HTMLInputElement).value)
+}
+
+function onStateInput(event: Event) {
+  form.state = sanitizeStateInput((event.target as HTMLInputElement).value)
+}
+
+function onZipInput(event: Event) {
+  form.zip = sanitizeZipInput((event.target as HTMLInputElement).value)
+}
+
+function onRfcInput(event: Event) {
+  form.rfc = sanitizeRfcInput((event.target as HTMLInputElement).value)
+}
+
+function validateForm(): string | null {
+  if (!isValidName(form.name)) {
+    return t('validation.name', { max: FIELD_LIMITS.name.max })
+  }
+  if (!isValidPhone(form.phone)) {
+    return t('validation.phone', {
+      min: FIELD_LIMITS.phone.minDigits,
+      max: FIELD_LIMITS.phone.maxDigits,
+    })
+  }
+  if (!isValidZip(form.zip)) {
+    return t('validation.zip')
+  }
+  if (!isValidRfc(form.rfc)) {
+    return t('validation.rfc')
+  }
+  return null
+}
+
 async function onSubmit() {
+  const validationError = validateForm()
+  if (validationError) {
+    error.value = validationError
+    success.value = false
+    return
+  }
+
   saving.value = true
   error.value = ''
   success.value = false
@@ -79,21 +133,6 @@ async function onSubmit() {
     </div>
 
     <form v-else class="card space-y-4" @submit.prevent="onSubmit">
-      <div v-if="profile" class="rounded-md bg-brand-light/60 px-4 py-3 text-sm text-gray-700">
-        <p>
-          <span class="font-medium text-ink">{{ t('profile.email') }}:</span>
-          {{ profile.email }}
-        </p>
-        <p class="mt-1">
-          <span class="font-medium text-ink">Odoo partner:</span>
-          #{{ profile.odooPartnerId }}
-          <span class="text-gray-500">({{ profile.source }})</span>
-        </p>
-        <p v-if="user" class="mt-1 text-xs text-gray-500">
-          {{ t('profile.noOdooLogin') }}
-        </p>
-      </div>
-
       <div class="grid gap-4 sm:grid-cols-2">
         <div class="sm:col-span-2">
           <label class="mb-1 block text-sm font-medium text-ink">
@@ -113,10 +152,13 @@ async function onSubmit() {
           </label>
           <input
             id="name"
-            v-model="form.name"
+            :value="form.name"
             type="text"
-            class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+            autocomplete="name"
             required
+            :maxlength="FIELD_LIMITS.name.max"
+            class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+            @input="onNameInput"
           >
         </div>
 
@@ -126,10 +168,18 @@ async function onSubmit() {
           </label>
           <input
             id="phone"
-            v-model="form.phone"
+            :value="form.phone"
             type="tel"
+            inputmode="tel"
+            autocomplete="tel"
+            :maxlength="FIELD_LIMITS.phone.maxDisplay"
+            :placeholder="t('register.phonePlaceholder')"
             class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+            @input="onPhoneInput"
           >
+          <p class="mt-1 text-xs text-gray-500">
+            {{ t('validation.phoneHint', { min: FIELD_LIMITS.phone.minDigits }) }}
+          </p>
         </div>
 
         <div>
@@ -138,9 +188,14 @@ async function onSubmit() {
           </label>
           <input
             id="rfc"
-            v-model="form.rfc"
+            :value="form.rfc"
             type="text"
-            class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+            autocomplete="off"
+            spellcheck="false"
+            :maxlength="FIELD_LIMITS.rfc.max"
+            :placeholder="t('profile.rfcPlaceholder')"
+            class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm uppercase focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+            @input="onRfcInput"
           >
         </div>
 
@@ -150,9 +205,12 @@ async function onSubmit() {
           </label>
           <input
             id="street"
-            v-model="form.street"
+            :value="form.street"
             type="text"
+            autocomplete="street-address"
+            :maxlength="FIELD_LIMITS.street.max"
             class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+            @input="onStreetInput"
           >
         </div>
 
@@ -162,9 +220,12 @@ async function onSubmit() {
           </label>
           <input
             id="city"
-            v-model="form.city"
+            :value="form.city"
             type="text"
+            autocomplete="address-level2"
+            :maxlength="FIELD_LIMITS.city.max"
             class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+            @input="onCityInput"
           >
         </div>
 
@@ -174,9 +235,12 @@ async function onSubmit() {
           </label>
           <input
             id="state"
-            v-model="form.state"
+            :value="form.state"
             type="text"
+            autocomplete="address-level1"
+            :maxlength="FIELD_LIMITS.state.max"
             class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+            @input="onStateInput"
           >
         </div>
 
@@ -186,9 +250,14 @@ async function onSubmit() {
           </label>
           <input
             id="zip"
-            v-model="form.zip"
+            :value="form.zip"
             type="text"
+            inputmode="numeric"
+            autocomplete="postal-code"
+            :maxlength="FIELD_LIMITS.zip.length"
+            :placeholder="t('profile.zipPlaceholder')"
             class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+            @input="onZipInput"
           >
         </div>
       </div>

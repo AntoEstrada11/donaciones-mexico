@@ -1,0 +1,44 @@
+---
+type: Playbook
+title: Migraciones de base de datos
+description: Generar y aplicar cambios de esquema con Drizzle, e importar el store legado.
+tags: [db, postgres, drizzle]
+timestamp: 2026-08-06T00:00:00Z
+---
+
+# Trigger
+
+Cambió `server/database/schema.ts`, o hay que preparar una base nueva.
+
+# Cambiar el esquema
+
+1. Editar `server/database/schema.ts`.
+2. `npm run db:generate` — escribe el SQL en `server/database/migrations/`.
+3. Revisar el SQL generado antes de aplicarlo. Drizzle no adivina intenciones: un renombre puede salir como `DROP` + `ADD` y perder datos.
+4. `npm run db:migrate` — aplica lo pendiente.
+5. Commitear el `.sql` junto con el cambio de `schema.ts`. Las migraciones son parte del código.
+
+# Base nueva desde cero
+
+```bash
+docker compose up -d
+npm run db:migrate
+npm run db:seed
+```
+
+# Importar usuarios del store anterior
+
+Migración única desde `server/data/users.json`, vigente solo para instalaciones previas al 2026-08-06:
+
+```bash
+npm run db:import-users
+```
+
+Es idempotente: los correos ya presentes se omiten y se reportan como saltados. Conserva el `password_hash` original, así que las contraseñas existentes siguen funcionando. Los usuarios reciben un uuid nuevo, ya que el identificador dejó de ser el correo.
+
+Cuando el conteo cuadre, `server/data/users.json` puede archivarse fuera del repo y borrarse; contiene hashes de contraseñas y datos personales.
+
+# Notas
+
+- Los scripts leen `.env` con `node --env-file`; no requieren dependencias extra.
+- No editar a mano el SQL ya aplicado: generar una migración nueva encima.

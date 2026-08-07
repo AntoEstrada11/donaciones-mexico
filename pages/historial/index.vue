@@ -2,18 +2,27 @@
 import type { Campaign, Donation } from '~/types'
 
 const { t } = useI18n()
-const { isLoggedIn, getLocalHistory } = useAuth()
+const { isLoggedIn, fetchDonations } = useAuth()
 
-const localHistory = ref<Donation[]>([])
+const donations = ref<Donation[]>([])
 const authReady = ref(false)
+const loadError = ref('')
 
-onMounted(() => {
-  authReady.value = true
+onMounted(async () => {
   if (!isLoggedIn.value) {
-    navigateTo('/login?redirect=/historial')
+    await navigateTo('/login?redirect=/historial')
     return
   }
-  localHistory.value = getLocalHistory()
+
+  try {
+    donations.value = await fetchDonations()
+  }
+  catch {
+    loadError.value = t('common.error')
+  }
+  finally {
+    authReady.value = true
+  }
 })
 
 const { data: campaigns } = await useFetch<Campaign[]>('/api/campaigns')
@@ -67,7 +76,11 @@ function formatDate(iso: string) {
     </div>
 
     <template v-else>
-      <div v-if="localHistory.length === 0" class="card py-12 text-center">
+      <p v-if="loadError" class="mb-4 text-center text-sm text-red-600">
+        {{ loadError }}
+      </p>
+
+      <div v-if="donations.length === 0" class="card py-12 text-center">
         <p class="text-gray-500">
           {{ t('history.empty') }}
         </p>
@@ -78,7 +91,7 @@ function formatDate(iso: string) {
 
       <div v-else class="space-y-4">
         <article
-          v-for="donation in localHistory"
+          v-for="donation in donations"
           :key="donation.id"
           class="card flex flex-wrap items-center justify-between gap-4"
         >

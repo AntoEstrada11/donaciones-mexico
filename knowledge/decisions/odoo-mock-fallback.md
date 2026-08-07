@@ -1,24 +1,28 @@
 ---
 type: Decision
 title: Mock si Odoo vacío
-description: Sin las cuatro vars NUXT_ODOO_*, partner id sintético y perfil source=mock.
-tags: [decision, odoo, mock]
-timestamp: 2026-07-20T00:00:00Z
+description: Sin las cuatro vars NUXT_ODOO_*, se generaba un partner id sintético. Superada.
+tags: [decision, odoo, mock, superseded]
+status: superseded
+superseded_by: /decisions/postgres-datos-propios.md
+timestamp: 2026-08-06T00:00:00Z
 ---
+
+> **Superada el 2026-08-06.** Ya no existe integración con Odoo ni modo mock. Ver [/decisions/postgres-datos-propios.md](/decisions/postgres-datos-propios.md).
 
 # Contexto
 
-Desarrollo y demos sin instancia Odoo disponible.
+Desarrollo y demos sin instancia de Odoo disponible.
 
 # Decisión
 
-`isOdooConfigured()` exige URL, DB, usuario y password. Si falta alguna, `upsertOdooPartner` genera un id estable por hash de email y el perfil usa `source: 'mock'`.
+`isOdooConfigured()` exigía URL, base, usuario y contraseña. Si faltaba alguna, `upsertOdooPartner` generaba un id estable por hash del correo y el perfil se marcaba `source: 'mock'`.
 
 # Consecuencias
 
-- **+** `npm run dev` útil sin CRM.
-- **−** Datos de perfil “ricos” no se sincronizan hasta configurar Odoo.
+- **+** `npm run dev` era útil sin CRM.
+- **−** Los datos de perfil no se sincronizaban hasta configurar Odoo.
 
-# Cuándo reconsiderar
+# Por qué se abandonó
 
-Cuando staging/prod siempre tengan Odoo y el mock deba fallar en duro (fail-fast).
+Además de la salida de Odoo, el mecanismo tenía una trampa práctica: copiar `.env.example` dejaba las variables con valores de ejemplo (`https://tu-odoo.ejemplo.com`), lo que hacía creer al sistema que Odoo estaba configurado y rompía el registro con un error de TLS. Una condición basada en "las variables tienen algo escrito" no distingue configuración real de plantilla.

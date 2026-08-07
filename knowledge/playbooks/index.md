@@ -1,4 +1,6 @@
 # Playbooks
 
-* [Correr en local](run-local.md) - Arranque de desarrollo Nuxt.
-* [Desplegar](deploy.md) - Build y preview/hosting Node.
+* [Correr en local](run-local.md) - Base en Docker y servidor de desarrollo.
+* [Migraciones de base de datos](db-migrations.md) - Drizzle, esquema e importación del store legado.
+* [Respaldo y restauración](db-backup.md) - `pg_dump`, `pg_restore` y respaldo programado.
+* [Desplegar](deploy.md) - Build de producción y orden de migraciones.

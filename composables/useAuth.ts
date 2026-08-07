@@ -1,13 +1,12 @@
 import type { AuthResponse, Donation, DonorProfile } from '~/types'
 
 const USER_KEY = 'auth-user'
-const HISTORY_KEY = 'donation-history'
 
 export interface AuthUser {
   token: string
+  id: string
   name: string
   email: string
-  odooPartnerId: number
   profileComplete: boolean
 }
 
@@ -31,17 +30,6 @@ function persistUser(user: AuthUser | null) {
   sessionStorage.setItem(USER_KEY, JSON.stringify(user))
 }
 
-function readLocalHistory(): Donation[] {
-  if (!import.meta.client) return []
-  try {
-    const raw = sessionStorage.getItem(HISTORY_KEY)
-    return raw ? JSON.parse(raw) as Donation[] : []
-  }
-  catch {
-    return []
-  }
-}
-
 function authHeaders(token: string) {
   return { Authorization: `Bearer ${token}` }
 }
@@ -58,12 +46,18 @@ export function useAuth() {
   function setSession(response: AuthResponse) {
     user.value = {
       token: response.token,
+      id: response.id,
       name: response.name,
       email: response.email,
-      odooPartnerId: response.odooPartnerId,
       profileComplete: response.profileComplete,
     }
     persistUser(user.value)
+  }
+
+  function requireToken() {
+    const token = user.value?.token
+    if (!token) throw new Error('No autenticado')
+    return token
   }
 
   async function register(payload: {
@@ -94,25 +88,19 @@ export function useAuth() {
   }
 
   async function fetchProfile(): Promise<DonorProfile> {
-    if (!user.value?.token) {
-      throw new Error('No autenticado')
-    }
     return await $fetch<DonorProfile>('/api/me', {
-      headers: authHeaders(user.value.token),
+      headers: authHeaders(requireToken()),
     })
   }
 
   async function updateProfile(payload: Partial<DonorProfile>) {
-    if (!user.value?.token) {
-      throw new Error('No autenticado')
-    }
     const profile = await $fetch<DonorProfile>('/api/me', {
       method: 'PATCH',
-      headers: authHeaders(user.value.token),
+      headers: authHeaders(requireToken()),
       body: payload,
     })
     user.value = {
-      ...user.value,
+      ...user.value!,
       name: profile.name,
       profileComplete: profile.profileComplete,
     }
@@ -120,15 +108,16 @@ export function useAuth() {
     return profile
   }
 
-  function addDonationToHistory(donation: Donation) {
-    if (!import.meta.client) return
-    const history = readLocalHistory()
-    history.unshift(donation)
-    sessionStorage.setItem(HISTORY_KEY, JSON.stringify(history))
+  async function fetchDonations(): Promise<Donation[]> {
+    return await $fetch<Donation[]>('/api/donations', {
+      headers: authHeaders(requireToken()),
+    })
   }
 
-  function getLocalHistory(): Donation[] {
-    return readLocalHistory()
+  /** Token para adjuntar la donación al donante cuando hay sesión iniciada. */
+  function optionalAuthHeaders(): Record<string, string> {
+    const token = user.value?.token
+    return token ? authHeaders(token) : {}
   }
 
   return {
@@ -139,7 +128,7 @@ export function useAuth() {
     logout,
     fetchProfile,
     updateProfile,
-    addDonationToHistory,
-    getLocalHistory,
+    fetchDonations,
+    optionalAuthHeaders,
   }
 }

@@ -3,7 +3,7 @@ import type { Campaign, Donation } from '~/types'
 
 const { t } = useI18n()
 const { selectedChurch, hydrated, clearChurch } = useDonation()
-const { addDonationToHistory } = useAuth()
+const { optionalAuthHeaders } = useAuth()
 
 const router = useRouter()
 
@@ -24,6 +24,8 @@ const success = ref(false)
 const submitError = ref('')
 
 const presetAmounts = [100, 200, 500, 1000]
+const amountMin = FIELD_LIMITS.amount.min
+const amountMax = FIELD_LIMITS.amount.max
 
 const selectedCampaign = computed(() =>
   campaigns.value?.find(c => c.id === selectedCampaignId.value) ?? null,
@@ -31,38 +33,75 @@ const selectedCampaign = computed(() =>
 
 const finalAmount = computed(() => {
   if (customAmount.value.trim()) {
-    const parsed = Number(customAmount.value)
-    return Number.isFinite(parsed) && parsed > 0 ? parsed : null
+    const parsed = parseAmount(customAmount.value)
+    return parsed !== null && isValidAmount(parsed) ? parsed : null
   }
-  return amount.value
+  return amount.value !== null && isValidAmount(amount.value) ? amount.value : null
 })
+
+const amountHint = computed(() =>
+  t('donation.amountRange', {
+    min: amountMin.toLocaleString('es-MX'),
+    max: formatAmountMaxLabel(),
+  }),
+)
 
 const canSubmit = computed(() =>
   selectedChurch.value
   && selectedCampaignId.value
   && finalAmount.value
-  && finalAmount.value > 0
   && !submitting.value,
 )
 
 function selectPreset(value: number) {
   amount.value = value
   customAmount.value = ''
+  submitError.value = ''
 }
 
-function onCustomInput() {
+/** Solo dígitos y un punto decimal (máx. 2 decimales). type=number permite "e" de notación científica. */
+function onCustomInput(event: Event) {
+  const input = event.target as HTMLInputElement
+  const cleaned = sanitizeAmountInput(input.value)
+  customAmount.value = cleaned
+  input.value = cleaned
   amount.value = null
+  submitError.value = ''
+}
+
+function blockNonAmountKeys(event: KeyboardEvent) {
+  if (event.ctrlKey || event.metaKey || event.altKey) return
+  const allowed = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'Home', 'End']
+  if (allowed.includes(event.key)) return
+  if (/^\d$/.test(event.key)) return
+  if (event.key === '.' && !customAmount.value.includes('.')) return
+  event.preventDefault()
 }
 
 async function submitDonation() {
-  if (!canSubmit.value || !selectedChurch.value || !selectedCampaignId.value || !finalAmount.value) return
+  if (!selectedChurch.value || !selectedCampaignId.value) return
+
+  if (customAmount.value.trim()) {
+    const parsed = parseAmount(customAmount.value)
+    if (parsed === null || !isValidAmount(parsed)) {
+      submitError.value = amountHint.value
+      return
+    }
+  }
+  else if (!finalAmount.value) {
+    submitError.value = t('donation.amountRequired')
+    return
+  }
+
+  if (!canSubmit.value || !finalAmount.value) return
 
   submitting.value = true
   submitError.value = ''
 
   try {
-    const donation = await $fetch<Donation>('/api/donations', {
+    await $fetch<Donation>('/api/donations', {
       method: 'POST',
+      headers: optionalAuthHeaders(),
       body: {
         churchId: selectedChurch.value.id,
         campaignId: selectedCampaignId.value,
@@ -71,11 +110,11 @@ async function submitDonation() {
       },
     })
 
-    addDonationToHistory(donation)
     success.value = true
   }
-  catch {
-    submitError.value = t('donation.submitError')
+  catch (e: unknown) {
+    const msg = (e as { data?: { statusMessage?: string } })?.data?.statusMessage
+    submitError.value = msg || t('donation.submitError')
   }
   finally {
     submitting.value = false
@@ -210,15 +249,20 @@ function startNewDonation() {
           <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">$</span>
           <input
             id="custom-amount"
-            v-model="customAmount"
-            type="number"
-            min="1"
-            step="1"
-            placeholder="0.00"
+            :value="customAmount"
+            type="text"
+            inputmode="decimal"
+            autocomplete="off"
+            :placeholder="t('donation.amountPlaceholder')"
+            :aria-describedby="'amount-hint'"
             class="w-full rounded-lg border border-gray-300 py-3 pl-7 pr-4 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+            @keydown="blockNonAmountKeys"
             @input="onCustomInput"
           >
         </div>
+        <p id="amount-hint" class="mt-1 text-xs text-gray-500">
+          {{ amountHint }}
+        </p>
       </section>
 
       <!-- Método de pago -->

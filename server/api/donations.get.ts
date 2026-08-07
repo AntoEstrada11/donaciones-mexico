@@ -1,5 +1,4 @@
-import donations from '../data/donations.json'
-
-export default defineEventHandler(() => {
-  return donations
+export default defineEventHandler(async (event) => {
+  const session = requireSession(event)
+  return await listDonationsByUser(session.sub)
 })

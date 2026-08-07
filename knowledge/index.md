@@ -9,7 +9,7 @@ Base de conocimiento OKF del proyecto. Empieza aquí (progressive disclosure).
 # Proyecto
 
 * [Donaciones México](project.md) - Plataforma de donaciones en línea IURD México.
-* [Arquitectura](architecture.md) - Componentes Nuxt, Nitro, Odoo e iglesias WP.
+* [Arquitectura](architecture.md) - Componentes Nuxt, Nitro, PostgreSQL e iglesias WP.
 
 # APIs
 
@@ -17,16 +17,16 @@ Base de conocimiento OKF del proyecto. Empieza aquí (progressive disclosure).
 
 # Datos
 
-* [Datos / schemas](data/) - JSON locales y store de usuarios.
+* [Datos / schemas](data/) - Esquema PostgreSQL, límites de formularios y archivos semilla.
 
 # Seguridad
 
-* [Seguridad](security/) - Auth HMAC, secretos por env, modo mock Odoo.
+* [Seguridad](security/) - Auth HMAC, secretos por env, acceso a la base.
 
 # Playbooks
 
-* [Operación](playbooks/) - Correr en local y desplegar.
+* [Operación](playbooks/) - Correr en local, migraciones, respaldos y despliegue.
 
 # Decisiones
 
-* [Decisiones](decisions/) - Trade-offs (mock Odoo, partner vs user, iglesias externas).
+* [Decisiones](decisions/) - Trade-offs vigentes y decisiones superadas.

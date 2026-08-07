@@ -34,27 +34,25 @@ export interface Donation {
 
 export interface AuthResponse {
   token: string
+  id: string
   name: string
   email: string
-  odooPartnerId: number
   profileComplete: boolean
 }
 
-/** Usuario de la app (no es usuario de Odoo). El id es el correo. */
+/** Cuenta de acceso del donante, tal como vive en la tabla `users`. */
 export interface AppUser {
   id: string
   email: string
   name: string
-  phone?: string
   passwordHash: string
-  odooPartnerId: number
   profileComplete: boolean
   createdAt: string
 }
 
-/** Perfil público que ve el donante (datos de res.partner). */
+/** Perfil que ve y edita el donante (tablas `users` + `donor_profiles`). */
 export interface DonorProfile {
-  odooPartnerId: number
+  id: string
   name: string
   email: string
   phone: string | null
@@ -64,7 +62,6 @@ export interface DonorProfile {
   zip: string | null
   rfc: string | null
   profileComplete: boolean
-  source: 'odoo' | 'mock'
 }
 
 export interface ChurchApiItem {

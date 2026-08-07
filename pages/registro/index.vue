@@ -14,9 +14,30 @@ onMounted(() => {
   }
 })
 
+function onEmailInput(event: Event) {
+  email.value = sanitizeEmailInput((event.target as HTMLInputElement).value)
+}
+
+function onPasswordInput(event: Event) {
+  password.value = sanitizePasswordInput((event.target as HTMLInputElement).value)
+}
+
 async function onSubmit() {
   if (!email.value.trim() || !password.value.trim()) {
     error.value = t('register.required')
+    return
+  }
+
+  if (!isValidEmail(email.value)) {
+    error.value = t('validation.email')
+    return
+  }
+
+  if (!isValidPassword(password.value)) {
+    error.value = t('validation.password', {
+      min: FIELD_LIMITS.password.min,
+      max: FIELD_LIMITS.password.max,
+    })
     return
   }
 
@@ -62,12 +83,14 @@ async function onSubmit() {
           </label>
           <input
             id="email"
-            v-model="email"
+            :value="email"
             type="email"
             autocomplete="email"
             required
+            :maxlength="FIELD_LIMITS.email.max"
             class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
             :placeholder="t('login.emailPlaceholder')"
+            @input="onEmailInput"
           >
         </div>
 
@@ -77,14 +100,19 @@ async function onSubmit() {
           </label>
           <input
             id="password"
-            v-model="password"
+            :value="password"
             type="password"
             autocomplete="new-password"
             required
-            minlength="6"
+            :minlength="FIELD_LIMITS.password.min"
+            :maxlength="FIELD_LIMITS.password.max"
             class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
             :placeholder="t('register.passwordHint')"
+            @input="onPasswordInput"
           >
+          <p class="mt-1 text-xs text-gray-500">
+            {{ t('validation.password', { min: FIELD_LIMITS.password.min, max: FIELD_LIMITS.password.max }) }}
+          </p>
         </div>
 
         <p v-if="error" class="text-sm text-red-600">

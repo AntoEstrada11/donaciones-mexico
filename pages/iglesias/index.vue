@@ -59,10 +59,12 @@ const filtered = computed(() => {
       <label for="church-search" class="sr-only">{{ t('churches.searchPlaceholder') }}</label>
       <input
         id="church-search"
-        v-model="search"
+        :value="search"
         type="search"
+        :maxlength="FIELD_LIMITS.search.max"
         :placeholder="t('churches.searchPlaceholder')"
         class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm shadow-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 md:max-w-md"
+        @input="search = sanitizeSearchInput(($event.target as HTMLInputElement).value)"
       >
     </div>
 

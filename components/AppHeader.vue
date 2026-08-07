@@ -1,27 +1,44 @@
 <script setup lang="ts">
 const { t } = useI18n()
+const route = useRoute()
 const { selectedChurch } = useDonation()
 const { isLoggedIn, user, logout } = useAuth()
 
 const mobileOpen = ref(false)
 
-const navLinks = computed(() => [
-  { to: '/', label: t('nav.home') },
-  { to: '/iglesias', label: t('nav.churches') },
+interface NavLink {
+  id: string
+  to: string
+  label: string
+  /** Ruta que marca el ítem como activo (puede diferir de `to`). */
+  match: string
+}
+
+const navLinks = computed<NavLink[]>(() => [
+  { id: 'home', to: '/', label: t('nav.home'), match: '/' },
+  { id: 'churches', to: '/iglesias', label: t('nav.churches'), match: '/iglesias' },
   {
+    id: 'donate',
+    // Sin iglesia elegida, el flujo empieza en el directorio; el activo sigue siendo solo /donaciones.
     to: selectedChurch.value ? '/donaciones' : '/iglesias',
     label: t('nav.donate'),
+    match: '/donaciones',
   },
   ...(isLoggedIn.value
     ? [
-        { to: '/perfil', label: t('nav.profile') },
-        { to: '/historial', label: t('nav.history') },
+        { id: 'profile', to: '/perfil', label: t('nav.profile'), match: '/perfil' },
+        { id: 'history', to: '/historial', label: t('nav.history'), match: '/historial' },
       ]
     : [
-        { to: '/login', label: t('nav.login') },
-        { to: '/registro', label: t('nav.register') },
+        { id: 'login', to: '/login', label: t('nav.login'), match: '/login' },
+        { id: 'register', to: '/registro', label: t('nav.register'), match: '/registro' },
       ]),
 ])
+
+function isActive(link: NavLink) {
+  if (link.match === '/') return route.path === '/'
+  return route.path === link.match || route.path.startsWith(`${link.match}/`)
+}
 
 function closeMobile() {
   mobileOpen.value = false
@@ -37,26 +54,22 @@ function handleLogout() {
 <template>
   <header class="sticky top-0 z-50 bg-brand text-white shadow-md">
     <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:px-6">
-      <NuxtLink to="/" class="flex items-center gap-3" @click="closeMobile">
-        <div
-          class="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-lg font-bold text-accent"
-          aria-hidden="true"
+      <NuxtLink to="/" class="flex items-center" @click="closeMobile">
+        <img
+          src="/logo-universal.png"
+          alt="Universal"
+          class="h-7 w-auto object-contain md:h-8"
         >
-          IU
-        </div>
-        <div class="leading-tight">
-          <span class="block text-sm font-bold tracking-wide md:text-base">Donaciones</span>
-          <span class="hidden text-xs text-white/70 sm:block">{{ t('header.tagline') }}</span>
-        </div>
       </NuxtLink>
 
       <nav class="hidden items-center gap-1 md:flex" aria-label="Navegación principal">
         <NuxtLink
           v-for="link in navLinks"
-          :key="link.to"
+          :key="link.id"
           :to="link.to"
-          class="rounded-md px-3 py-2 text-sm font-medium text-white/90 transition hover:bg-white/10 hover:text-white"
-          active-class="bg-white/15 text-white"
+          class="rounded-md px-3 py-2 text-sm font-medium transition hover:bg-white/10 hover:text-white"
+          :class="isActive(link) ? 'bg-white/15 text-white' : 'text-white/90'"
+          :aria-current="isActive(link) ? 'page' : undefined"
         >
           {{ link.label }}
         </NuxtLink>
@@ -93,10 +106,11 @@ function handleLogout() {
     >
       <NuxtLink
         v-for="link in navLinks"
-        :key="link.to"
+        :key="link.id"
         :to="link.to"
-        class="block rounded-md px-3 py-2.5 text-sm font-medium text-white/90 hover:bg-white/10"
-        active-class="bg-white/15 text-white"
+        class="block rounded-md px-3 py-2.5 text-sm font-medium hover:bg-white/10"
+        :class="isActive(link) ? 'bg-white/15 text-white' : 'text-white/90'"
+        :aria-current="isActive(link) ? 'page' : undefined"
         @click="closeMobile"
       >
         {{ link.label }}

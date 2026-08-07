@@ -1,25 +1,48 @@
 ---
 type: Playbook
 title: Correr en local
-description: Pasos para levantar Donaciones México en desarrollo.
+description: Levantar la base y el servidor de desarrollo de Donaciones México.
 tags: [dev, local]
-timestamp: 2026-07-20T00:00:00Z
+timestamp: 2026-08-06T00:00:00Z
 ---
 
 # Trigger
 
 Necesitas desarrollar o depurar en la máquina local.
 
+# Requisitos
+
+Node.js 18+ (probado en 24), npm y Docker.
+
 # Steps
 
-1. Requisitos: Node.js 18+ y npm.
-2. En la raíz del repo: `npm install`.
-3. Copiar `.env.example` → `.env` y ajustar (mínimo `NUXT_AUTH_SECRET`). Dejar Odoo vacío para modo mock.
-4. `npm run dev`.
-5. Abrir [http://localhost:3000](http://localhost:3000).
+1. `npm install`
+2. Copiar `.env.example` → `.env`. Para desarrollo los valores por defecto sirven tal cual.
+3. Levantar PostgreSQL: `docker compose up -d`
+4. Aplicar el esquema: `npm run db:migrate`
+5. Sembrar campañas: `npm run db:seed`
+6. `npm run dev`
+7. Abrir [http://localhost:3000](http://localhost:3000)
+
+Los pasos 3 a 5 solo se repiten cuando cambia el esquema o se borra el volumen.
 
 # Verificación rápida
 
-- Home carga campañas desde `/api/campaigns`.
-- Registro/login crea o usa `server/data/users.json`.
-- `/iglesias` consulta la API WordPress (red requerida).
+- `GET /api/campaigns` devuelve 4 campañas con id uuid.
+- Registro en `/registro` crea la fila en `users` y su `donor_profiles`.
+- Una donación en `/donaciones` aparece luego en `/historial`.
+
+# Inspeccionar la base
+
+```bash
+docker exec -it donaciones-db psql -U donaciones -d donaciones
+```
+
+# Problemas frecuentes
+
+| Síntoma | Causa | Salida |
+|---------|-------|--------|
+| `DATABASE_URL no está configurada` | Falta `.env` | Copiar `.env.example` |
+| `ECONNREFUSED 127.0.0.1:5432` | Contenedor abajo | `docker compose up -d` |
+| `relation "users" does not exist` | Falta migrar | `npm run db:migrate` |
+| `Another Nuxt dev server is already running` | Instancia previa viva | Detener el proceso indicado o usar el puerto que reporta |

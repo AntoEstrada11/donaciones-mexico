@@ -44,10 +44,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     authSecret: process.env.NUXT_AUTH_SECRET || 'dev-secret-change-me',
-    odooUrl: process.env.NUXT_ODOO_URL || '',
-    odooDb: process.env.NUXT_ODOO_DB || '',
-    odooUsername: process.env.NUXT_ODOO_USERNAME || '',
-    odooPassword: process.env.NUXT_ODOO_PASSWORD || '',
+    databaseUrl: process.env.DATABASE_URL || '',
     public: {
       churchesApiUrl: 'https://universal.org.mx/wp-json/iurd/v1/churches',
       defaultLatitude: 19.392531016453,

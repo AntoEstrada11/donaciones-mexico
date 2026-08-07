@@ -23,5 +23,9 @@ logs
 .env.*
 !.env.example
 
-# App user store (local auth Option A)
+# Store legado de usuarios, reemplazado por PostgreSQL (ver knowledge/playbooks/db-migrations.md)
 server/data/users.json
+
+# Volcados de base de datos: contienen datos personales
+*.dump
+*.sql.gz

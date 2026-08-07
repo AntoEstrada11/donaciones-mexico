@@ -61,6 +61,9 @@
     "campaignLabel": "Tipo de donación",
     "amountLabel": "Monto",
     "customAmount": "Otro monto",
+    "amountPlaceholder": "0.00",
+    "amountRange": "Monto entre ${min} y ${max} MXN.",
+    "amountRequired": "Seleccione o escriba un monto válido.",
     "methodLabel": "Método de pago",
     "methodSpei": "Transferencia bancaria SPEI",
     "methodCard": "Tarjeta",
@@ -121,18 +124,28 @@
     "city": "Ciudad",
     "state": "Estado",
     "zip": "C.P.",
+    "zipPlaceholder": "00000",
     "rfc": "RFC",
+    "rfcPlaceholder": "XAXX010101000",
     "save": "Guardar cambios",
     "saving": "Guardando…",
     "saved": "Perfil actualizado correctamente.",
-    "saveError": "No se pudo guardar el perfil.",
-    "noOdooLogin": "No tiene usuario de ingreso a Odoo; solo el personal administrativo puede ver esta información allí."
+    "saveError": "No se pudo guardar el perfil."
   },
   "history": {
     "title": "Historial de donaciones",
     "subtitle": "Consulte sus donaciones recientes.",
     "empty": "Aún no tiene donaciones registradas.",
     "cta": "Hacer una donación"
+  },
+  "validation": {
+    "email": "Ingrese un correo electrónico válido.",
+    "password": "La contraseña debe tener entre {min} y {max} caracteres.",
+    "name": "El nombre es requerido (máximo {max} caracteres).",
+    "phone": "El teléfono debe tener entre {min} y {max} dígitos.",
+    "phoneHint": "Incluya al menos {min} dígitos (formato México).",
+    "zip": "El código postal debe tener 5 dígitos.",
+    "rfc": "El RFC debe tener 12 o 13 caracteres válidos."
   },
   "common": {
     "loading": "Cargando…",

@@ -2,10 +2,10 @@ import { createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypt
 import type { H3Event } from 'h3'
 
 export interface SessionPayload {
+  /** Id (uuid) del usuario en la tabla `users`. */
   sub: string
   email: string
   name: string
-  odooPartnerId: number
   exp: number
 }
 
@@ -83,4 +83,10 @@ export function requireSession(event: H3Event): SessionPayload {
   }
 
   return session
+}
+
+/** Sesión cuando exista, sin exigirla: permite donar sin haber iniciado sesión. */
+export function optionalSession(event: H3Event): SessionPayload | null {
+  const token = getBearerToken(event)
+  return token ? verifyToken(token) : null
 }
