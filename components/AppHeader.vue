@@ -2,7 +2,7 @@
 const { t } = useI18n()
 const route = useRoute()
 const { selectedChurch } = useDonation()
-const { isLoggedIn, user, logout } = useAuth()
+const { isLoggedIn, isAdmin, user, logout } = useAuth()
 
 const mobileOpen = ref(false)
 
@@ -28,6 +28,9 @@ const navLinks = computed<NavLink[]>(() => [
     ? [
         { id: 'profile', to: '/perfil', label: t('nav.profile'), match: '/perfil' },
         { id: 'history', to: '/historial', label: t('nav.history'), match: '/historial' },
+        ...(isAdmin.value
+          ? [{ id: 'admin', to: '/admin', label: t('nav.admin'), match: '/admin' }]
+          : []),
       ]
     : [
         { id: 'login', to: '/login', label: t('nav.login'), match: '/login' },

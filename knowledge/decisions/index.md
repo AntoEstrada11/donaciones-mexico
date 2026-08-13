@@ -4,6 +4,7 @@
 
 * [Base de datos propia en PostgreSQL](postgres-datos-propios.md) - Salida de Odoo hacia datos propios.
 * [Drizzle como capa de acceso](drizzle-orm.md) - ORM ligero y migraciones versionadas.
+* [Rol admin en la misma cuenta](admin-role.md) - role en users + panel /admin.
 * [Iglesias vía WordPress](churches-external-api.md) - Directorio desde la API IURD MX.
 
 ## Superadas

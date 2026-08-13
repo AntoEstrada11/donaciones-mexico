@@ -1,4 +1,4 @@
-import type { AuthResponse, Donation, DonorProfile } from '~/types'
+import type { AuthResponse, Donation, DonorProfile, UserRole } from '~/types'
 
 const USER_KEY = 'auth-user'
 
@@ -7,6 +7,7 @@ export interface AuthUser {
   id: string
   name: string
   email: string
+  role: UserRole
   profileComplete: boolean
 }
 
@@ -14,7 +15,12 @@ function readStoredUser(): AuthUser | null {
   if (!import.meta.client) return null
   try {
     const raw = sessionStorage.getItem(USER_KEY)
-    return raw ? JSON.parse(raw) as AuthUser : null
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as AuthUser
+    return {
+      ...parsed,
+      role: parsed.role === 'admin' ? 'admin' : 'donor',
+    }
   }
   catch {
     return null
@@ -42,6 +48,7 @@ export function useAuth() {
   }
 
   const isLoggedIn = computed(() => !!user.value?.token)
+  const isAdmin = computed(() => user.value?.role === 'admin')
 
   function setSession(response: AuthResponse) {
     user.value = {
@@ -49,6 +56,7 @@ export function useAuth() {
       id: response.id,
       name: response.name,
       email: response.email,
+      role: response.role === 'admin' ? 'admin' : 'donor',
       profileComplete: response.profileComplete,
     }
     persistUser(user.value)
@@ -120,9 +128,14 @@ export function useAuth() {
     return token ? authHeaders(token) : {}
   }
 
+  function adminHeaders(): Record<string, string> {
+    return authHeaders(requireToken())
+  }
+
   return {
     user,
     isLoggedIn,
+    isAdmin,
     register,
     login,
     logout,
@@ -130,5 +143,6 @@ export function useAuth() {
     updateProfile,
     fetchDonations,
     optionalAuthHeaders,
+    adminHeaders,
   }
 }

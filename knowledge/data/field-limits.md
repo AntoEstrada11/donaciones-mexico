@@ -25,6 +25,7 @@ Constantes y helpers en `utils/fieldLimits.ts`. Misma fuente para páginas Vue y
 | RFC | opcional; 12 (moral) o 13 (física); patrón SAT básico; mayúsculas |
 | Monto de donación | $1 – $999,999.99 MXN; máx. 2 decimales; sin notación científica |
 | Búsqueda de iglesias | máx. 100 caracteres |
+| Imagen del hero | JPG/PNG/WebP; máx. 3 MB; alt máx. 160 |
 
 # Dónde se aplica
 

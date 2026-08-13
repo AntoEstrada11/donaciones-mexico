@@ -23,6 +23,7 @@ timestamp: 2026-08-07T00:00:00Z
 | `email` | varchar(255) | único (`users_email_key`) |
 | `name` | varchar(160) | |
 | `password_hash` | text | formato `salt:hash` scrypt |
+| `role` | enum `user_role` | `donor` (default) o `admin` |
 | `profile_complete` | boolean | derivado de nombre + teléfono |
 | `created_at` / `updated_at` | timestamptz | |
 
@@ -64,6 +65,17 @@ Separar el perfil de la cuenta acota el manejo de PII: la tabla de acceso no con
 | `created_at` / `updated_at` | timestamptz | |
 
 Índices: `donations_user_created_idx` (historial por donante) y `donations_campaign_idx` (reportes por campaña).
+
+## `hero_slides` — carrusel del home
+
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | uuid PK | |
+| `filename` | varchar(255) | archivo en `public/uploads/hero/` |
+| `alt` | varchar(160) | texto alternativo |
+| `sort_order` | integer | orden de aparición |
+| `active` | boolean | solo las activas salen en `GET /api/hero-slides` |
+| `created_at` | timestamptz | |
 
 # Invariantes que sostiene la base
 

@@ -1,15 +1,10 @@
 <script setup lang="ts">
+import type { Campaign, HeroSlide } from '~/types'
+
 const { t } = useI18n()
 
-interface Campaign {
-  id: string
-  name: string
-  slug: string
-  description: string
-  type: string
-}
-
 const { data: campaigns, pending } = await useFetch<Campaign[]>('/api/campaigns')
+const { data: heroSlides } = await useFetch<HeroSlide[]>('/api/hero-slides')
 
 const steps = computed(() => [
   { title: t('home.step1Title'), desc: t('home.step1Desc'), icon: '⛪' },
@@ -20,14 +15,16 @@ const steps = computed(() => [
 
 <template>
   <div>
-    <!-- Hero -->
-    <section class="bg-brand text-white">
-      <div class="mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">
+    <!-- Hero full-bleed con carrusel y degradado -->
+    <section class="relative isolate overflow-hidden text-white">
+      <HeroCarousel :slides="heroSlides ?? []" />
+
+      <div class="relative mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">
         <div class="max-w-2xl">
           <h1 class="text-3xl font-bold leading-tight md:text-5xl">
             {{ t('home.heroTitle') }}
           </h1>
-          <p class="mt-4 text-base text-white/80 md:text-lg">
+          <p class="mt-4 text-base text-white/85 md:text-lg">
             {{ t('home.heroSubtitle') }}
           </p>
           <div class="mt-8 flex flex-wrap gap-4">

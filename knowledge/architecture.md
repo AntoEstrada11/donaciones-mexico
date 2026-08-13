@@ -30,6 +30,8 @@ timestamp: 2026-08-07T00:00:00Z
 | `server/utils/auth.ts` | Hash scrypt, firmar/verificar token, `requireSession` y `optionalSession` |
 | `composables/useAuth.ts` | Sesión en cliente y llamadas autenticadas |
 | `composables/useChurches.ts` | Fetch + mapeo de iglesias externas |
+| `components/HeroCarousel.vue` | Fondo del home con slides y degradado |
+| `pages/admin/` | Panel operativo (stats, slides, donaciones, usuarios) |
 | `docker-compose.yml` | Servicio PostgreSQL con volumen persistente |
 
 # Frontera de datos

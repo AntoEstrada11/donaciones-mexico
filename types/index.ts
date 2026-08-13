@@ -1,3 +1,5 @@
+export type UserRole = 'donor' | 'admin'
+
 export interface Church {
   id: string
   name: string
@@ -37,6 +39,7 @@ export interface AuthResponse {
   id: string
   name: string
   email: string
+  role: UserRole
   profileComplete: boolean
 }
 
@@ -46,6 +49,7 @@ export interface AppUser {
   email: string
   name: string
   passwordHash: string
+  role: UserRole
   profileComplete: boolean
   createdAt: string
 }
@@ -62,6 +66,37 @@ export interface DonorProfile {
   zip: string | null
   rfc: string | null
   profileComplete: boolean
+}
+
+export interface HeroSlide {
+  id: string
+  url: string
+  alt: string
+  sortOrder: number
+  active: boolean
+  createdAt: string
+}
+
+export interface AdminStats {
+  users: number
+  admins: number
+  donationsByStatus: Record<Donation['status'], number>
+  activeSlides: number
+}
+
+export interface AdminUserRow {
+  id: string
+  email: string
+  name: string
+  role: UserRole
+  profileComplete: boolean
+  createdAt: string
+}
+
+export interface AdminDonationRow extends Donation {
+  userEmail: string | null
+  userName: string | null
+  campaignName: string | null
 }
 
 export interface ChurchApiItem {

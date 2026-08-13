@@ -6,6 +6,7 @@ export interface SessionPayload {
   sub: string
   email: string
   name: string
+  role: 'donor' | 'admin'
   exp: number
 }
 
@@ -58,7 +59,10 @@ export function verifyToken(token: string): SessionPayload | null {
   try {
     const payload = JSON.parse(fromB64url(data)) as SessionPayload
     if (!payload.exp || payload.exp < Math.floor(Date.now() / 1000)) return null
-    return payload
+    return {
+      ...payload,
+      role: payload.role === 'admin' ? 'admin' : 'donor',
+    }
   }
   catch {
     return null
@@ -89,4 +93,12 @@ export function requireSession(event: H3Event): SessionPayload {
 export function optionalSession(event: H3Event): SessionPayload | null {
   const token = getBearerToken(event)
   return token ? verifyToken(token) : null
+}
+
+export function requireAdmin(event: H3Event): SessionPayload {
+  const session = requireSession(event)
+  if (session.role !== 'admin') {
+    throw createError({ statusCode: 403, statusMessage: 'Se requiere rol de administrador' })
+  }
+  return session
 }

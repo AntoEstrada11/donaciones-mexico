@@ -41,6 +41,7 @@ function toAppUser(row: typeof users.$inferSelect): AppUser {
     email: row.email,
     name: row.name,
     passwordHash: row.passwordHash,
+    role: row.role,
     profileComplete: row.profileComplete,
     createdAt: row.createdAt.toISOString(),
   }

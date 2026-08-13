@@ -14,6 +14,7 @@ import {
 
 export const donationStatusEnum = pgEnum('donation_status', ['paid', 'pending', 'failed', 'cancelled'])
 export const donationMethodEnum = pgEnum('donation_method', ['spei', 'card'])
+export const userRoleEnum = pgEnum('user_role', ['donor', 'admin'])
 
 /** Cuenta de acceso del donante. El correo es único pero puede cambiar, por eso la PK es sintética. */
 export const users = pgTable('users', {
@@ -21,6 +22,7 @@ export const users = pgTable('users', {
   email: varchar('email', { length: 255 }).notNull(),
   name: varchar('name', { length: 160 }).notNull(),
   passwordHash: text('password_hash').notNull(),
+  role: userRoleEnum('role').notNull().default('donor'),
   profileComplete: boolean('profile_complete').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
@@ -72,4 +74,16 @@ export const donations = pgTable('donations', {
 }, table => [
   index('donations_user_created_idx').on(table.userId, table.createdAt),
   index('donations_campaign_idx').on(table.campaignId),
+])
+
+/** Imágenes del carrusel del home. El archivo vive en public/uploads/hero/. */
+export const heroSlides = pgTable('hero_slides', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  filename: varchar('filename', { length: 255 }).notNull(),
+  alt: varchar('alt', { length: 160 }).notNull().default(''),
+  sortOrder: integer('sort_order').notNull().default(0),
+  active: boolean('active').notNull().default(true),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, table => [
+  index('hero_slides_active_sort_idx').on(table.active, table.sortOrder),
 ])

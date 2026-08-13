@@ -26,6 +26,10 @@ logs
 # Store legado de usuarios, reemplazado por PostgreSQL (ver knowledge/playbooks/db-migrations.md)
 server/data/users.json
 
+# Subidas del carrusel (metadatos en BD; archivos locales)
+public/uploads/**
+!public/uploads/**/.gitkeep
+
 # Volcados de base de datos: contienen datos personales
 *.dump
 *.sql.gz

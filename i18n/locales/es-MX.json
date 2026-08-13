@@ -8,6 +8,7 @@
     "logout": "Salir",
     "history": "Historial",
     "profile": "Perfil",
+    "admin": "Admin",
     "spei": "Tutorial SPEI",
     "menu": "Menú",
     "close": "Cerrar"
@@ -146,6 +147,68 @@
     "phoneHint": "Incluya al menos {min} dígitos (formato México).",
     "zip": "El código postal debe tener 5 dígitos.",
     "rfc": "El RFC debe tener 12 o 13 caracteres válidos."
+  },
+  "admin": {
+    "title": "Administración",
+    "subtitle": "Herramientas para operar el sitio de donaciones.",
+    "nav": {
+      "overview": "Resumen",
+      "slides": "Carrusel",
+      "donations": "Donaciones",
+      "users": "Usuarios"
+    },
+    "stats": {
+      "users": "Usuarios",
+      "admins": "{count} administradores",
+      "pending": "Donaciones pendientes",
+      "paid": "Donaciones pagadas",
+      "slides": "Slides activas"
+    },
+    "slides": {
+      "title": "Carrusel del inicio",
+      "subtitle": "Suba, ordene o dé de baja las imágenes del hero.",
+      "upload": "Subir imagen",
+      "uploading": "Subiendo…",
+      "altPlaceholder": "Texto alternativo (opcional)",
+      "limits": "JPG, PNG o WebP · máximo 3 MB",
+      "fileRequired": "Seleccione una imagen.",
+      "uploaded": "Imagen subida correctamente.",
+      "uploadError": "No se pudo subir la imagen.",
+      "empty": "Aún no hay imágenes en el carrusel.",
+      "noAlt": "Sin descripción",
+      "active": "Activa",
+      "inactive": "Inactiva",
+      "activate": "Activar",
+      "deactivate": "Desactivar",
+      "delete": "Eliminar",
+      "confirmDelete": "¿Eliminar esta imagen del carrusel?",
+      "deleted": "Imagen eliminada."
+    },
+    "donations": {
+      "title": "Donaciones",
+      "subtitle": "Consulte y actualice el estado de las donaciones.",
+      "empty": "No hay donaciones registradas.",
+      "date": "Fecha",
+      "donor": "Donante",
+      "campaign": "Campaña",
+      "amount": "Monto",
+      "status": "Estado",
+      "anonymous": "Sin sesión"
+    },
+    "users": {
+      "title": "Usuarios",
+      "subtitle": "Gestione roles de donante y administrador.",
+      "name": "Nombre",
+      "email": "Correo",
+      "created": "Alta",
+      "role": "Rol",
+      "actions": "Acciones",
+      "you": "usted",
+      "roleAdmin": "Admin",
+      "roleDonor": "Donante",
+      "promote": "Hacer admin",
+      "demote": "Quitar admin"
+    }
   },
   "common": {
     "loading": "Cargando…",

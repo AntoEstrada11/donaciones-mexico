@@ -1,6 +1,7 @@
 # Directory Update Log
 
 ## 2026-08-07
+* **Update**: Panel admin (`role` en users), carrusel del hero con degradado, APIs `/api/admin/*` y `GET /api/hero-slides`. Ver [/decisions/admin-role.md](/decisions/admin-role.md) y [/apis/admin.md](/apis/admin.md).
 * **Update**: Restricciones de formularios unificadas en `utils/fieldLimits.ts` (UI + API). Concepto [/data/field-limits.md](/data/field-limits.md); contratos actualizados: register, login, `PATCH /api/me`, `POST /api/donations`.
 * **Update**: Arquitectura e índices enlazan validación compartida; esquema Postgres distingue invariantes de BD vs límites de aplicación.
 * **Update**: Navegación: estado activo de “Iglesias” vs “Donar” según ruta real (`components/AppHeader.vue`), no según el destino del enlace.

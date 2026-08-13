@@ -53,6 +53,7 @@ export default defineEventHandler(async (event) => {
     sub: user.id,
     email: user.email,
     name: user.name,
+    role: user.role,
   })
 
   const response: AuthResponse = {
@@ -60,6 +61,7 @@ export default defineEventHandler(async (event) => {
     id: user.id,
     name: user.name,
     email: user.email,
+    role: user.role,
     profileComplete: user.profileComplete,
   }
 

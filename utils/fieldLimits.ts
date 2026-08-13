@@ -15,6 +15,11 @@ export const FIELD_LIMITS = {
   rfc: { min: 12, max: 13 },
   amount: { min: 1, max: 999_999.99, maxDecimals: 2, maxWholeDigits: 6 },
   search: { max: 100 },
+  heroImage: {
+    maxBytes: 3 * 1024 * 1024,
+    maxAlt: 160,
+    mimeTypes: ['image/jpeg', 'image/png', 'image/webp'] as const,
+  },
 } as const
 
 /** RFC persona moral (12) o física (13). */
