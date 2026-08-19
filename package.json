@@ -13,7 +13,8 @@
     "db:seed": "node --env-file=.env server/database/seed.ts",
     "db:import-users": "node --env-file=.env server/database/import-users.ts",
     "db:promote-admin": "node --env-file=.env server/database/promote-admin.ts",
-    "db:set-password": "node --env-file=.env server/database/set-password.ts"
+    "db:set-password": "node --env-file=.env server/database/set-password.ts",
+    "db:sync-churches": "node --env-file=.env server/database/sync-churches-fallback.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.2",

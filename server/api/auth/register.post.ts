@@ -43,10 +43,24 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  // Datos sensibles (creencias religiosas): sin consentimiento expreso no hay tratamiento.
+  if (body?.consent !== true) {
+    throw createError({
+      statusCode: 422,
+      statusMessage: 'Debe aceptar el aviso de privacidad para crear su cuenta',
+    })
+  }
+
   const user = await createUser({
     email,
     name: name.trim(),
     passwordHash: hashPassword(password),
+  })
+
+  await recordConsentBundle({
+    event,
+    userId: user.id,
+    marketing: body?.marketing === true,
   })
 
   const token = signToken({

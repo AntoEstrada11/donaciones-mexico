@@ -1,4 +1,4 @@
-import { and, eq, ne } from 'drizzle-orm'
+import { and, eq, ne, sql } from 'drizzle-orm'
 import { donorProfiles, users } from '../database/schema'
 import type { AppUser, DonorProfile } from '~/types'
 import {
@@ -28,6 +28,7 @@ export function normalizePhone(phone: string) {
 export interface ProfileInput {
   name?: string
   phone?: string | null
+  wantsReceipt?: boolean
   street?: string | null
   city?: string | null
   state?: string | null
@@ -108,6 +109,7 @@ export async function getDonorProfile(userId: string): Promise<DonorProfile | nu
     name: row.user.name,
     email: row.user.email,
     phone: row.profile?.phone ?? null,
+    wantsReceipt: row.profile?.wantsReceipt ?? false,
     street: row.profile?.street ?? null,
     city: row.profile?.city ?? null,
     state: row.profile?.state ?? null,
@@ -160,6 +162,10 @@ export async function updateDonorProfile(userId: string, input: ProfileInput): P
     }
   }
 
+  const wantsReceipt = input.wantsReceipt !== undefined
+    ? Boolean(input.wantsReceipt)
+    : current.wantsReceipt
+
   const street = input.street !== undefined
     ? sanitizeStreetInput(input.street || '').trim() || null
     : current.street
@@ -176,27 +182,31 @@ export async function updateDonorProfile(userId: string, input: ProfileInput): P
     ? sanitizeRfcInput(input.rfc || '') || null
     : current.rfc
 
-  if (zip && !isValidZip(zip)) {
-    throw createError({ statusCode: 400, statusMessage: 'El código postal debe tener 5 dígitos' })
-  }
+  if (wantsReceipt) {
+    if (zip && !isValidZip(zip)) {
+      throw createError({ statusCode: 400, statusMessage: 'El código postal debe tener 5 dígitos' })
+    }
 
-  if (rfc && !isValidRfc(rfc)) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'El RFC debe tener 12 o 13 caracteres válidos',
-    })
+    if (rfc && !isValidRfc(rfc)) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'El RFC debe tener 12 o 13 caracteres válidos',
+      })
+    }
   }
 
   const profileComplete = Boolean(name && phoneDigits)
 
+  // Minimización: si el donante ya no quiere recibo, no conservamos sus datos fiscales.
+  const fiscal = wantsReceipt
+    ? { street, city, state, zip, rfc }
+    : { street: null, city: null, state: null, zip: null, rfc: null }
+
   const values = {
     phone,
     phoneDigits,
-    street,
-    city,
-    state,
-    zip,
-    rfc,
+    wantsReceipt,
+    ...fiscal,
     updatedAt: new Date(),
   }
 
@@ -222,6 +232,34 @@ export async function updateDonorProfile(userId: string, input: ProfileInput): P
 
   const updated = await getDonorProfile(userId)
   return updated as DonorProfile
+}
+
+/**
+ * Cancelación del titular. El esquema hace el resto: `donor_profiles` cae en cascada,
+ * las donaciones quedan con `user_id` nulo (obligación contable) y los consentimientos
+ * sobreviven anonimizados como evidencia de que se otorgaron.
+ */
+export async function deleteUserAccount(userId: string): Promise<void> {
+  const db = useDatabase()
+
+  const [{ count } = { count: 0 }] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(users)
+    .where(eq(users.role, 'admin'))
+
+  const user = await findUserById(userId)
+  if (!user) {
+    throw createError({ statusCode: 404, statusMessage: 'Usuario no encontrado' })
+  }
+
+  if (user.role === 'admin' && count <= 1) {
+    throw createError({
+      statusCode: 409,
+      statusMessage: 'No se puede eliminar la única cuenta de administrador',
+    })
+  }
+
+  await db.delete(users).where(eq(users.id, userId))
 }
 
 interface PgError {

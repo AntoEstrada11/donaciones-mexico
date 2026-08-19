@@ -15,6 +15,13 @@
       "when": 1786143348681,
       "tag": "0001_melodic_johnny_blaze",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1787155950270,
+      "tag": "0002_swift_salo",
+      "breakpoints": true
     }
   ]
 }

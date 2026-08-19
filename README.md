@@ -31,6 +31,7 @@ Abra [http://localhost:3000](http://localhost:3000).
 | `npm run db:import-users` | Migración única del store legado `server/data/users.json` |
 | `npm run db:promote-admin` | Asigna `role=admin` a un correo existente |
 | `npm run db:set-password` | Cambia la contraseña de un usuario (`NEW_PASSWORD`, opcional `--create`) |
+| `npm run db:sync-churches` | Regenera `server/data/churches.json` desde Odoo (plan B) |
 
 ## Rutas implementadas
 
@@ -54,7 +55,7 @@ Abra [http://localhost:3000](http://localhost:3000).
 | `GET /api/me` | Bearer | Perfil del donante |
 | `PATCH /api/me` | Bearer | Actualiza perfil |
 | `GET /api/campaigns` | — | Campañas activas |
-| `GET /api/churches` | — | Directorio (WordPress o muestra) |
+| `GET /api/churches` | — | Directorio (Odoo o muestra) |
 | `GET /api/donations` | Bearer | Historial del donante |
 | `POST /api/donations` | Opcional | Registra una donación |
 
@@ -66,7 +67,7 @@ Abra [http://localhost:3000](http://localhost:3000).
 - **Tailwind CSS** — estilos
 - **@nuxtjs/i18n** — internacionalización (`es-MX`, archivos en `i18n/locales/`)
 
-El directorio de iglesias se consume de la API pública de WordPress de IURD México a través de `GET /api/churches`. Si WordPress no responde, se usa `server/data/churches.json` y la página avisa.
+El directorio de iglesias se consume de Odoo IURD (`miembros.iurdsys.net`) a través de `GET /api/churches`. Si Odoo no responde, se usa `server/data/churches.json` y la página avisa.
 
 ## Documentación
 

@@ -23,6 +23,7 @@ timestamp: 2026-08-07T00:00:00Z
 | `campaignId` | string (uuid) | requerido; debe existir en `campaigns` |
 | `amount` | number | requerido; entre $1 y $999,999.99 MXN |
 | `method` | string | `card` o default `spei` |
+| `consent` | boolean | **requerido y en `true`**; consentimiento expreso para datos sensibles |
 
 # Respuesta
 
@@ -33,10 +34,18 @@ timestamp: 2026-08-07T00:00:00Z
 | Código | Causa |
 |--------|--------|
 | 400 | Faltan campos, monto fuera de rango o campaña inexistente |
+| 422 | No se aceptó el aviso de privacidad (`consent` distinto de `true`) |
+| 429 | Más de 20 donaciones por IP en 5 minutos |
 
 # Notas
 
 - El monto se redondea a centavos y se guarda como `NUMERIC(12,2)`; nunca como punto flotante crudo.
 - Sin sesión, `user_id` queda nulo: la donación se registra pero no aparece en ningún historial.
+- El consentimiento se exige también sin sesión, porque el donativo revela creencias religiosas.
+  Tras crear la donación se escriben en `consents` las filas `privacy_notice` y `sensitive_data`,
+  ligadas por `donation_id` cuando no hay usuario. Ver
+  [/decisions/consentimiento-datos-sensibles.md](/decisions/consentimiento-datos-sensibles.md).
+- El orden de validación es: campos, monto, campaña, consentimiento. Un `422` implica que el resto
+  del cuerpo ya era válido.
 - No hay cobro real; el estado `pending` no cambia hasta que exista pasarela o conciliación SPEI.
 - Límites de monto: [/data/field-limits.md](/data/field-limits.md).

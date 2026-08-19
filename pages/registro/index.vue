@@ -5,6 +5,8 @@ const route = useRoute()
 
 const email = ref('')
 const password = ref('')
+const consent = ref(false)
+const marketing = ref(false)
 const loading = ref(false)
 const error = ref('')
 
@@ -41,6 +43,11 @@ async function onSubmit() {
     return
   }
 
+  if (!consent.value) {
+    error.value = t('legal.consentRequired')
+    return
+  }
+
   loading.value = true
   error.value = ''
 
@@ -48,6 +55,8 @@ async function onSubmit() {
     await register({
       email: email.value.trim(),
       password: password.value,
+      consent: consent.value,
+      marketing: marketing.value,
     })
     const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/perfil'
     await navigateTo(redirect)
@@ -115,6 +124,14 @@ async function onSubmit() {
           </p>
         </div>
 
+        <PrivacyNoticeShort />
+
+        <LegalConsent
+          v-model:consent="consent"
+          v-model:marketing="marketing"
+          show-marketing
+        />
+
         <p v-if="error" class="text-sm text-red-600">
           {{ error }}
         </p>
@@ -122,8 +139,8 @@ async function onSubmit() {
         <button
           type="submit"
           class="btn-primary w-full"
-          :class="{ 'cursor-not-allowed opacity-60': loading }"
-          :disabled="loading"
+          :class="{ 'cursor-not-allowed opacity-60': loading || !consent }"
+          :disabled="loading || !consent"
         >
           {{ loading ? t('register.submitting') : t('register.submit') }}
         </button>

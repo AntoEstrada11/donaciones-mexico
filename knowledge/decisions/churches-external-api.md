@@ -1,25 +1,25 @@
 ---
 type: Decision
 title: Iglesias vía WordPress
-description: El directorio de iglesias consume la API pública IURD MX, no Nitro.
-tags: [decision, churches]
+description: El directorio de iglesias consumía la API pública IURD MX en WordPress. Superada.
+tags: [decision, churches, superseded]
 timestamp: 2026-08-18T00:00:00Z
 ---
 
-# Contexto
+> **Superada el 2026-08-19.** WordPress se da de baja; Nitro consulta Odoo directamente.
+> Ver [/decisions/churches-odoo-direct.md](/decisions/churches-odoo-direct.md).
 
-El listado real de templos ya existe en WordPress (`/wp-json/iurd/v1/churches`).
+# Contexto (histórico)
 
-# Decisión
+El listado real de templos existía en WordPress (`/wp-json/iurd/v1/churches`), que a su vez
+consumía Odoo en `miembros.iurdsys.net`.
 
-Nitro (`GET /api/churches`) llama esa URL con geolocalización. El cliente no habla con WordPress. `churches.json` es muestra del shape y **fallback** si WP no responde (p. ej. HTTP 500 en `/wp-json/`).
+# Decisión (histórica)
 
-# Consecuencias
+Nitro (`GET /api/churches`) llamaba esa URL con geolocalización. El cliente no hablaba con
+WordPress. `churches.json` era muestra del shape y **fallback** si WP no respondía.
 
-- **+** Datos oficiales y distancia real sin duplicar catálogo cuando WP está sano.
-- **+** El donante puede seguir el flujo con el JSON de ejemplo si WP cae.
-- **−** Dependencia de red y del contrato WP; el fallback no tiene el listado real.
+# Por qué se reemplazó
 
-# Cuándo reconsiderar
-
-Si se necesita caché server-side, offline, o el contrato WP cambia de forma incompatible.
+WordPress era un intermediario con paginación de 10 ítems y caché propia. Al apagarse, el proxy
+directo a Odoo simplifica la arquitectura y devuelve el catálogo completo.

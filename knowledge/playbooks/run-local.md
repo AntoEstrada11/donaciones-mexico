@@ -29,8 +29,18 @@ Los pasos 3 a 5 solo se repiten cuando cambia el esquema o se borra el volumen.
 # Verificación rápida
 
 - `GET /api/campaigns` devuelve 4 campañas con id uuid.
-- Registro en `/registro` crea la fila en `users` y su `donor_profiles`.
-- Una donación en `/donaciones` aparece luego en `/historial`.
+- Registro en `/registro` exige casilla de consentimiento; sin ella la API responde `422`.
+- Tras registrar, existen filas en `consents` (`privacy_notice`, `sensitive_data`).
+- Una donación en `/donaciones` también exige consentimiento; aparece en `/historial` si hay sesión.
+- `/privacidad` y `/terminos` responden 200; enlaces en el pie.
+- En `/perfil` → «Mis datos y privacidad»: descarga JSON, toggle marketing, eliminar cuenta.
+
+Consulta de consentimientos (solo conteos, sin PII):
+
+```sql
+SELECT count(*) FROM consents;
+SELECT count(*) FROM consents WHERE user_id IS NOT NULL;
+```
 
 # Inspeccionar la base
 

@@ -1,0 +1,52 @@
+---
+description: Reglas de tratamiento de datos personales (LFPDPPP) en el sitio de donaciones
+alwaysApply: true
+---
+
+# Datos personales
+
+Este sitio trata datos personales **sensibles**: donar a una iglesia revela creencias
+religiosas. Las sanciones se duplican para datos sensibles, así que cualquier cambio que
+toque datos de personas exige cuidado explícito.
+
+## Nunca
+
+- Registrar en logs, mensajes de error o trazas: correo, teléfono, nombre, domicilio, RFC,
+  coordenadas o contraseñas. Ni siquiera en desarrollo.
+- Guardar la IP en claro. Usa el HMAC de `server/utils/consents.ts`.
+- Enviar datos personales a servicios externos que no estén en el aviso de privacidad.
+- Añadir analítica, píxeles de rastreo o cookies de terceros. El aviso declara que no existen.
+- Exponer `password_hash`, `phone_digits` ni `ip_hash` en respuestas de API.
+- Guardar datos personales reales en `knowledge/`, fixtures o semillas.
+
+## Al agregar o cambiar un campo de datos personales
+
+Todo en el mismo trabajo:
+
+1. Declararlo en el aviso integral (`pages/privacidad/index.vue`), sección 2, y si aplica
+   en el aviso simplificado (`components/PrivacyNoticeShort.vue`).
+2. Definir su finalidad y si es necesaria u opcional. Las opcionales requieren
+   consentimiento separado y no pueden bloquear el servicio.
+3. Definir su plazo de conservación en `utils/legal.ts` (`RETENTION`) y documentarlo en
+   `knowledge/security/data-retention.md`.
+4. Actualizar el inventario en `knowledge/data/personal-data-inventory.md`.
+5. Incluirlo en la exportación de `server/api/me/export.get.ts` (derecho de acceso) y
+   verificar que se elimina o anonimiza al borrar la cuenta.
+6. Añadir límites y sanitización en `utils/fieldLimits.ts`.
+7. Si el cambio altera las finalidades del tratamiento, subir `LEGAL.noticeVersion` para
+   que el consentimiento previo no se dé por válido.
+
+## Minimización
+
+No pidas un dato sin una finalidad concreta ya declarada. Los datos fiscales (RFC,
+domicilio) solo se solicitan cuando el donante activa el recibo deducible, y se borran si
+lo desactiva.
+
+## Consentimiento
+
+- Las casillas nunca vienen premarcadas.
+- El servidor valida el consentimiento; la casilla del cliente no basta.
+- Revocar no borra: se inserta una fila nueva en `consents` con `granted: false`.
+
+Ver `/security/data-retention.md`, `/data/personal-data-inventory.md` y
+`/playbooks/arco-request.md` del bundle OKF.

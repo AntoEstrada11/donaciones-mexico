@@ -17,21 +17,26 @@ timestamp: 2026-08-07T00:00:00Z
 
 # Body (parcial)
 
-Campos opcionales: `name`, `phone`, `street`, `city`, `state`, `zip`, `rfc`.
+Campos opcionales: `name`, `phone`, `wantsReceipt`, `street`, `city`, `state`, `zip`, `rfc`.
 Solo se tocan los campos presentes en el body; `name` no puede quedar vacío si se envía.
 
 # Respuesta
 
-`DonorProfile` actualizado.
+`DonorProfile` actualizado, incluido `wantsReceipt`.
 
 # Reglas
 
 - Teléfono: normalizado a `phone_digits` (índice único). Si se envía, 10–15 dígitos.
-- C.P.: si se envía, exactamente 5 dígitos.
-- RFC: si se envía, 12 o 13 caracteres con patrón SAT básico; mayúsculas.
 - Nombre máx. 160; dirección 200; ciudad/estado 120.
-- `profileComplete` = nombre + teléfono presentes.
+- `profileComplete` = nombre + teléfono presentes. **No** depende de los datos fiscales.
 - Escribe `users` y `donor_profiles` en una transacción.
+
+## Datos fiscales condicionales
+
+- C.P. y RFC solo se validan cuando `wantsReceipt` es `true`.
+- Si `wantsReceipt` queda en `false`, el handler escribe `null` en calle, ciudad, estado, C.P. y
+  RFC. Desactivar el recibo borra los datos, no solo los oculta.
+- Motivo en [/decisions/minimizacion-datos-fiscales.md](/decisions/minimizacion-datos-fiscales.md).
 
 # Errores
 
@@ -41,5 +46,6 @@ Solo se tocan los campos presentes en el body; `name` no puede quedar vacío si 
 | 401 | Sesión inválida |
 | 404 | Usuario no encontrado |
 | 409 | Teléfono ya registrado por otro donante |
+| 429 | Más de 60 escrituras por IP en 5 minutos |
 
 Detalle de límites: [/data/field-limits.md](/data/field-limits.md).

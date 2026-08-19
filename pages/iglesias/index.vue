@@ -10,8 +10,19 @@ const coords = ref({
   longitude: config.public.defaultLongitude,
 })
 
-onMounted(() => {
-  if (!navigator.geolocation) return
+/**
+ * La ubicación se pide solo si la persona lo solicita: las coordenadas salen
+ * hacia el directorio externo, así que no las tomamos de forma silenciosa.
+ */
+const geoState = ref<'idle' | 'locating' | 'granted' | 'denied'>('idle')
+
+function requestLocation() {
+  if (!navigator.geolocation) {
+    geoState.value = 'denied'
+    return
+  }
+
+  geoState.value = 'locating'
 
   navigator.geolocation.getCurrentPosition(
     (pos) => {
@@ -19,11 +30,14 @@ onMounted(() => {
         latitude: pos.coords.latitude,
         longitude: pos.coords.longitude,
       }
+      geoState.value = 'granted'
     },
-    () => {},
+    () => {
+      geoState.value = 'denied'
+    },
     { timeout: 5000, maximumAge: 300000 },
   )
-})
+}
 
 const { data, pending, error, refresh } = useChurches(coords)
 
@@ -53,7 +67,7 @@ const filtered = computed(() => {
       </p>
     </header>
 
-    <div class="mb-8">
+    <div class="mb-6">
       <label for="church-search" class="sr-only">{{ t('churches.searchPlaceholder') }}</label>
       <input
         id="church-search"
@@ -64,6 +78,34 @@ const filtered = computed(() => {
         class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm shadow-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 md:max-w-md"
         @input="search = sanitizeSearchInput(($event.target as HTMLInputElement).value)"
       >
+    </div>
+
+    <div class="mb-8 rounded-lg border border-gray-200 bg-gray-50 p-4 md:max-w-2xl">
+      <h2 class="text-sm font-semibold text-ink">
+        {{ t('legal.geoTitle') }}
+      </h2>
+      <p class="mt-1 text-xs leading-relaxed text-gray-600">
+        {{ t('legal.geoBody') }}
+      </p>
+
+      <button
+        v-if="geoState === 'idle' || geoState === 'denied'"
+        type="button"
+        class="btn-secondary mt-3 px-4 py-2 text-xs"
+        @click="requestLocation"
+      >
+        {{ t('legal.geoUse') }}
+      </button>
+      <p v-else-if="geoState === 'locating'" class="mt-3 text-xs text-gray-500">
+        {{ t('legal.geoLocating') }}
+      </p>
+      <p v-else class="mt-3 text-xs font-medium text-green-700">
+        {{ t('legal.geoActive') }}
+      </p>
+
+      <p v-if="geoState === 'denied'" class="mt-2 text-xs text-amber-700">
+        {{ t('legal.geoDenied') }}
+      </p>
     </div>
 
     <div v-if="pending" class="py-12 text-center text-gray-500">

@@ -1,30 +1,74 @@
 ---
 type: Integration
-title: Iglesias API WordPress (IURD MX)
-description: Endpoint externo de iglesias; Nitro lo consulta y, si falla, usa el JSON de muestra.
-resource: https://universal.org.mx/wp-json/iurd/v1/churches
-tags: [api, churches, wordpress]
-timestamp: 2026-08-18T00:00:00Z
+title: Iglesias API Odoo (IURD)
+description: Endpoint externo de iglesias en miembros.iurdsys.net; Nitro lo consulta con API key y caché.
+resource: https://miembros.iurdsys.net/api/churches
+tags: [api, churches, odoo, integration]
+timestamp: 2026-08-19T00:00:00Z
 ---
 
 # Contrato
 
-- **URL base:** `runtimeConfig.churchesApiUrl` (default en `nuxt.config.ts`, opcional `NUXT_CHURCHES_API_URL`)
+- **URL base:** `runtimeConfig.churchesApiUrl` (default `https://miembros.iurdsys.net/api/churches`)
+- **Auth:** header `X-API-Key` con `NUXT_CHURCHES_API_KEY` (solo servidor; opcional mientras Odoo no la exija)
 - **Consumidor:** `server/utils/churches.ts` vía `GET /api/churches`
-- **Auth:** pública (sin Bearer de la app)
+- **Host permitido:** `NUXT_CHURCHES_API_ALLOWED_HOST` (default `miembros.iurdsys.net`)
 
-# Uso
+# Query hacia Odoo
 
-Query por latitud/longitud. La respuesta WP (`results[]`) se mapea a `Church` (`utils/mapChurch.ts`).
+| Campo | Tipo | Notas |
+|-------|------|--------|
+| `latitude` | number | Nitro reenvía coords saneadas (-90…90) |
+| `longitude` | number | Nitro reenvía coords saneadas (-180…180) |
 
-El navegador **no** llama a WordPress: evita CORS y permite fallback.
+# Respuesta Odoo
 
-# Tipos
+```json
+{
+  "results": [
+    {
+      "id": 6,
+      "distance": 1.36,
+      "latitude": 19.39492,
+      "longitude": -99.13818,
+      "name": "ALAMOS-BENITO JUAREZ",
+      "alias": "ALAMOS",
+      "reference": "Frente al metro Xola",
+      "address": "Calz. de Tlalpan 663, ...",
+      "image_url": "https://miembros.iurdsys.net/...",
+      "google_url": "https://maps.google.com/...",
+      "click_2_call": "https://iurd.3cx.run/...",
+      "schedules": { "monday": ["07:30 AM", "..."] }
+    }
+  ]
+}
+```
 
-Ver `ChurchesApiResponse` / `ChurchApiItem` en `types/index.ts`.
+Odoo devuelve el catálogo completo (~253 templos) ordenado por distancia. `pagination` puede ser
+`null`. Nitro mapea cada ítem con `utils/mapChurch.ts`.
 
-# Si WordPress cae
+# Seguridad en Nitro
 
-Todo `/wp-json/` en universal.org.mx puede devolver HTML 500. En ese caso `listChurches` sirve `server/data/churches.json` con `source: sample`. El directorio `/iglesias` muestra un aviso y deja continuar la donación.
+| Control | Detalle |
+|---------|---------|
+| Proxy obligatorio | El navegador nunca llama a Odoo (CORS + ocultar API key) |
+| HTTPS + host allowlist | Rechaza URLs no HTTPS o con host distinto al permitido |
+| API key server-side | `churchesApiKey` no está en `runtimeConfig.public` |
+| Sin redirects | `$fetch` con `redirect: 'error'` |
+| Timeout | 8 s |
+| Validación de respuesta | Máx. 1000 ítems; cada uno exige `id` numérico y `name` |
+| Caché en memoria | Por coords redondeadas (2 decimales), TTL `NUXT_CHURCHES_CACHE_TTL_MS` (default 1 h) |
+| Rate limit | 60 GET `/api/churches` por IP cada 5 min |
+| Logs | Errores sin volcar direcciones ni la key |
+
+# Si Odoo cae
+
+`listChurches` sirve `server/data/churches.json` con `source: sample`. El directorio `/iglesias`
+muestra aviso y deja continuar la donación.
 
 Contrato Nitro: [/apis/churches-get.md](/apis/churches-get.md).
+
+# Histórico
+
+Antes se consumía WordPress (`/wp-json/iurd/v1/churches`), que a su vez proxyeaba Odoo. WordPress
+se da de baja; ver [/decisions/churches-odoo-direct.md](/decisions/churches-odoo-direct.md).

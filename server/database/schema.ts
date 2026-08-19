@@ -15,6 +15,7 @@ import {
 export const donationStatusEnum = pgEnum('donation_status', ['paid', 'pending', 'failed', 'cancelled'])
 export const donationMethodEnum = pgEnum('donation_method', ['spei', 'card'])
 export const userRoleEnum = pgEnum('user_role', ['donor', 'admin'])
+export const consentTypeEnum = pgEnum('consent_type', ['privacy_notice', 'sensitive_data', 'marketing'])
 
 /** Cuenta de acceso del donante. El correo es único pero puede cambiar, por eso la PK es sintética. */
 export const users = pgTable('users', {
@@ -36,6 +37,8 @@ export const donorProfiles = pgTable('donor_profiles', {
   phone: varchar('phone', { length: 32 }),
   /** Solo dígitos; sostiene el índice único sin depender del formato capturado. */
   phoneDigits: varchar('phone_digits', { length: 20 }),
+  /** Los datos fiscales solo se piden si el donante quiere recibo deducible. */
+  wantsReceipt: boolean('wants_receipt').notNull().default(false),
   street: text('street'),
   city: varchar('city', { length: 120 }),
   state: varchar('state', { length: 120 }),
@@ -74,6 +77,28 @@ export const donations = pgTable('donations', {
 }, table => [
   index('donations_user_created_idx').on(table.userId, table.createdAt),
   index('donations_campaign_idx').on(table.campaignId),
+])
+
+/**
+ * Evidencia de consentimiento. La carga de probarlo es del responsable, así que
+ * la tabla es append-only: revocar inserta una fila con `granted: false`.
+ * Las llaves usan `set null` para que borrar la cuenta no destruya el rastro.
+ */
+export const consents = pgTable('consents', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+  /** Cubre a quien dona sin sesión iniciada. */
+  donationId: uuid('donation_id').references(() => donations.id, { onDelete: 'set null' }),
+  type: consentTypeEnum('type').notNull(),
+  granted: boolean('granted').notNull(),
+  /** Versión del aviso vigente al momento de aceptar (LEGAL.noticeVersion). */
+  noticeVersion: varchar('notice_version', { length: 32 }).notNull(),
+  /** HMAC de la IP, no la IP en claro: la dirección también es dato personal. */
+  ipHash: varchar('ip_hash', { length: 64 }),
+  userAgent: varchar('user_agent', { length: 255 }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, table => [
+  index('consents_user_created_idx').on(table.userId, table.createdAt),
 ])
 
 /** Imágenes del carrusel del home. El archivo vive en public/uploads/hero/. */

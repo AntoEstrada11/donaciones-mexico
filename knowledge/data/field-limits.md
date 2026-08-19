@@ -22,7 +22,8 @@ Constantes y helpers en `utils/fieldLimits.ts`. Misma fuente para páginas Vue y
 | Dirección | máx. 200 |
 | Ciudad / Estado | máx. 120 |
 | C.P. | opcional; exactamente 5 dígitos |
-| RFC | opcional; 12 (moral) o 13 (física); patrón SAT básico; mayúsculas |
+| RFC | opcional; solo si `wantsReceipt`; 12 (moral) o 13 (física); patrón SAT básico; mayúsculas |
+| Consentimiento (`consent`) | boolean; **obligatorio `true`** en registro y donación (validación servidor) |
 | Monto de donación | $1 – $999,999.99 MXN; máx. 2 decimales; sin notación científica |
 | Búsqueda de iglesias | máx. 100 caracteres |
 | Imagen del hero | JPG/PNG/WebP; máx. 3 MB; alt máx. 160 |
@@ -31,20 +32,28 @@ Constantes y helpers en `utils/fieldLimits.ts`. Misma fuente para páginas Vue y
 
 | Superficie | Uso |
 |------------|-----|
-| `/login`, `/registro` | correo y contraseña |
-| `/perfil` | nombre, teléfono, domicilio, C.P., RFC |
-| `/donaciones` | monto (presets + “otro monto”) |
-| `/iglesias` | búsqueda |
-| `POST /api/auth/register` | correo, contraseña, nombre |
+| `/login`, `/registro` | correo, contraseña; registro además exige `consent` |
+| `/perfil` | nombre, teléfono; fiscal solo si `wantsReceipt` (RFC, domicilio, C.P.) |
+| `/donaciones` | monto; `consent` obligatorio antes de enviar |
+| `/iglesias` | búsqueda; geolocalización solo tras botón explícito |
+| `POST /api/auth/register` | correo, contraseña, nombre, `consent`, `marketing?` |
 | `POST /api/auth/login` | correo |
-| `PATCH /api/me` | perfil completo |
-| `POST /api/donations` | monto (revalida y redondea a centavos) |
+| `PATCH /api/me` | perfil; RFC/C.P. validados solo con `wantsReceipt: true` |
+| `POST /api/donations` | monto, `consent` |
 
 # Comportamiento de UI
 
 - Inputs con `maxlength` / `inputmode` según el campo.
 - El monto usa `type="text"` + sanitización (no `type="number"`, que permite `e`).
 - Bajo el monto se muestra el rango permitido (`donation.amountRange`).
+- Registro y donación deshabilitan el botón principal hasta marcar la casilla de consentimiento.
+- Datos fiscales en perfil ocultos detrás del interruptor «recibo deducible».
+
+# Relación con privacidad
+
+Los campos de consentimiento no están en `FIELD_LIMITS`; se validan como boolean estricto en el
+servidor. Identidad del responsable y versión del aviso: `utils/legal.ts`. Ver
+[/legal/aviso-privacidad.md](/legal/aviso-privacidad.md).
 
 # Relación con la base
 

@@ -7,6 +7,7 @@ export default defineEventHandler(async (event) => {
   const patch: ProfileInput = {}
   if (body?.name !== undefined) patch.name = String(body.name)
   if (body?.phone !== undefined) patch.phone = String(body.phone || '')
+  if (body?.wantsReceipt !== undefined) patch.wantsReceipt = body.wantsReceipt === true
   if (body?.street !== undefined) patch.street = String(body.street || '')
   if (body?.city !== undefined) patch.city = String(body.city || '')
   if (body?.state !== undefined) patch.state = String(body.state || '')

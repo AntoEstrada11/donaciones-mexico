@@ -46,6 +46,15 @@ Copiar `public/uploads/hero/` a una instalación nueva (o conservar esos JPG tra
 
 Hay que volver a cargarlas desde `/admin/slides` (cuenta admin). Detalle: [/playbooks/hero-slides-restore.md](/playbooks/hero-slides-restore.md).
 
+# Migración de privacidad (2026-08-19)
+
+`0002_swift_salo.sql` añade:
+
+- Tabla `consents` + enum `consent_type`
+- Columna `donor_profiles.wants_receipt` (default `false`)
+
+Bases existentes: `npm run db:migrate` aplica solo lo pendiente. Bases nuevas: migrate + seed como siempre.
+
 # Notas
 
 - Los scripts leen `.env` con `node --env-file`; no requieren dependencias extra.

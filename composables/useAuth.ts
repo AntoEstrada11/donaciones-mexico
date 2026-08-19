@@ -1,4 +1,4 @@
-import type { AuthResponse, Donation, DonorProfile, UserRole } from '~/types'
+import type { AuthResponse, ConsentType, DataExport, Donation, DonorProfile, UserRole } from '~/types'
 
 const USER_KEY = 'auth-user'
 
@@ -72,6 +72,8 @@ export function useAuth() {
     email: string
     password: string
     name?: string
+    consent: boolean
+    marketing?: boolean
   }) {
     const response = await $fetch<AuthResponse>('/api/auth/register', {
       method: 'POST',
@@ -132,6 +134,44 @@ export function useAuth() {
     return authHeaders(requireToken())
   }
 
+  /** Derecho de acceso: dispara la descarga del JSON con todos los datos del titular. */
+  async function downloadMyData() {
+    const data = await $fetch<DataExport>('/api/me/export', {
+      headers: authHeaders(requireToken()),
+    })
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'mis-datos.json'
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
+  async function fetchConsents() {
+    return await $fetch<Partial<Record<ConsentType, boolean>>>('/api/me/consents', {
+      headers: authHeaders(requireToken()),
+    })
+  }
+
+  async function setConsent(type: ConsentType, granted: boolean) {
+    return await $fetch<Partial<Record<ConsentType, boolean>>>('/api/me/consents', {
+      method: 'POST',
+      headers: authHeaders(requireToken()),
+      body: { type, granted },
+    })
+  }
+
+  async function deleteAccount(password: string) {
+    await $fetch('/api/me', {
+      method: 'DELETE',
+      headers: authHeaders(requireToken()),
+      body: { password },
+    })
+    logout()
+  }
+
   return {
     user,
     isLoggedIn,
@@ -144,5 +184,9 @@ export function useAuth() {
     fetchDonations,
     optionalAuthHeaders,
     adminHeaders,
+    downloadMyData,
+    fetchConsents,
+    setConsent,
+    deleteAccount,
   }
 }

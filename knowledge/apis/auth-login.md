@@ -31,6 +31,7 @@ timestamp: 2026-08-07T00:00:00Z
 |--------|--------|
 | 400 | Faltan campos o correo inválido |
 | 401 | Credenciales incorrectas |
+| 429 | Más de 10 intentos por IP en 5 minutos (fuerza bruta) |
 
 # Notas
 

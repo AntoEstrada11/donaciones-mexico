@@ -1,5 +1,28 @@
 # Directory Update Log
 
+## 2026-08-19 (plan B iglesias)
+* **Update**: `server/data/churches.json` regenerado con 253 templos e ids Odoo reales. Script `npm run db:sync-churches`. Ver [/data/churches-json.md](/data/churches-json.md).
+
+## 2026-08-19 (iglesias vía Odoo)
+* **Update**: `GET /api/churches` consulta Odoo directo (`miembros.iurdsys.net/api/churches`) con API key en servidor, caché 1 h, host allowlist y rate limit. WordPress queda fuera del camino. Ver [/decisions/churches-odoo-direct.md](/decisions/churches-odoo-direct.md).
+* **Update**: `source` pasa de `wordpress` a `odoo`. Textos legales al usuario sin cambio (siguen citando universal.org.mx).
+
+## 2026-08-19 (documentación OKF)
+* **Update**: [legal-config.md](/legal/legal-config.md) — referencia de `utils/legal.ts`.
+* **Update**: Sección [/legal/](/legal/) con [aviso-privacidad.md](/legal/aviso-privacidad.md) (rutas, componentes, versionado, checklist pre-publicación).
+* **Update**: [rate-limiting.md](/security/rate-limiting.md), decisión [contenido-legal-en-paginas.md](/decisions/contenido-legal-en-paginas.md).
+* **Update**: Sincronizados `project.md`, `roadmap.md`, `field-limits.md`, `me-get.md`, `churches-get.md`, playbooks `run-local`, `db-migrations`, `deploy` e índices de `security/`, `decisions/` e `index.md`.
+
+## 2026-08-19
+* **Update**: Cumplimiento LFPDPPP (ley vigente desde el 21/03/2025). Aviso de privacidad integral en `/privacidad`, términos en `/terminos`, aviso simplificado junto a cada formulario y enlaces en el pie. Identidad del responsable y versionado en `utils/legal.ts`.
+* **Update**: Consentimiento expreso para datos sensibles (creencias religiosas). `POST /api/auth/register` y `POST /api/donations` devuelven `422` sin `consent: true`; la evidencia se guarda en la tabla `consents`. Ver [/decisions/consentimiento-datos-sensibles.md](/decisions/consentimiento-datos-sensibles.md) y [/data/consents-table.md](/data/consents-table.md).
+* **Update**: Derechos ARCO en autoservicio desde `/perfil`: [GET /api/me/export](/apis/me-export.md), [DELETE /api/me](/apis/me-delete.md) y [/apis/me-consents.md](/apis/me-consents.md).
+* **Update**: Minimización de datos fiscales. RFC y domicilio solo se piden si el donante activa el recibo deducible (`donor_profiles.wants_receipt`) y se borran al desactivarlo. Ver [/decisions/minimizacion-datos-fiscales.md](/decisions/minimizacion-datos-fiscales.md).
+* **Update**: La geolocalización en `/iglesias` ya no se pide en `onMounted`; requiere acción explícita y avisa que las coordenadas salen hacia `universal.org.mx`.
+* **Update**: Límite de tasa por IP en login, registro, donaciones y escrituras de `/api/me` (`server/middleware/rateLimit.ts`). Ver [/security/layers.md](/security/layers.md).
+* **Update**: Nuevos conceptos [/data/personal-data-inventory.md](/data/personal-data-inventory.md) y [/security/data-retention.md](/security/data-retention.md); nuevos playbooks [/playbooks/arco-request.md](/playbooks/arco-request.md) y [/playbooks/data-breach.md](/playbooks/data-breach.md).
+* **Pendiente**: Confirmar con el área jurídica el domicilio fiscal y el buzón ARCO en `utils/legal.ts` antes de publicar. Hoy son marcadores.
+
 ## 2026-08-18
 * **Update**: `GET /api/churches` proxea WordPress; si `/wp-json/` responde 500, el directorio usa `churches.json` y avisa. Ver [/apis/churches-get.md](/apis/churches-get.md).
 * **Update**: Tutorial SPEI en `/spei` (datos bancarios, pasos, copiar CLABE); enlaces en home, pie y flujo de donación. Conceptos [/data/spei-bank.md](/data/spei-bank.md) y [/roadmap.md](/roadmap.md).

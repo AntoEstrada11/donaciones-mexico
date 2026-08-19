@@ -19,6 +19,7 @@ const selectedCampaignId = ref<string | null>(null)
 const amount = ref<number | null>(null)
 const customAmount = ref('')
 const paymentMethod = ref<'spei' | 'card'>('spei')
+const consent = ref(false)
 const submitting = ref(false)
 const success = ref(false)
 const submitError = ref('')
@@ -50,6 +51,7 @@ const canSubmit = computed(() =>
   selectedChurch.value
   && selectedCampaignId.value
   && finalAmount.value
+  && consent.value
   && !submitting.value,
 )
 
@@ -93,6 +95,11 @@ async function submitDonation() {
     return
   }
 
+  if (!consent.value) {
+    submitError.value = t('legal.consentRequired')
+    return
+  }
+
   if (!canSubmit.value || !finalAmount.value) return
 
   submitting.value = true
@@ -107,6 +114,7 @@ async function submitDonation() {
         campaignId: selectedCampaignId.value,
         amount: finalAmount.value,
         method: paymentMethod.value,
+        consent: consent.value,
       },
     })
 
@@ -127,6 +135,7 @@ function startNewDonation() {
   amount.value = null
   customAmount.value = ''
   paymentMethod.value = 'spei'
+  consent.value = false
 }
 </script>
 
@@ -343,6 +352,11 @@ function startNewDonation() {
             </dd>
           </div>
         </dl>
+      </section>
+
+      <section class="mb-6 space-y-4">
+        <PrivacyNoticeShort />
+        <LegalConsent v-model:consent="consent" />
       </section>
 
       <p v-if="submitError" class="mb-4 text-center text-sm text-red-600">

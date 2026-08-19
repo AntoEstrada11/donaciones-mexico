@@ -60,12 +60,48 @@ export interface DonorProfile {
   name: string
   email: string
   phone: string | null
+  wantsReceipt: boolean
   street: string | null
   city: string | null
   state: string | null
   zip: string | null
   rfc: string | null
   profileComplete: boolean
+}
+
+export type ConsentType = 'privacy_notice' | 'sensitive_data' | 'marketing'
+
+/** Evidencia de consentimiento tal como se expone al titular. */
+export interface ConsentRecord {
+  id: string
+  type: ConsentType
+  granted: boolean
+  noticeVersion: string
+  createdAt: string
+}
+
+/** Copia completa de los datos del titular (derecho de acceso). */
+export interface DataExport {
+  exportedAt: string
+  noticeVersion: string
+  account: {
+    id: string
+    email: string
+    name: string
+    role: UserRole
+    createdAt: string
+  }
+  profile: {
+    phone: string | null
+    wantsReceipt: boolean
+    street: string | null
+    city: string | null
+    state: string | null
+    zip: string | null
+    rfc: string | null
+  }
+  donations: Donation[]
+  consents: ConsentRecord[]
 }
 
 export interface HeroSlide {
@@ -116,7 +152,7 @@ export interface ChurchApiItem {
 
 export interface ChurchesApiResponse {
   results: ChurchApiItem[]
-  pagination: {
+  pagination?: {
     current_page: number
     per_page: number
     total_records: number
@@ -125,10 +161,10 @@ export interface ChurchesApiResponse {
     has_prev: boolean
     next_page: number | null
     prev_page: number | null
-  }
+  } | null
 }
 
-export type ChurchesSource = 'wordpress' | 'sample'
+export type ChurchesSource = 'odoo' | 'sample'
 
 export interface ChurchesListResponse {
   churches: Church[]

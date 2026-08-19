@@ -34,11 +34,12 @@ timestamp: 2026-08-18T00:00:00Z
 | `user_id` | uuid PK/FK | → `users.id`, `ON DELETE CASCADE` |
 | `phone` | varchar(32) | tal como lo capturó el donante |
 | `phone_digits` | varchar(20) | solo dígitos; único (`donor_profiles_phone_digits_key`) |
-| `street`, `city`, `state`, `zip` | texto | domicilio |
+| `wants_receipt` | boolean | default `false`; condiciona si se piden y conservan los datos fiscales |
+| `street`, `city`, `state`, `zip` | texto | domicilio; se vacían si `wants_receipt` pasa a `false` |
 | `rfc` | varchar(13) | en mayúsculas; insumo para un eventual CFDI |
 | `updated_at` | timestamptz | |
 
-Separar el perfil de la cuenta acota el manejo de PII: la tabla de acceso no contiene domicilio ni datos fiscales.
+Separar el perfil de la cuenta acota el manejo de PII: la tabla de acceso no contiene domicilio ni datos fiscales. Los campos fiscales solo se llenan bajo demanda: ver [/decisions/minimizacion-datos-fiscales.md](/decisions/minimizacion-datos-fiscales.md).
 
 ## `campaigns` — catálogo de tipos de donación
 
@@ -66,6 +67,22 @@ Separar el perfil de la cuenta acota el manejo de PII: la tabla de acceso no con
 
 Índices: `donations_user_created_idx` (historial por donante) y `donations_campaign_idx` (reportes por campaña).
 
+## `consents` — evidencia de consentimiento
+
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | uuid PK | |
+| `user_id` | uuid FK nullable | → `users.id`, `ON DELETE SET NULL` |
+| `donation_id` | uuid FK nullable | → `donations.id`, `ON DELETE SET NULL`; cubre donativos sin sesión |
+| `type` | enum `consent_type` | `privacy_notice`, `sensitive_data`, `marketing` |
+| `granted` | boolean | `false` es una revocación |
+| `notice_version` | varchar(32) | versión del aviso aceptada |
+| `ip_hash` | varchar(64) | HMAC de la IP, nunca la IP en claro |
+| `user_agent` | varchar(255) | |
+| `created_at` | timestamptz | |
+
+Índice: `consents_user_created_idx`. Tabla append-only; detalle en [/data/consents-table.md](/data/consents-table.md).
+
 ## `hero_slides` — carrusel del home
 
 | Columna | Tipo | Notas |
@@ -85,6 +102,7 @@ El home no recorre el directorio: solo muestra filas con `active = true`. Copiar
 - Un teléfono no puede repetirse entre donantes, sin importar el formato capturado.
 - Una donación siempre apunta a una campaña existente.
 - Borrar un donante borra su perfil pero conserva sus donaciones con `user_id` nulo, para no perder el registro contable.
+- Borrar un donante tampoco destruye sus consentimientos: quedan anonimizados (`user_id` nulo) como evidencia de que se otorgaron. Ver [/security/data-retention.md](/security/data-retention.md).
 
 Los límites de formato (rango de monto, RFC, C.P., longitudes) se aplican en la capa de aplicación: [/data/field-limits.md](/data/field-limits.md).
 

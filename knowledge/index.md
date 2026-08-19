@@ -18,11 +18,13 @@ Base de conocimiento OKF del proyecto. Empieza aquí (progressive disclosure).
 
 # Datos
 
-* [Datos / schemas](data/) - Esquema PostgreSQL, límites de formularios y archivos semilla.
+* [Datos / schemas](data/) - Esquema PostgreSQL, inventario de datos personales, consentimientos y límites de formularios.
 
-# Seguridad
+# Seguridad y privacidad
 
-* [Seguridad](security/) - Auth HMAC, secretos por env, acceso a la base.
+* [Seguridad](security/) - Auth HMAC, secretos por env, límites de tasa y plazos de conservación.
+* [Legal y privacidad (LFPDPPP)](legal/) - Aviso, consentimiento, checklist pre-publicación.
+* [Inventario de datos personales](data/personal-data-inventory.md) - Qué se trata, con qué finalidad y por cuánto tiempo.
 
 # Playbooks
 

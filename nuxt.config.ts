@@ -45,7 +45,11 @@ export default defineNuxtConfig({
   runtimeConfig: {
     authSecret: process.env.NUXT_AUTH_SECRET || 'dev-secret-change-me',
     databaseUrl: process.env.DATABASE_URL || '',
-    churchesApiUrl: process.env.NUXT_CHURCHES_API_URL || 'https://universal.org.mx/wp-json/iurd/v1/churches',
+    churchesApiUrl: process.env.NUXT_CHURCHES_API_URL || 'https://miembros.iurdsys.net/api/churches',
+    /** Solo servidor; nunca en runtimeConfig.public */
+    churchesApiKey: process.env.NUXT_CHURCHES_API_KEY || '',
+    churchesApiAllowedHost: process.env.NUXT_CHURCHES_API_ALLOWED_HOST || 'miembros.iurdsys.net',
+    churchesCacheTtlMs: Number(process.env.NUXT_CHURCHES_CACHE_TTL_MS || 3_600_000),
     public: {
       defaultLatitude: 19.392531016453,
       defaultLongitude: -99.18114903857942,

@@ -6,7 +6,7 @@ const year = new Date().getFullYear()
 <template>
   <footer class="mt-auto border-t border-gray-200 bg-white">
     <div class="mx-auto max-w-6xl px-4 py-10 md:px-6">
-      <div class="grid gap-8 md:grid-cols-2">
+      <div class="grid gap-8 md:grid-cols-3">
         <div>
           <h2 class="mb-3 text-sm font-bold uppercase tracking-wider text-brand">
             {{ t('footer.contact') }}
@@ -41,6 +41,24 @@ const year = new Date().getFullYear()
           <NuxtLink to="/spei" class="mt-3 inline-block text-sm font-medium text-brand hover:underline">
             {{ t('footer.speiTutorial') }}
           </NuxtLink>
+        </div>
+
+        <div>
+          <h2 class="mb-3 text-sm font-bold uppercase tracking-wider text-brand">
+            {{ t('legal.footerHeading') }}
+          </h2>
+          <ul class="space-y-2 text-sm text-gray-600">
+            <li>
+              <NuxtLink to="/privacidad" class="hover:text-brand hover:underline">
+                {{ t('legal.privacyLink') }}
+              </NuxtLink>
+            </li>
+            <li>
+              <NuxtLink to="/terminos" class="hover:text-brand hover:underline">
+                {{ t('legal.termsLink') }}
+              </NuxtLink>
+            </li>
+          </ul>
         </div>
       </div>
 

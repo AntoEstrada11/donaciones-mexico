@@ -16,12 +16,17 @@ timestamp: 2026-08-06T00:00:00Z
 
 # Respuesta
 
-`DonorProfile` (`types/index.ts`): `id`, `name`, `email`, `phone`, `street`, `city`, `state`, `zip`, `rfc`, `profileComplete`.
+`DonorProfile` (`types/index.ts`): `id`, `name`, `email`, `phone`, `wantsReceipt`, `street`, `city`, `state`, `zip`, `rfc`, `profileComplete`.
 
-Resulta de un `LEFT JOIN` entre `users` y `donor_profiles`, así que un perfil ausente devuelve campos nulos en vez de fallar.
+Los campos fiscales pueden ser `null` si el donante no activó recibo deducible. Ver [/decisions/minimizacion-datos-fiscales.md](/decisions/minimizacion-datos-fiscales.md).
 
 # Errores
 
 | Código | Causa |
 |--------|--------|
 | 401 | Sin token, token inválido/expirado o usuario inexistente |
+
+# Relacionados
+
+- Rectificación: [PATCH /api/me](me-patch.md)
+- Acceso portable: [GET /api/me/export](me-export.md)
