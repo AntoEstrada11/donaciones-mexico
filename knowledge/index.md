@@ -10,6 +10,7 @@ Base de conocimiento OKF del proyecto. Empieza aquí (progressive disclosure).
 
 * [Donaciones México](project.md) - Plataforma de donaciones en línea IURD México.
 * [Arquitectura](architecture.md) - Componentes Nuxt, Nitro, PostgreSQL e iglesias WP.
+* [Roadmap](roadmap.md) - Hecho, pendiente de producto y endurecimiento.
 
 # APIs
 

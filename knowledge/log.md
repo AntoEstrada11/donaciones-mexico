@@ -1,5 +1,12 @@
 # Directory Update Log
 
+## 2026-08-18
+* **Update**: `GET /api/churches` proxea WordPress; si `/wp-json/` responde 500, el directorio usa `churches.json` y avisa. Ver [/apis/churches-get.md](/apis/churches-get.md).
+* **Update**: Tutorial SPEI en `/spei` (datos bancarios, pasos, copiar CLABE); enlaces en home, pie y flujo de donación. Conceptos [/data/spei-bank.md](/data/spei-bank.md) y [/roadmap.md](/roadmap.md).
+* **Update**: Playbook y script `db:set-password` para resetear la contraseña de una cuenta (scrypt) o crear el primer admin con `--create`. Ver [/playbooks/set-password.md](/playbooks/set-password.md).
+* **Update**: Documentado que el carrusel del home no se restaura copiando JPG: migrate/seed e instalación nueva dejan `hero_slides` vacía; hay que volver a cargar las fotos desde `/admin/slides`. Playbook [/playbooks/hero-slides-restore.md](/playbooks/hero-slides-restore.md); también migraciones, deploy, local, backup, esquema y APIs de slides.
+* **Update**: `GET /api/churches` proxea WordPress; si `/wp-json/` responde 500, el directorio usa `churches.json` y avisa. Ver [/apis/churches-get.md](/apis/churches-get.md).
+
 ## 2026-08-07
 * **Update**: Panel admin (`role` en users), carrusel del hero con degradado, APIs `/api/admin/*` y `GET /api/hero-slides`. Ver [/decisions/admin-role.md](/decisions/admin-role.md) y [/apis/admin.md](/apis/admin.md).
 * **Update**: Restricciones de formularios unificadas en `utils/fieldLimits.ts` (UI + API). Concepto [/data/field-limits.md](/data/field-limits.md); contratos actualizados: register, login, `PATCH /api/me`, `POST /api/donations`.

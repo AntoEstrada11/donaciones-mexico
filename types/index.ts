@@ -127,3 +127,10 @@ export interface ChurchesApiResponse {
     prev_page: number | null
   }
 }
+
+export type ChurchesSource = 'wordpress' | 'sample'
+
+export interface ChurchesListResponse {
+  churches: Church[]
+  source: ChurchesSource
+}

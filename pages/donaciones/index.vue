@@ -151,6 +151,17 @@ function startNewDonation() {
         <p class="mb-6 text-gray-600">
           {{ t('donation.successDesc') }}
         </p>
+        <div v-if="paymentMethod === 'spei'" class="mb-6 text-left">
+          <p class="mb-3 text-center text-sm text-ink">
+            {{ t('spei.afterDonate') }}
+          </p>
+          <SpeiBankDetails />
+          <p class="mt-3 text-center">
+            <NuxtLink to="/spei" class="text-sm font-medium text-brand hover:underline">
+              {{ t('home.speiCta') }}
+            </NuxtLink>
+          </p>
+        </div>
         <div class="flex flex-wrap justify-center gap-3">
           <NuxtLink to="/historial" class="btn-primary">
             {{ t('donation.viewHistory') }}
@@ -285,6 +296,13 @@ function startNewDonation() {
             <p class="mt-1 text-sm text-gray-600">
               {{ t('donation.methodSpei') }}
             </p>
+            <NuxtLink
+              to="/spei"
+              class="mt-2 inline-block text-xs font-medium text-brand hover:underline"
+              @click.stop
+            >
+              {{ t('home.speiCta') }}
+            </NuxtLink>
           </button>
           <button
             type="button"

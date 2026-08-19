@@ -29,6 +29,8 @@ Abra [http://localhost:3000](http://localhost:3000).
 | `npm run db:migrate` | Aplica las migraciones pendientes |
 | `npm run db:seed` | Siembra las campañas desde `server/data/campaigns.json` |
 | `npm run db:import-users` | Migración única del store legado `server/data/users.json` |
+| `npm run db:promote-admin` | Asigna `role=admin` a un correo existente |
+| `npm run db:set-password` | Cambia la contraseña de un usuario (`NEW_PASSWORD`, opcional `--create`) |
 
 ## Rutas implementadas
 
@@ -40,6 +42,8 @@ Abra [http://localhost:3000](http://localhost:3000).
 | `/historial` | Historial de donaciones del donante |
 | `/login`, `/registro` | Acceso y alta de cuenta |
 | `/perfil` | Datos personales y fiscales |
+| `/spei` | Tutorial de transferencia SPEI (CLABE y pasos) |
+| `/admin` | Panel operativo (requiere rol admin) |
 
 ## API (`server/api/`)
 
@@ -50,6 +54,7 @@ Abra [http://localhost:3000](http://localhost:3000).
 | `GET /api/me` | Bearer | Perfil del donante |
 | `PATCH /api/me` | Bearer | Actualiza perfil |
 | `GET /api/campaigns` | — | Campañas activas |
+| `GET /api/churches` | — | Directorio (WordPress o muestra) |
 | `GET /api/donations` | Bearer | Historial del donante |
 | `POST /api/donations` | Opcional | Registra una donación |
 
@@ -61,7 +66,7 @@ Abra [http://localhost:3000](http://localhost:3000).
 - **Tailwind CSS** — estilos
 - **@nuxtjs/i18n** — internacionalización (`es-MX`, archivos en `i18n/locales/`)
 
-El directorio de iglesias se consume de la API pública de WordPress de IURD México; no hay tabla local de iglesias.
+El directorio de iglesias se consume de la API pública de WordPress de IURD México a través de `GET /api/churches`. Si WordPress no responde, se usa `server/data/churches.json` y la página avisa.
 
 ## Documentación
 
@@ -71,4 +76,6 @@ La base de conocimiento del proyecto vive en [`knowledge/`](knowledge/index.md):
 
 - Sin pasarelas de pago reales: las donaciones quedan en estado `pending`.
 - Sin emisión de CFDI todavía; el RFC ya se captura en el perfil.
-- Donación recurrente: pendiente.
+- Donación recurrente: pendiente (el home muestra «Próximamente»).
+- Pendientes agrupados en [`knowledge/roadmap.md`](knowledge/roadmap.md).
+- Carrusel del home: en instalación nueva o tras recrear la base, copiar los JPG a `public/uploads/hero/` no basta; hay que volver a subirlos en `/admin/slides`. Detalle en [`knowledge/playbooks/hero-slides-restore.md`](knowledge/playbooks/hero-slides-restore.md).

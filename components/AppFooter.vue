@@ -34,10 +34,13 @@ const year = new Date().getFullYear()
             SPEI
           </h2>
           <ul class="space-y-1 text-sm text-gray-600">
-            <li>{{ t('footer.bank') }}</li>
-            <li class="font-mono font-medium text-ink">{{ t('footer.clabe') }}</li>
-            <li>{{ t('footer.concept') }}</li>
+            <li>{{ t('spei.bank') }} — {{ t('spei.beneficiary') }}</li>
+            <li class="font-mono font-medium text-ink">{{ t('spei.clabeLabel') }}: {{ t('spei.clabe') }}</li>
+            <li>{{ t('spei.conceptLabel') }}: {{ t('spei.concept') }}</li>
           </ul>
+          <NuxtLink to="/spei" class="mt-3 inline-block text-sm font-medium text-brand hover:underline">
+            {{ t('footer.speiTutorial') }}
+          </NuxtLink>
         </div>
       </div>
 

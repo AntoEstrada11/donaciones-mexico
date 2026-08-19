@@ -32,3 +32,5 @@ SELECT email, role FROM users WHERE email = 'correo@ejemplo.com';
 # Notas
 
 No se puede degradar al único admin desde la API. Ver [/decisions/admin-role.md](/decisions/admin-role.md).
+
+Para cambiar la contraseña (no hay pantalla en `/perfil`): [/playbooks/set-password.md](/playbooks/set-password.md).

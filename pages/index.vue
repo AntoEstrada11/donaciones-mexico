@@ -116,9 +116,9 @@ const steps = computed(() => [
           <p class="mb-4 text-sm text-gray-600">
             {{ t('home.speiDesc') }}
           </p>
-          <span class="inline-block rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-500">
-            {{ t('home.recurringSoon') }}
-          </span>
+          <NuxtLink to="/spei" class="btn-primary">
+            {{ t('home.speiCta') }}
+          </NuxtLink>
         </article>
       </div>
     </section>

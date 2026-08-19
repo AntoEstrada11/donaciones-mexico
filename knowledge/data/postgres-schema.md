@@ -4,7 +4,7 @@ title: Esquema PostgreSQL
 description: Tablas, llaves y restricciones de la base propia de donantes y donaciones.
 resource: server/database/schema.ts
 tags: [data, postgres, drizzle]
-timestamp: 2026-08-07T00:00:00Z
+timestamp: 2026-08-18T00:00:00Z
 ---
 
 # Ubicación
@@ -71,11 +71,13 @@ Separar el perfil de la cuenta acota el manejo de PII: la tabla de acceso no con
 | Columna | Tipo | Notas |
 |---------|------|-------|
 | `id` | uuid PK | |
-| `filename` | varchar(255) | archivo en `public/uploads/hero/` |
+| `filename` | varchar(255) | nombre del archivo en `public/uploads/hero/`; la presencia del JPG no crea la fila, ni al revés |
 | `alt` | varchar(160) | texto alternativo |
 | `sort_order` | integer | orden de aparición |
 | `active` | boolean | solo las activas salen en `GET /api/hero-slides` |
 | `created_at` | timestamptz | |
+
+El home no recorre el directorio: solo muestra filas con `active = true`. Copiar archivos a `public/uploads/hero/` en una instalación nueva o tras recrear la base **no** restaura el reel. Hay que volver a subirlos en `/admin/slides`. Ver [/playbooks/hero-slides-restore.md](/playbooks/hero-slides-restore.md).
 
 # Invariantes que sostiene la base
 
@@ -90,6 +92,7 @@ Los límites de formato (rango de monto, RFC, C.P., longitudes) se aplican en la
 
 - No se guarda un nombre histórico de la iglesia: si el catálogo externo cambia, el historial muestra solo el identificador.
 - No hay tabla de auditoría de cambios de estado de donación; será necesaria si se emiten comprobantes fiscales.
+- Las fotos del carrusel no se siembran ni se reconstruyen al migrar: sin filas en `hero_slides` el reel queda vacío aunque existan archivos en disco.
 
 # Operación
 

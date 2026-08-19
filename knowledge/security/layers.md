@@ -3,7 +3,7 @@ type: Reference
 title: Capas de seguridad
 description: Controles de auth, acceso a datos y variables de entorno; solo nombres, nunca valores.
 tags: [security]
-timestamp: 2026-08-07T00:00:00Z
+timestamp: 2026-08-18T00:00:00Z
 ---
 
 # Controles
@@ -14,7 +14,8 @@ timestamp: 2026-08-07T00:00:00Z
 | Contraseñas | scrypt con salt por usuario, comparación en tiempo constante | — (columna `password_hash`) |
 | Sesión API | Header `Authorization: Bearer` + `requireSession` / `optionalSession` | — |
 | Base de datos | Usuario dedicado de aplicación, puerto publicado solo en `127.0.0.1` | `DATABASE_URL`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` |
-| Público | URL de iglesias y coordenadas por defecto | `runtimeConfig.public.*` (sin secretos) |
+| Público | Coordenadas por defecto del directorio | `runtimeConfig.public.defaultLatitude` / `defaultLongitude` |
+| Iglesias (servidor) | URL WordPress IURD; no es secreto | `NUXT_CHURCHES_API_URL` |
 
 # Manejo de datos personales
 

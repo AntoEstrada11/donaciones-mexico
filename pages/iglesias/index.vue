@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { Church } from '~/types'
-import { mapChurch } from '~/utils/mapChurch'
 
 const { t } = useI18n()
 const config = useRuntimeConfig()
@@ -26,11 +25,10 @@ onMounted(() => {
   )
 })
 
-const { data, pending, error } = useChurches(coords)
+const { data, pending, error, refresh } = useChurches(coords)
 
-const churches = computed<Church[]>(() =>
-  (data.value?.results ?? []).map(mapChurch),
-)
+const churches = computed<Church[]>(() => data.value?.churches ?? [])
+const usingSample = computed(() => data.value?.source === 'sample')
 
 const filtered = computed(() => {
   const q = search.value.trim().toLowerCase()
@@ -72,11 +70,22 @@ const filtered = computed(() => {
       {{ t('common.loading') }}
     </div>
 
-    <div v-else-if="error" class="py-12 text-center text-red-600">
-      {{ t('common.error') }}
+    <div v-else-if="error" class="py-12 text-center">
+      <p class="text-red-600">
+        {{ t('churches.loadError') }}
+      </p>
+      <button type="button" class="btn-secondary mt-4" @click="refresh()">
+        {{ t('churches.retry') }}
+      </button>
     </div>
 
     <template v-else>
+      <p
+        v-if="usingSample"
+        class="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900"
+      >
+        {{ t('churches.sourceSample') }}
+      </p>
       <p class="mb-6 text-sm text-gray-500">
         {{ t('churches.count', { count: filtered.length }) }}
       </p>

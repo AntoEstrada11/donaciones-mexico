@@ -3,7 +3,7 @@ type: Playbook
 title: Respaldo y restauración
 description: Sacar y reponer copias de la base PostgreSQL del proyecto.
 tags: [db, backup, postgres]
-timestamp: 2026-08-06T00:00:00Z
+timestamp: 2026-08-18T00:00:00Z
 ---
 
 # Trigger
@@ -25,6 +25,8 @@ cat donaciones-2026-08-06.dump | docker exec -i donaciones-db pg_restore -U dona
 ```
 
 `--clean` borra los objetos existentes antes de reponerlos: verificar que se apunta a la base correcta.
+
+Un `pg_restore` de un dump **completo** sí trae `hero_slides`. Una base nueva solo con `db:migrate` + `db:seed` no: aunque copies `public/uploads/hero/`, el reel queda vacío hasta recargar las fotos en `/admin/slides`. Ver [/playbooks/hero-slides-restore.md](/playbooks/hero-slides-restore.md).
 
 # Respaldo programado en el servidor
 

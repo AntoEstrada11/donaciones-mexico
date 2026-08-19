@@ -3,7 +3,7 @@ type: Playbook
 title: Migraciones de base de datos
 description: Generar y aplicar cambios de esquema con Drizzle, e importar el store legado.
 tags: [db, postgres, drizzle]
-timestamp: 2026-08-06T00:00:00Z
+timestamp: 2026-08-18T00:00:00Z
 ---
 
 # Trigger
@@ -37,6 +37,14 @@ npm run db:import-users
 Es idempotente: los correos ya presentes se omiten y se reportan como saltados. Conserva el `password_hash` original, así que las contraseñas existentes siguen funcionando. Los usuarios reciben un uuid nuevo, ya que el identificador dejó de ser el correo.
 
 Cuando el conteo cuadre, `server/data/users.json` puede archivarse fuera del repo y borrarse; contiene hashes de contraseñas y datos personales.
+
+# Carrusel del home (no viaja con migrate/seed)
+
+`npm run db:seed` solo sincroniza campañas. Las fotos del reel **no** se siembran.
+
+Copiar `public/uploads/hero/` a una instalación nueva (o conservar esos JPG tras borrar el volumen de Postgres) **no** hace que aparezcan en el home. El carrusel lee `hero_slides`; sin esas filas, `GET /api/hero-slides` devuelve `[]` y el hero queda en color de marca.
+
+Hay que volver a cargarlas desde `/admin/slides` (cuenta admin). Detalle: [/playbooks/hero-slides-restore.md](/playbooks/hero-slides-restore.md).
 
 # Notas
 

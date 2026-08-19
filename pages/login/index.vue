@@ -61,7 +61,7 @@ async function onSubmit() {
       <h1 class="section-title mb-2">
         {{ t('login.title') }}
       </h1>
-      <p class="mb-6 text-sm text-gray-600">
+      <p class="form-note mb-6">
         {{ t('login.subtitle') }}
       </p>
 

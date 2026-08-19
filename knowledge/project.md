@@ -3,7 +3,7 @@ type: System
 title: Donaciones México
 description: Plataforma de donaciones en línea para la Iglesia Universal del Reino de Dios en México.
 tags: [nuxt, donaciones, mexico, iurd, postgres]
-timestamp: 2026-08-06T00:00:00Z
+timestamp: 2026-08-18T00:00:00Z
 ---
 
 # Resumen
@@ -20,7 +20,7 @@ Sitio web Nuxt 3 para que donantes en México registren cuenta, elijan iglesia y
 | Base de datos | PostgreSQL 17 (Docker en el mismo host) |
 | Acceso a datos | Drizzle ORM + driver `postgres` |
 | Auth | Token HMAC propio + scrypt; cuentas en la tabla `users` |
-| Iglesias | API WordPress pública IURD MX (sin tabla local) |
+| Iglesias | API WordPress IURD MX vía Nitro; JSON de muestra si WP cae |
 
 # Entradas útiles
 
@@ -32,4 +32,4 @@ Sitio web Nuxt 3 para que donantes en México registren cuenta, elijan iglesia y
 
 # Estado
 
-Fase funcional con registro, login, perfil, directorio de iglesias, alta de donaciones e historial, todo persistido en PostgreSQL. Sin cobros reales ni emisión de CFDI.
+Fase funcional: registro, login, perfil, directorio de iglesias, alta de donaciones, historial, panel admin y tutorial SPEI (`/spei`), persistido en PostgreSQL. Sin cobros reales, sin donación recurrente ni emisión de CFDI. Backlog: [/roadmap.md](/roadmap.md).

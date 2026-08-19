@@ -3,7 +3,7 @@ type: Playbook
 title: Correr en local
 description: Levantar la base y el servidor de desarrollo de Donaciones México.
 tags: [dev, local]
-timestamp: 2026-08-06T00:00:00Z
+timestamp: 2026-08-18T00:00:00Z
 ---
 
 # Trigger
@@ -46,3 +46,4 @@ docker exec -it donaciones-db psql -U donaciones -d donaciones
 | `ECONNREFUSED 127.0.0.1:5432` | Contenedor abajo | `docker compose up -d` |
 | `relation "users" does not exist` | Falta migrar | `npm run db:migrate` |
 | `Another Nuxt dev server is already running` | Instancia previa viva | Detener el proceso indicado o usar el puerto que reporta |
+| Carrusel del home sin fotos | Hay JPG en `public/uploads/hero/` pero `hero_slides` está vacía (base nueva o volumen recreado) | Volver a subirlas en `/admin/slides`; copiar archivos no alcanza. Ver [/playbooks/hero-slides-restore.md](/playbooks/hero-slides-restore.md) |

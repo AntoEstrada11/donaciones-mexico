@@ -4,7 +4,7 @@ title: Admin API
 description: Endpoints protegidos requireAdmin para estadísticas, slides, donaciones y usuarios.
 resource: /api/admin/*
 tags: [api, admin]
-timestamp: 2026-08-07T00:00:00Z
+timestamp: 2026-08-18T00:00:00Z
 ---
 
 # Auth
@@ -28,6 +28,8 @@ Todas las rutas exigen `Authorization: Bearer` con `role === admin` (`requireAdm
 # Archivos
 
 Subidas en `public/uploads/hero/` (gitignored). Metadatos en tabla `hero_slides`.
+
+El carrusel **no** lista el directorio. Solo muestra filas de esa tabla. En una instalación nueva, una migración sobre base vacía o al copiar los JPG a otro servidor, hay que volver a cargarlos desde `/admin/slides`. Copiar archivos no crea las filas. Ver [/playbooks/hero-slides-restore.md](/playbooks/hero-slides-restore.md).
 
 # UI
 

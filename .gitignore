@@ -33,3 +33,6 @@ public/uploads/**
 # Volcados de base de datos: contienen datos personales
 *.dump
 *.sql.gz
+
+# Carta personal (no es del proyecto)
+tmp-carta/

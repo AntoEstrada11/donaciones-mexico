@@ -3,7 +3,7 @@ type: Playbook
 title: Desplegar
 description: Build de producción Nuxt/Nitro con la base PostgreSQL en el mismo host.
 tags: [deploy]
-timestamp: 2026-08-06T00:00:00Z
+timestamp: 2026-08-18T00:00:00Z
 ---
 
 # Trigger
@@ -19,6 +19,7 @@ Publicar o actualizar el entorno de staging/producción.
 5. `npm run build`
 6. Arrancar el output de Nitro: `node .output/server/index.mjs`, o el adaptador del proveedor.
 7. Smoke: registro, login, `/api/campaigns`, `/iglesias`, alta de donación y `/historial`.
+8. Carrusel: si el entorno es nuevo o se recreó la base, **no** basta con copiar `public/uploads/hero/`. Subir de nuevo las fotos en `/admin/slides`. Ver [/playbooks/hero-slides-restore.md](/playbooks/hero-slides-restore.md).
 
 # Orden importa
 
