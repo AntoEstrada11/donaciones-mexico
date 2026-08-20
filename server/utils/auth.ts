@@ -89,6 +89,13 @@ export function requireSession(event: H3Event): SessionPayload {
   return session
 }
 
+/** Valida sesión y que la cuenta donante no esté dada de baja. */
+export async function requireActiveSession(event: H3Event): Promise<SessionPayload> {
+  const session = requireSession(event)
+  await assertDonorAccountActive(session.sub)
+  return session
+}
+
 /** Sesión cuando exista, sin exigirla: permite donar sin haber iniciado sesión. */
 export function optionalSession(event: H3Event): SessionPayload | null {
   const token = getBearerToken(event)

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { Church } from '~/types'
 
+definePageMeta({ middleware: 'auth' })
+
 const { t } = useI18n()
 const config = useRuntimeConfig()
 

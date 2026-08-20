@@ -5,7 +5,7 @@
 import { readFile } from 'node:fs/promises'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
-import { donorProfiles, users } from './schema.ts'
+import { donorProfiles, userStatusEvents, users } from './schema.ts'
 
 interface LegacyUser {
   id: string
@@ -76,6 +76,12 @@ try {
         phoneDigits: phone ? phone.replace(/\D/g, '') || null : null,
       })
       .onConflictDoNothing({ target: donorProfiles.userId })
+
+    await db.insert(userStatusEvents).values({
+      userId: row.id,
+      status: 'active',
+      actorUserId: null,
+    })
 
     imported++
   }

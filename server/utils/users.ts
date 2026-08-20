@@ -1,6 +1,6 @@
 import { and, eq, ne, sql } from 'drizzle-orm'
-import { donorProfiles, users } from '../database/schema'
-import type { AppUser, DonorProfile } from '~/types'
+import { donorProfiles, userStatusEvents, users } from '../database/schema'
+import type { AppUser, DonorProfile, DonorStatus } from '~/types'
 import {
   FIELD_LIMITS,
   isValidName,
@@ -43,6 +43,7 @@ function toAppUser(row: typeof users.$inferSelect): AppUser {
     name: row.name,
     passwordHash: row.passwordHash,
     role: row.role,
+    status: row.status,
     profileComplete: row.profileComplete,
     createdAt: row.createdAt.toISOString(),
   }
@@ -81,6 +82,12 @@ export async function createUser(input: {
         .returning()
 
       await tx.insert(donorProfiles).values({ userId: row.id })
+
+      await tx.insert(userStatusEvents).values({
+        userId: row.id,
+        status: 'active',
+        actorUserId: null,
+      })
 
       return toAppUser(row)
     })
@@ -260,6 +267,53 @@ export async function deleteUserAccount(userId: string): Promise<void> {
   }
 
   await db.delete(users).where(eq(users.id, userId))
+}
+
+export async function assertDonorAccountActive(userId: string): Promise<void> {
+  const user = await findUserById(userId)
+  if (!user) {
+    throw createError({ statusCode: 401, statusMessage: 'Sesión inválida o expirada' })
+  }
+  if (user.role === 'donor' && user.status === 'deactivated') {
+    throw createError({
+      statusCode: 403,
+      statusMessage: 'Su cuenta está dada de baja. Contacte a la iglesia si necesita reactivarla.',
+    })
+  }
+}
+
+export async function setDonorStatus(
+  targetUserId: string,
+  status: DonorStatus,
+  actorUserId: string,
+): Promise<void> {
+  const db = useDatabase()
+  const user = await findUserById(targetUserId)
+  if (!user) {
+    throw createError({ statusCode: 404, statusMessage: 'Usuario no encontrado' })
+  }
+  if (user.role === 'admin') {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'El estado operativo no aplica a cuentas de administrador',
+    })
+  }
+  if (user.status === status) {
+    return
+  }
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(users)
+      .set({ status, updatedAt: new Date() })
+      .where(eq(users.id, targetUserId))
+
+    await tx.insert(userStatusEvents).values({
+      userId: targetUserId,
+      status,
+      actorUserId,
+    })
+  })
 }
 
 interface PgError {

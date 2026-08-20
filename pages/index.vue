@@ -2,14 +2,20 @@
 import type { Campaign, HeroSlide } from '~/types'
 
 const { t } = useI18n()
+const { isLoggedIn } = useAuth()
+
+const donateEntry = computed(() =>
+  isLoggedIn.value ? '/iglesias' : '/login?redirect=/iglesias',
+)
 
 const { data: campaigns, pending } = await useFetch<Campaign[]>('/api/campaigns')
 const { data: heroSlides } = await useFetch<HeroSlide[]>('/api/hero-slides')
 
 const steps = computed(() => [
-  { title: t('home.step1Title'), desc: t('home.step1Desc'), icon: '⛪' },
-  { title: t('home.step2Title'), desc: t('home.step2Desc'), icon: '💝' },
-  { title: t('home.step3Title'), desc: t('home.step3Desc'), icon: '🔒' },
+  { title: t('home.step1Title'), desc: t('home.step1Desc'), icon: '🔐' },
+  { title: t('home.step2Title'), desc: t('home.step2Desc'), icon: '⛪' },
+  { title: t('home.step3Title'), desc: t('home.step3Desc'), icon: '💝' },
+  { title: t('home.step4Title'), desc: t('home.step4Desc'), icon: '🔒' },
 ])
 </script>
 
@@ -28,10 +34,14 @@ const steps = computed(() => [
             {{ t('home.heroSubtitle') }}
           </p>
           <div class="mt-8 flex flex-wrap gap-4">
-            <NuxtLink to="/iglesias" class="btn-primary bg-accent text-ink hover:bg-accent-dark">
+            <NuxtLink :to="donateEntry" class="btn-primary bg-accent text-ink hover:bg-accent-dark">
               {{ t('home.ctaDonate') }}
             </NuxtLink>
-            <NuxtLink to="/iglesias" class="btn-secondary border-white/30 bg-transparent text-white hover:bg-white/10">
+            <NuxtLink
+              v-if="isLoggedIn"
+              to="/iglesias"
+              class="btn-secondary border-white/30 bg-transparent text-white hover:bg-white/10"
+            >
               {{ t('home.ctaChurches') }}
             </NuxtLink>
           </div>
@@ -44,7 +54,7 @@ const steps = computed(() => [
       <h2 class="section-title mb-10 text-center">
         {{ t('home.howTitle') }}
       </h2>
-      <div class="grid gap-8 md:grid-cols-3">
+      <div class="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
         <div
           v-for="(step, i) in steps"
           :key="i"

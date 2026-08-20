@@ -15,6 +15,7 @@ import {
 export const donationStatusEnum = pgEnum('donation_status', ['paid', 'pending', 'failed', 'cancelled'])
 export const donationMethodEnum = pgEnum('donation_method', ['spei', 'card'])
 export const userRoleEnum = pgEnum('user_role', ['donor', 'admin'])
+export const donorStatusEnum = pgEnum('donor_status', ['active', 'deactivated'])
 export const consentTypeEnum = pgEnum('consent_type', ['privacy_notice', 'sensitive_data', 'marketing'])
 
 /** Cuenta de acceso del donante. El correo es único pero puede cambiar, por eso la PK es sintética. */
@@ -24,11 +25,39 @@ export const users = pgTable('users', {
   name: varchar('name', { length: 160 }).notNull(),
   passwordHash: text('password_hash').notNull(),
   role: userRoleEnum('role').notNull().default('donor'),
+  /** Solo aplica a donantes; los admin se consideran siempre operativos. */
+  status: donorStatusEnum('status').notNull().default('active'),
   profileComplete: boolean('profile_complete').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, table => [
   uniqueIndex('users_email_key').on(table.email),
+])
+
+/** Historial de cambios de estado de donantes (activo / baja). */
+export const userStatusEvents = pgTable('user_status_events', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  status: donorStatusEnum('status').notNull(),
+  /** Admin que aplicó el cambio; nulo en el alta automática. */
+  actorUserId: uuid('actor_user_id').references(() => users.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, table => [
+  index('user_status_events_user_created_idx').on(table.userId, table.createdAt),
+])
+
+/** Tokens de un solo uso para restablecer contraseña (generados por un admin). */
+export const passwordResetTokens = pgTable('password_reset_tokens', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  tokenHash: varchar('token_hash', { length: 64 }).notNull(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  createdByUserId: uuid('created_by_user_id').references(() => users.id, { onDelete: 'set null' }),
+  usedAt: timestamp('used_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, table => [
+  index('password_reset_tokens_user_idx').on(table.userId),
+  uniqueIndex('password_reset_tokens_hash_key').on(table.tokenHash),
 ])
 
 /** Datos personales y fiscales. Separados de la cuenta para acotar el manejo de PII. */

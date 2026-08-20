@@ -10,7 +10,8 @@ const error = ref('')
 
 onMounted(() => {
   if (isLoggedIn.value) {
-    navigateTo('/perfil')
+    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/perfil'
+    navigateTo(redirect)
   }
 })
 
@@ -116,7 +117,12 @@ async function onSubmit() {
 
       <p class="mt-4 text-center text-sm text-gray-600">
         {{ t('login.noAccount') }}
-        <NuxtLink to="/registro" class="font-medium text-brand hover:underline">
+        <NuxtLink
+          :to="typeof route.query.redirect === 'string'
+            ? { path: '/registro', query: { redirect: route.query.redirect } }
+            : '/registro'"
+          class="font-medium text-brand hover:underline"
+        >
           {{ t('nav.register') }}
         </NuxtLink>
       </p>

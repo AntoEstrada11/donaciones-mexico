@@ -148,7 +148,12 @@ async function onSubmit() {
 
       <p class="mt-4 text-center text-sm text-gray-600">
         {{ t('register.hasAccount') }}
-        <NuxtLink to="/login" class="font-medium text-brand hover:underline">
+        <NuxtLink
+          :to="typeof route.query.redirect === 'string'
+            ? { path: '/login', query: { redirect: route.query.redirect } }
+            : '/login'"
+          class="font-medium text-brand hover:underline"
+        >
           {{ t('nav.login') }}
         </NuxtLink>
       </p>

@@ -1,5 +1,10 @@
 <script setup lang="ts">
 const { t } = useI18n()
+const { isLoggedIn } = useAuth()
+
+const donateEntry = computed(() =>
+  isLoggedIn.value ? '/iglesias' : '/login?redirect=/iglesias',
+)
 
 useHead({
   title: t('spei.title'),
@@ -68,7 +73,7 @@ const steps = computed(() => [
     </section>
 
     <div class="flex flex-wrap gap-3">
-      <NuxtLink to="/iglesias" class="btn-primary">
+      <NuxtLink :to="donateEntry" class="btn-primary">
         {{ t('spei.ctaDonate') }}
       </NuxtLink>
       <NuxtLink to="/" class="btn-secondary">

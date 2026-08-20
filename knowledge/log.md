@@ -1,5 +1,8 @@
 # Directory Update Log
 
+## 2026-08-19 (panel admin usuarios)
+* **Update**: Retirada promoción de rol admin desde `/admin/users` (410 en PATCH role). Estado donante activo/baja con auditoría en `user_status_events`. Restablecimiento de contraseña vía enlace (`/restablecer-contrasena`).
+
 ## 2026-08-19 (plan B iglesias)
 * **Update**: `server/data/churches.json` regenerado con 253 templos e ids Odoo reales. Script `npm run db:sync-churches`. Ver [/data/churches-json.md](/data/churches-json.md).
 

@@ -15,7 +15,9 @@ Hacía falta un panel para operar el sitio (carrusel del hero, donaciones, usuar
 
 Columna `role` en `users` (`donor` | `admin`, default `donor`). El token HMAC y `AuthResponse` incluyen `role`. Las rutas `/api/admin/**` usan `requireAdmin`.
 
-El primer admin se crea con `npm run db:promote-admin -- <email>` (o `ADMIN_EMAIL` en `.env`). Desde el panel se puede promover o degradar a otros, sin poder quitar el rol al único admin.
+El primer admin se crea con `npm run db:promote-admin -- <email>` (o `ADMIN_EMAIL` en `.env`). **Ya no** se promueve desde el panel: el rol admin pasará a un servicio externo; mientras tanto solo vía script o base de datos.
+
+Desde el panel se gestiona el **estado operativo** de donantes (`active` / `deactivated`) con historial en `user_status_events`, y enlaces de restablecimiento de contraseña.
 
 # Consecuencias
 

@@ -3,7 +3,7 @@ import { LEGAL } from '../../../utils/legal'
 
 /** Derecho de acceso: copia completa y portable de los datos del titular. */
 export default defineEventHandler(async (event): Promise<DataExport> => {
-  const session = requireSession(event)
+  const session = await requireActiveSession(event)
 
   const user = await findUserById(session.sub)
   const profile = await getDonorProfile(session.sub)

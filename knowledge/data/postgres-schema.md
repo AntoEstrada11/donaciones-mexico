@@ -24,6 +24,7 @@ timestamp: 2026-08-18T00:00:00Z
 | `name` | varchar(160) | |
 | `password_hash` | text | formato `salt:hash` scrypt |
 | `role` | enum `user_role` | `donor` (default) o `admin` |
+| `status` | enum `donor_status` | `active` (default) o `deactivated`; solo aplica operativamente a donantes |
 | `profile_complete` | boolean | derivado de nombre + teléfono |
 | `created_at` / `updated_at` | timestamptz | |
 
@@ -95,6 +96,32 @@ Separar el perfil de la cuenta acota el manejo de PII: la tabla de acceso no con
 | `created_at` | timestamptz | |
 
 El home no recorre el directorio: solo muestra filas con `active = true`. Copiar archivos a `public/uploads/hero/` en una instalación nueva o tras recrear la base **no** restaura el reel. Hay que volver a subirlos en `/admin/slides`. Ver [/playbooks/hero-slides-restore.md](/playbooks/hero-slides-restore.md).
+
+## `user_status_events` — auditoría de estado donante
+
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | uuid PK | |
+| `user_id` | uuid FK | → `users.id`, `ON DELETE CASCADE` |
+| `status` | enum `donor_status` | valor aplicado (`active` o `deactivated`) |
+| `actor_user_id` | uuid FK nullable | admin que ejecutó el cambio; `null` en alta inicial |
+| `created_at` | timestamptz | momento del cambio |
+
+Índice: `user_status_events_user_created_idx`. El panel admin muestra el último evento por donante.
+
+## `password_reset_tokens` — enlaces de restablecimiento
+
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | uuid PK | |
+| `user_id` | uuid FK | → `users.id`, `ON DELETE CASCADE` |
+| `token_hash` | varchar(64) | HMAC del token; nunca el token en claro |
+| `expires_at` | timestamptz | vigencia 24 h desde creación |
+| `used_at` | timestamptz nullable | consumo único |
+| `created_by_user_id` | uuid FK nullable | admin que generó el enlace |
+| `created_at` | timestamptz | |
+
+Índices: `password_reset_tokens_user_idx`, `password_reset_tokens_hash_key` (único).
 
 # Invariantes que sostiene la base
 

@@ -1,6 +1,7 @@
-import { count, desc, eq, sql } from 'drizzle-orm'
-import { campaigns, donations, heroSlides, users } from '../database/schema'
-import type { AdminDonationRow, AdminStats, AdminUserRow, Donation, UserRole } from '~/types'
+import { count, desc, eq, inArray, sql } from 'drizzle-orm'
+import { campaigns, donations, heroSlides, userStatusEvents, users } from '../database/schema'
+import type { AdminDonationRow, AdminStats, AdminUserRow, Donation, DonorStatus } from '~/types'
+import { setDonorStatus } from './users'
 
 export async function getAdminStats(): Promise<AdminStats> {
   const db = useDatabase()
@@ -43,6 +44,27 @@ export async function getAdminStats(): Promise<AdminStats> {
   }
 }
 
+async function latestStatusEventsByUser() {
+  const db = useDatabase()
+  const events = await db
+    .select({
+      userId: userStatusEvents.userId,
+      status: userStatusEvents.status,
+      createdAt: userStatusEvents.createdAt,
+      actorUserId: userStatusEvents.actorUserId,
+    })
+    .from(userStatusEvents)
+    .orderBy(desc(userStatusEvents.createdAt))
+
+  const latest = new Map<string, (typeof events)[number]>()
+  for (const event of events) {
+    if (!latest.has(event.userId)) {
+      latest.set(event.userId, event)
+    }
+  }
+  return latest
+}
+
 export async function listAdminUsers(): Promise<AdminUserRow[]> {
   const db = useDatabase()
   const rows = await db
@@ -51,61 +73,66 @@ export async function listAdminUsers(): Promise<AdminUserRow[]> {
       email: users.email,
       name: users.name,
       role: users.role,
+      status: users.status,
       profileComplete: users.profileComplete,
       createdAt: users.createdAt,
     })
     .from(users)
     .orderBy(desc(users.createdAt))
 
-  return rows.map(row => ({
-    id: row.id,
-    email: row.email,
-    name: row.name,
-    role: row.role,
-    profileComplete: row.profileComplete,
-    createdAt: row.createdAt.toISOString(),
-  }))
-}
+  const latestEvents = await latestStatusEventsByUser()
+  const actorIds = [...new Set(
+    [...latestEvents.values()]
+      .map(e => e.actorUserId)
+      .filter((id): id is string => Boolean(id)),
+  )]
 
-export async function setUserRole(
-  targetUserId: string,
-  role: UserRole,
-  actorUserId: string,
-): Promise<AdminUserRow> {
-  const db = useDatabase()
-
-  if (role === 'donor' && targetUserId === actorUserId) {
-    const [admins] = await db
-      .select({ total: count() })
+  const actorNames = new Map<string, string>()
+  if (actorIds.length > 0) {
+    const actors = await db
+      .select({ id: users.id, name: users.name })
       .from(users)
-      .where(eq(users.role, 'admin'))
+      .where(inArray(users.id, actorIds))
 
-    if (Number(admins?.total ?? 0) <= 1) {
-      throw createError({
-        statusCode: 400,
-        statusMessage: 'No puede quitar el rol al único administrador',
-      })
+    for (const actor of actors) {
+      actorNames.set(actor.id, actor.name)
     }
   }
 
-  const [row] = await db
-    .update(users)
-    .set({ role, updatedAt: new Date() })
-    .where(eq(users.id, targetUserId))
-    .returning()
+  return rows.map((row) => {
+    const event = latestEvents.get(row.id)
+    return {
+      id: row.id,
+      email: row.email,
+      name: row.name,
+      role: row.role,
+      status: row.status,
+      profileComplete: row.profileComplete,
+      createdAt: row.createdAt.toISOString(),
+      statusChangedAt: event?.createdAt.toISOString() ?? null,
+      statusChangedByName: event?.actorUserId
+        ? actorNames.get(event.actorUserId) ?? null
+        : null,
+    }
+  })
+}
 
+export async function updateDonorStatusForAdmin(
+  targetUserId: string,
+  status: DonorStatus,
+  actorUserId: string,
+): Promise<AdminUserRow> {
+  if (status !== 'active' && status !== 'deactivated') {
+    throw createError({ statusCode: 400, statusMessage: 'Estado inválido' })
+  }
+
+  await setDonorStatus(targetUserId, status, actorUserId)
+
+  const row = (await listAdminUsers()).find(u => u.id === targetUserId)
   if (!row) {
     throw createError({ statusCode: 404, statusMessage: 'Usuario no encontrado' })
   }
-
-  return {
-    id: row.id,
-    email: row.email,
-    name: row.name,
-    role: row.role,
-    profileComplete: row.profileComplete,
-    createdAt: row.createdAt.toISOString(),
-  }
+  return row
 }
 
 export async function listAdminDonations(limit = 100): Promise<AdminDonationRow[]> {

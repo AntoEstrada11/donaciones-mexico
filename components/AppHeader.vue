@@ -14,29 +14,41 @@ interface NavLink {
   match: string
 }
 
-const navLinks = computed<NavLink[]>(() => [
-  { id: 'home', to: '/', label: t('nav.home'), match: '/' },
-  { id: 'churches', to: '/iglesias', label: t('nav.churches'), match: '/iglesias' },
-  {
-    id: 'donate',
-    // Sin iglesia elegida, el flujo empieza en el directorio; el activo sigue siendo solo /donaciones.
-    to: selectedChurch.value ? '/donaciones' : '/iglesias',
-    label: t('nav.donate'),
-    match: '/donaciones',
-  },
-  ...(isLoggedIn.value
-    ? [
-        { id: 'profile', to: '/perfil', label: t('nav.profile'), match: '/perfil' },
-        { id: 'history', to: '/historial', label: t('nav.history'), match: '/historial' },
-        ...(isAdmin.value
-          ? [{ id: 'admin', to: '/admin', label: t('nav.admin'), match: '/admin' }]
-          : []),
-      ]
-    : [
-        { id: 'login', to: '/login', label: t('nav.login'), match: '/login' },
-        { id: 'register', to: '/registro', label: t('nav.register'), match: '/registro' },
-      ]),
-])
+const navLinks = computed<NavLink[]>(() => {
+  const links: NavLink[] = [
+    { id: 'home', to: '/', label: t('nav.home'), match: '/' },
+  ]
+
+  if (isLoggedIn.value) {
+    links.push(
+      { id: 'churches', to: '/iglesias', label: t('nav.churches'), match: '/iglesias' },
+      {
+        id: 'donate',
+        to: selectedChurch.value ? '/donaciones' : '/iglesias',
+        label: t('nav.donate'),
+        match: selectedChurch.value ? '/donaciones' : '/iglesias',
+      },
+      { id: 'profile', to: '/perfil', label: t('nav.profile'), match: '/perfil' },
+      { id: 'history', to: '/historial', label: t('nav.history'), match: '/historial' },
+    )
+    if (isAdmin.value) {
+      links.push({ id: 'admin', to: '/admin', label: t('nav.admin'), match: '/admin' })
+    }
+  }
+  else {
+    links.push(
+      {
+        id: 'donate',
+        to: '/login?redirect=/iglesias',
+        label: t('nav.donate'),
+        match: '/iglesias',
+      },
+      { id: 'login', to: '/login', label: t('nav.login'), match: '/login' },
+    )
+  }
+
+  return links
+})
 
 function isActive(link: NavLink) {
   if (link.match === '/') return route.path === '/'

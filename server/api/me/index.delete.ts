@@ -3,7 +3,7 @@
  * borre la cuenta, y deja constancia de la revocación antes de eliminar.
  */
 export default defineEventHandler(async (event) => {
-  const session = requireSession(event)
+  const session = await requireActiveSession(event)
   const body = await readBody(event)
   const password = String(body?.password || '')
 

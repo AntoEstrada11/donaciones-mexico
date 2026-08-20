@@ -7,7 +7,7 @@ import type { ConsentType } from '~/types'
 const REVOCABLE: ConsentType[] = ['marketing']
 
 export default defineEventHandler(async (event) => {
-  const session = requireSession(event)
+  const session = await requireActiveSession(event)
   const body = await readBody(event)
   const type = String(body?.type || '') as ConsentType
 

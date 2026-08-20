@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { Campaign, Donation } from '~/types'
 
+definePageMeta({ middleware: 'auth' })
+
 const { t } = useI18n()
 const { selectedChurch, hydrated, clearChurch } = useDonation()
 const { optionalAuthHeaders } = useAuth()

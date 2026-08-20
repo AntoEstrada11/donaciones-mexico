@@ -22,8 +22,12 @@ Todas las rutas exigen `Authorization: Bearer` con `role === admin` (`requireAdm
 | DELETE | `/api/admin/slides/:id` | Borra fila y archivo en disco |
 | GET | `/api/admin/donations` | Listado reciente enriquecido |
 | PATCH | `/api/admin/donations/:id` | `{ status }` |
-| GET | `/api/admin/users` | Listado de usuarios |
-| PATCH | `/api/admin/users/:id/role` | `{ role: "admin" \| "donor" }` |
+| GET | `/api/admin/users` | Listado de usuarios con estado y último cambio |
+| PATCH | `/api/admin/users/:id/status` | `{ status: "active" \| "deactivated" }` — solo donantes |
+| POST | `/api/admin/users/:id/password-reset` | Genera enlace de restablecimiento (24 h) |
+| PATCH | `/api/admin/users/:id/role` | **Retirado** — responde `410`; el rol admin vendrá de servicio externo |
+
+El rol admin sigue en la base (`users.role`) y se asigna con `npm run db:promote-admin`. Ya no se promueve desde el panel.
 
 # Archivos
 

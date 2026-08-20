@@ -1,4 +1,5 @@
 export type UserRole = 'donor' | 'admin'
+export type DonorStatus = 'active' | 'deactivated'
 
 export interface Church {
   id: string
@@ -50,6 +51,7 @@ export interface AppUser {
   name: string
   passwordHash: string
   role: UserRole
+  status: DonorStatus
   profileComplete: boolean
   createdAt: string
 }
@@ -125,8 +127,11 @@ export interface AdminUserRow {
   email: string
   name: string
   role: UserRole
+  status: DonorStatus
   profileComplete: boolean
   createdAt: string
+  statusChangedAt: string | null
+  statusChangedByName: string | null
 }
 
 export interface AdminDonationRow extends Donation {

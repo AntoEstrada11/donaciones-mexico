@@ -2,6 +2,9 @@ import { formatAmountMaxLabel, isValidAmount } from '../../utils/fieldLimits'
 
 export default defineEventHandler(async (event) => {
   const session = optionalSession(event)
+  if (session) {
+    await assertDonorAccountActive(session.sub)
+  }
   const body = await readBody(event)
 
   if (!body?.churchId || !body?.campaignId || !body?.amount) {

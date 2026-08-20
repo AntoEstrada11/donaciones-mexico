@@ -28,6 +28,13 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  if (user.role === 'donor' && user.status === 'deactivated') {
+    throw createError({
+      statusCode: 403,
+      statusMessage: 'Su cuenta está dada de baja. Contacte a la iglesia si necesita reactivarla.',
+    })
+  }
+
   const token = signToken({
     sub: user.id,
     email: user.email,
