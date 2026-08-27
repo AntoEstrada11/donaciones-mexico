@@ -20,6 +20,14 @@ export const FIELD_LIMITS = {
     maxAlt: 160,
     mimeTypes: ['image/jpeg', 'image/png', 'image/webp'] as const,
   },
+  site: {
+    contactPhone: { max: 40 },
+    contactEmail: { max: 255 },
+    speiBank: { max: 120 },
+    speiBeneficiary: { max: 200 },
+    speiClabe: { length: 18 },
+    speiConcept: { max: 80 },
+  },
 } as const
 
 /** RFC persona moral (12) o física (13). */
@@ -145,4 +153,35 @@ export function formatAmountMaxLabel() {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   })
+}
+
+export function sanitizeSitePhoneInput(value: string) {
+  return value.replace(/[^\d+\-\s()]/g, '').slice(0, FIELD_LIMITS.site.contactPhone.max)
+}
+
+export function isValidSitePhone(value: string) {
+  const trimmed = value.trim()
+  if (!trimmed) return false
+  const digits = onlyDigits(trimmed)
+  return digits.length >= FIELD_LIMITS.phone.minDigits && digits.length <= FIELD_LIMITS.phone.maxDigits
+}
+
+export function sanitizeClabeInput(value: string) {
+  return onlyDigits(value).slice(0, FIELD_LIMITS.site.speiClabe.length)
+}
+
+export function isValidClabe(value: string) {
+  return /^\d{18}$/.test(value.trim())
+}
+
+export function sanitizeSpeiBankInput(value: string) {
+  return value.replace(/\s+/g, ' ').trim().slice(0, FIELD_LIMITS.site.speiBank.max)
+}
+
+export function sanitizeSpeiBeneficiaryInput(value: string) {
+  return value.replace(/\s+/g, ' ').trim().slice(0, FIELD_LIMITS.site.speiBeneficiary.max)
+}
+
+export function sanitizeSpeiConceptInput(value: string) {
+  return value.replace(/\s+/g, ' ').trim().slice(0, FIELD_LIMITS.site.speiConcept.max)
 }

@@ -1,6 +1,12 @@
 <script setup lang="ts">
 const { t } = useI18n()
 const year = new Date().getFullYear()
+const { data: settings } = useSiteSettings()
+
+const mailto = computed(() => {
+  const email = settings.value?.contactEmail || 'donaciones@mx.universal.org'
+  return `mailto:${email}`
+})
 </script>
 
 <template>
@@ -13,14 +19,14 @@ const year = new Date().getFullYear()
           </h2>
           <ul class="space-y-2 text-sm text-gray-600">
             <li>
-              <span class="font-medium text-ink">{{ t('footer.phone') }}</span>
+              <span class="font-medium text-ink">{{ settings?.contactPhone }}</span>
             </li>
             <li>
               <a
-                href="mailto:donaciones@mx.universal.org"
+                :href="mailto"
                 class="text-brand hover:underline"
               >
-                {{ t('footer.email') }}
+                {{ settings?.contactEmail }}
               </a>
             </li>
           </ul>
@@ -34,9 +40,11 @@ const year = new Date().getFullYear()
             SPEI
           </h2>
           <ul class="space-y-1 text-sm text-gray-600">
-            <li>{{ t('spei.bank') }} — {{ t('spei.beneficiary') }}</li>
-            <li class="font-mono font-medium text-ink">{{ t('spei.clabeLabel') }}: {{ t('spei.clabe') }}</li>
-            <li>{{ t('spei.conceptLabel') }}: {{ t('spei.concept') }}</li>
+            <li>{{ settings?.speiBank }} — {{ settings?.speiBeneficiary }}</li>
+            <li class="font-mono font-medium text-ink">
+              {{ t('spei.clabeLabel') }}: {{ settings?.speiClabe }}
+            </li>
+            <li>{{ t('spei.conceptLabel') }}: {{ settings?.speiConcept }}</li>
           </ul>
           <NuxtLink to="/spei" class="mt-3 inline-block text-sm font-medium text-brand hover:underline">
             {{ t('footer.speiTutorial') }}

@@ -18,8 +18,6 @@
   },
   "footer": {
     "contact": "Contacto",
-    "phone": "55 86 64 51 01",
-    "email": "donaciones{'@'}mx.universal.org",
     "speiTutorial": "Ver tutorial SPEI",
     "rights": "© {year} Iglesia Universal del Reino de Dios — México",
     "blessing": "¡Que Dios le bendiga abundantemente!"
@@ -51,13 +49,9 @@
     "subtitle": "Transfiera desde su banca en línea o app usando estos datos. Primero registre la donación en este sitio para que quede en su historial.",
     "dataTitle": "Datos para transferir",
     "beneficiaryLabel": "Beneficiario",
-    "beneficiary": "IGLESIA UNIVERSAL DEL REINO DE DIOS OFES A.R.",
     "bankLabel": "Banco",
-    "bank": "Banco Azteca",
     "clabeLabel": "CLABE",
-    "clabe": "127180001112050753",
     "conceptLabel": "Concepto",
-    "concept": "Donativo",
     "copy": "Copiar",
     "copied": "Copiado",
     "stepsTitle": "Paso a paso",
@@ -186,9 +180,35 @@
     "subtitle": "Herramientas para operar el sitio de donaciones.",
     "nav": {
       "overview": "Resumen",
-      "slides": "Carrusel",
+      "personalize": "Personalizar",
+      "carousel": "Carrusel",
+      "footer": "Pie",
       "donations": "Donaciones",
       "users": "Usuarios"
+    },
+    "personalize": {
+      "title": "Personalizar",
+      "subtitle": "Carrusel del inicio y datos públicos del pie (contacto y SPEI)."
+    },
+    "footer": {
+      "title": "Pie de página",
+      "subtitle": "Teléfono, correo y datos bancarios SPEI que ve el público.",
+      "contactSection": "Contacto",
+      "speiSection": "SPEI",
+      "phone": "Teléfono",
+      "email": "Correo",
+      "bank": "Banco",
+      "beneficiary": "Beneficiario",
+      "clabe": "CLABE",
+      "clabeHint": "Exactamente 18 dígitos.",
+      "concept": "Concepto",
+      "save": "Guardar cambios",
+      "saving": "Guardando…",
+      "saved": "Datos del pie actualizados.",
+      "saveError": "No se pudieron guardar los datos del pie.",
+      "confirmTitle": "Publicar estos datos",
+      "confirmSave": "Teléfono, correo y CLABE se mostrarán de inmediato en el pie del sitio público.",
+      "confirmCancel": "Seguir editando"
     },
     "stats": {
       "users": "Usuarios",
@@ -214,7 +234,10 @@
       "activate": "Activar",
       "deactivate": "Desactivar",
       "delete": "Eliminar",
-      "confirmDelete": "¿Eliminar esta imagen del carrusel?",
+      "deleting": "Eliminando…",
+      "confirmDeleteTitle": "Eliminar imagen",
+      "confirmDelete": "Esta imagen dejará de aparecer en el carrusel del inicio.",
+      "confirmDeleteCancel": "Conservar",
       "deleted": "Imagen eliminada."
     },
     "donations": {

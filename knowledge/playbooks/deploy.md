@@ -20,7 +20,7 @@ Publicar o actualizar el entorno de staging/producción.
 5. `npm run build`
 6. Arrancar el output de Nitro: `node .output/server/index.mjs`, o el adaptador del proveedor.
 7. Smoke: registro (con consentimiento), login, `/api/campaigns`, `/iglesias`, alta de donación (con consentimiento), `/historial`, `/privacidad`, `/perfil` (descarga y sección privacidad).
-8. Carrusel: si el entorno es nuevo o se recreó la base, **no** basta con copiar `public/uploads/hero/`. Subir de nuevo las fotos en `/admin/slides`. Ver [/playbooks/hero-slides-restore.md](/playbooks/hero-slides-restore.md).
+8. Carrusel: si el entorno es nuevo o se recreó la base, **no** basta con copiar `public/uploads/hero/`. Subir de nuevo las fotos en `/admin/personalizar/carrusel`. Ver [/playbooks/hero-slides-restore.md](/playbooks/hero-slides-restore.md).
 
 # Orden importa
 

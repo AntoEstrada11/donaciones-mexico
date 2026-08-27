@@ -1,14 +1,15 @@
 <script setup lang="ts">
 const { t } = useI18n()
+const { data: settings } = useSiteSettings()
 
 const copiedId = ref<string | null>(null)
 let copyTimer: ReturnType<typeof setTimeout> | undefined
 
 const fields = computed(() => [
-  { id: 'beneficiary', label: t('spei.beneficiaryLabel'), value: t('spei.beneficiary') },
-  { id: 'bank', label: t('spei.bankLabel'), value: t('spei.bank') },
-  { id: 'clabe', label: t('spei.clabeLabel'), value: t('spei.clabe'), mono: true },
-  { id: 'concept', label: t('spei.conceptLabel'), value: t('spei.concept') },
+  { id: 'beneficiary', label: t('spei.beneficiaryLabel'), value: settings.value?.speiBeneficiary ?? '', mono: false },
+  { id: 'bank', label: t('spei.bankLabel'), value: settings.value?.speiBank ?? '', mono: false },
+  { id: 'clabe', label: t('spei.clabeLabel'), value: settings.value?.speiClabe ?? '', mono: true },
+  { id: 'concept', label: t('spei.conceptLabel'), value: settings.value?.speiConcept ?? '', mono: false },
 ])
 
 async function copy(id: string, value: string) {
@@ -51,6 +52,7 @@ onBeforeUnmount(() => {
       <button
         type="button"
         class="shrink-0 rounded-md border border-gray-200 px-2.5 py-1 text-xs font-semibold text-brand hover:bg-brand-light"
+        :disabled="!field.value"
         @click="copy(field.id, field.value)"
       >
         {{ copiedId === field.id ? t('spei.copied') : t('spei.copy') }}

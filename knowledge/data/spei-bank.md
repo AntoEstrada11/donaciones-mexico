@@ -1,32 +1,37 @@
 ---
 type: Reference
-title: Datos bancarios SPEI
-description: CLABE y beneficiario públicos para transferencia; la UI vive en /spei.
-tags: [spei, bank]
-timestamp: 2026-08-18T00:00:00Z
+title: Datos bancarios SPEI y contacto del pie
+description: CLABE, beneficiario y teléfono/correo públicos viven en site_settings.
+tags: [spei, bank, footer]
+timestamp: 2026-08-27T00:00:00Z
 ---
 
 # Dónde están
 
-Textos en `i18n/locales/es-MX.json` (`spei.*`). No hay tabla ni API: son datos de exhibición.
+Tabla PostgreSQL `site_settings` (una fila, `id = 1`). Expuestos por `GET /api/site-settings`. El admin los edita en `/admin/personalizar/pie`.
 
-# Valores vigentes
+Etiquetas de UI (“Contacto”, “CLABE”, “Copiar”) siguen en `i18n/locales/es-MX.json`.
 
-| Campo | Valor |
-|-------|-------|
-| Banco | Banco Azteca |
-| Beneficiario | IGLESIA UNIVERSAL DEL REINO DE DIOS OFES A.R. |
-| CLABE | 127180001112050753 |
-| Concepto | Donativo |
+# Campos
 
-Cámbielos en el JSON de i18n (home, footer, `/spei` y confirmación de donación leen las mismas claves).
+| Campo | Columna | Uso |
+|-------|--------|-----|
+| Teléfono | `contact_phone` | Pie |
+| Correo | `contact_email` | Pie |
+| Banco | `spei_bank` | Pie, `/spei` |
+| Beneficiario | `spei_beneficiary` | Pie, `/spei` |
+| CLABE | `spei_clabe` | 18 dígitos |
+| Concepto | `spei_concept` | Transferencia |
+
+Semilla: `utils/siteSettingsDefaults.ts` (también `npm run db:seed`).
 
 # UI
 
-- Página: `pages/spei/index.vue`
-- Bloque reutilizable: `components/SpeiBankDetails.vue`
-- Enlaces: home, pie, método SPEI en `/donaciones` y pantalla de éxito SPEI
+- Admin: `/admin/personalizar/pie` (confirmación de publicación con `ConfirmDialog`)
+- Público: `AppFooter`, `SpeiBankDetails`, `/spei` (`useSiteSettings`)
+- Carrusel hermano: `/admin/personalizar/carrusel` (confirmación de borrado con el mismo diálogo)
+- Tras PATCH exitoso: `refreshNuxtData('site-settings')`
 
 # Relacionado
 
-[/roadmap.md](/roadmap.md) · conciliación SPEI sigue pendiente (marcar `paid` en `/admin/donations`).
+[/apis/site-settings-get.md](/apis/site-settings-get.md) · [/data/postgres-schema.md](/data/postgres-schema.md)

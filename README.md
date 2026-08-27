@@ -45,6 +45,8 @@ Abra [http://localhost:3000](http://localhost:3000).
 | `/perfil` | Datos personales y fiscales |
 | `/spei` | Tutorial de transferencia SPEI (CLABE y pasos) |
 | `/admin` | Panel operativo (requiere rol admin) |
+| `/admin/personalizar/carrusel` | Carrusel del hero |
+| `/admin/personalizar/pie` | Contacto y datos SPEI del pie |
 
 ## API (`server/api/`)
 
@@ -56,6 +58,7 @@ Abra [http://localhost:3000](http://localhost:3000).
 | `PATCH /api/me` | Bearer | Actualiza perfil |
 | `GET /api/campaigns` | — | Campañas activas |
 | `GET /api/churches` | — | Directorio (Odoo o muestra) |
+| `GET /api/site-settings` | — | Contacto y SPEI del pie |
 | `GET /api/donations` | Bearer | Historial del donante |
 | `POST /api/donations` | Opcional | Registra una donación |
 
@@ -79,4 +82,4 @@ La base de conocimiento del proyecto vive en [`knowledge/`](knowledge/index.md):
 - Sin emisión de CFDI todavía; el RFC ya se captura en el perfil.
 - Donación recurrente: pendiente (el home muestra «Próximamente»).
 - Pendientes agrupados en [`knowledge/roadmap.md`](knowledge/roadmap.md).
-- Carrusel del home: en instalación nueva o tras recrear la base, copiar los JPG a `public/uploads/hero/` no basta; hay que volver a subirlos en `/admin/slides`. Detalle en [`knowledge/playbooks/hero-slides-restore.md`](knowledge/playbooks/hero-slides-restore.md).
+- Carrusel del home: en instalación nueva o tras recrear la base, copiar los JPG a `public/uploads/hero/` no basta; hay que volver a subirlos en `/admin/personalizar/carrusel`. Detalle en [`knowledge/playbooks/hero-slides-restore.md`](knowledge/playbooks/hero-slides-restore.md).

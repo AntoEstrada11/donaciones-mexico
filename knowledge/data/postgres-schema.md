@@ -4,7 +4,7 @@ title: Esquema PostgreSQL
 description: Tablas, llaves y restricciones de la base propia de donantes y donaciones.
 resource: server/database/schema.ts
 tags: [data, postgres, drizzle]
-timestamp: 2026-08-18T00:00:00Z
+timestamp: 2026-08-27T00:00:00Z
 ---
 
 # Ubicación
@@ -95,7 +95,24 @@ Separar el perfil de la cuenta acota el manejo de PII: la tabla de acceso no con
 | `active` | boolean | solo las activas salen en `GET /api/hero-slides` |
 | `created_at` | timestamptz | |
 
-El home no recorre el directorio: solo muestra filas con `active = true`. Copiar archivos a `public/uploads/hero/` en una instalación nueva o tras recrear la base **no** restaura el reel. Hay que volver a subirlos en `/admin/slides`. Ver [/playbooks/hero-slides-restore.md](/playbooks/hero-slides-restore.md).
+El home no recorre el directorio: solo muestra filas con `active = true`. Copiar archivos a `public/uploads/hero/` en una instalación nueva o tras recrear la base **no** restaura el reel. Hay que volver a subirlos en `/admin/personalizar/carrusel`. Ver [/playbooks/hero-slides-restore.md](/playbooks/hero-slides-restore.md).
+
+## `site_settings` — pie y SPEI públicos
+
+Una sola fila (`id = 1`). Contacto institucional y datos SPEI editables desde `/admin/personalizar/pie`.
+
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | integer PK | siempre `1` |
+| `contact_phone` | varchar(40) | teléfono del pie |
+| `contact_email` | varchar(255) | correo del pie |
+| `spei_bank` | varchar(120) | banco |
+| `spei_beneficiary` | varchar(200) | beneficiario |
+| `spei_clabe` | varchar(18) | CLABE 18 dígitos |
+| `spei_concept` | varchar(80) | concepto de transferencia |
+| `updated_at` | timestamptz | |
+
+Semilla: `utils/siteSettingsDefaults.ts` vía `npm run db:seed`. Ver [/data/spei-bank.md](/data/spei-bank.md).
 
 ## `user_status_events` — auditoría de estado donante
 

@@ -44,7 +44,7 @@ Cuando el conteo cuadre, `server/data/users.json` puede archivarse fuera del rep
 
 Copiar `public/uploads/hero/` a una instalación nueva (o conservar esos JPG tras borrar el volumen de Postgres) **no** hace que aparezcan en el home. El carrusel lee `hero_slides`; sin esas filas, `GET /api/hero-slides` devuelve `[]` y el hero queda en color de marca.
 
-Hay que volver a cargarlas desde `/admin/slides` (cuenta admin). Detalle: [/playbooks/hero-slides-restore.md](/playbooks/hero-slides-restore.md).
+Hay que volver a cargarlas desde `/admin/personalizar/carrusel` (cuenta admin). Detalle: [/playbooks/hero-slides-restore.md](/playbooks/hero-slides-restore.md).
 
 # Migración de privacidad (2026-08-19)
 

@@ -1,5 +1,12 @@
 # Directory Update Log
 
+## 2026-08-27
+* **Update**: OKF: rutas reales de slides (`/api/admin/slides`), `ConfirmDialog`, y `refreshNuxtData('site-settings')` tras guardar el pie. Ver [/apis/admin.md](/apis/admin.md), [/apis/site-settings-get.md](/apis/site-settings-get.md), [/data/spei-bank.md](/data/spei-bank.md).
+* **Update**: Tras guardar el pie, `refreshNuxtData('site-settings')` (antes `clearNuxtData` dejaba el footer vacío hasta recargar).
+* **Update**: `/admin/personalizar/carrusel` confirma el borrado de imágenes con `ConfirmDialog` (mismo patrón que el pie).
+* **Update**: `/admin/personalizar/pie` confirma el guardado con un diálogo del sitio (`ConfirmDialog`) en lugar de `window.confirm`.
+* **Update**: Admin **Personalizar** sustituye la pestaña Carrusel: subnav Carrusel (`/admin/personalizar/carrusel`) y Pie (`/admin/personalizar/pie`). Tabla `site_settings`, `GET /api/site-settings` y `GET/PATCH /api/admin/site-settings`. Pie y SPEI dejan de vivir en i18n. Ver [/data/spei-bank.md](/data/spei-bank.md) y [/apis/site-settings-get.md](/apis/site-settings-get.md).
+
 ## 2026-08-19 (panel admin usuarios)
 * **Update**: Retirada promoción de rol admin desde `/admin/users` (410 en PATCH role). Estado donante activo/baja con auditoría en `user_status_events`. Restablecimiento de contraseña vía enlace (`/restablecer-contrasena`).
 
@@ -30,7 +37,7 @@
 * **Update**: `GET /api/churches` proxea WordPress; si `/wp-json/` responde 500, el directorio usa `churches.json` y avisa. Ver [/apis/churches-get.md](/apis/churches-get.md).
 * **Update**: Tutorial SPEI en `/spei` (datos bancarios, pasos, copiar CLABE); enlaces en home, pie y flujo de donación. Conceptos [/data/spei-bank.md](/data/spei-bank.md) y [/roadmap.md](/roadmap.md).
 * **Update**: Playbook y script `db:set-password` para resetear la contraseña de una cuenta (scrypt) o crear el primer admin con `--create`. Ver [/playbooks/set-password.md](/playbooks/set-password.md).
-* **Update**: Documentado que el carrusel del home no se restaura copiando JPG: migrate/seed e instalación nueva dejan `hero_slides` vacía; hay que volver a cargar las fotos desde `/admin/slides`. Playbook [/playbooks/hero-slides-restore.md](/playbooks/hero-slides-restore.md); también migraciones, deploy, local, backup, esquema y APIs de slides.
+* **Update**: Documentado que el carrusel del home no se restaura copiando JPG: migrate/seed e instalación nueva dejan `hero_slides` vacía; hay que volver a cargar las fotos desde `/admin/personalizar/carrusel`. Playbook [/playbooks/hero-slides-restore.md](/playbooks/hero-slides-restore.md); también migraciones, deploy, local, backup, esquema y APIs de slides.
 * **Update**: `GET /api/churches` proxea WordPress; si `/wp-json/` responde 500, el directorio usa `churches.json` y avisa. Ver [/apis/churches-get.md](/apis/churches-get.md).
 
 ## 2026-08-07

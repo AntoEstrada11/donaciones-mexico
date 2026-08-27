@@ -37,4 +37,4 @@ El sitio cumple la LFPDPPP vigente (21/03/2025): aviso integral y simplificado, 
 
 # Estado
 
-Fase funcional: registro, login, perfil (con ARCO), directorio de iglesias, alta de donaciones, historial, panel admin, tutorial SPEI (`/spei`) y páginas legales (`/privacidad`, `/terminos`), persistido en PostgreSQL. Sin cobros reales, sin donación recurrente ni emisión de CFDI. Pendiente jurídico: confirmar domicilio y buzón ARCO en `utils/legal.ts`. Backlog: [/roadmap.md](/roadmap.md).
+Fase funcional: registro, login, perfil (con ARCO), directorio de iglesias, alta de donaciones, historial, panel admin (**Personalizar**: carrusel y pie/SPEI), tutorial SPEI (`/spei`) y páginas legales (`/privacidad`, `/terminos`), persistido en PostgreSQL. Sin cobros reales, sin donación recurrente ni emisión de CFDI. Pendiente jurídico: confirmar domicilio y buzón ARCO en `utils/legal.ts`. Backlog: [/roadmap.md](/roadmap.md).

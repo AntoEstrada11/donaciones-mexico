@@ -26,7 +26,7 @@ cat donaciones-2026-08-06.dump | docker exec -i donaciones-db pg_restore -U dona
 
 `--clean` borra los objetos existentes antes de reponerlos: verificar que se apunta a la base correcta.
 
-Un `pg_restore` de un dump **completo** sí trae `hero_slides`. Una base nueva solo con `db:migrate` + `db:seed` no: aunque copies `public/uploads/hero/`, el reel queda vacío hasta recargar las fotos en `/admin/slides`. Ver [/playbooks/hero-slides-restore.md](/playbooks/hero-slides-restore.md).
+Un `pg_restore` de un dump **completo** sí trae `hero_slides`. Una base nueva solo con `db:migrate` + `db:seed` no: aunque copies `public/uploads/hero/`, el reel queda vacío hasta recargar las fotos en `/admin/personalizar/carrusel`. Ver [/playbooks/hero-slides-restore.md](/playbooks/hero-slides-restore.md).
 
 # Respaldo programado en el servidor
 

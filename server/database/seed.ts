@@ -1,7 +1,8 @@
 import { readFile } from 'node:fs/promises'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
-import { campaigns } from './schema.ts'
+import { campaigns, siteSettings } from './schema.ts'
+import { DEFAULT_SITE_SETTINGS } from '../../utils/siteSettingsDefaults.ts'
 
 interface SeedCampaign {
   name: string
@@ -44,6 +45,12 @@ try {
       })
   }
   console.log(`Campañas sincronizadas: ${source.length}.`)
+
+  await db
+    .insert(siteSettings)
+    .values({ id: 1, ...DEFAULT_SITE_SETTINGS })
+    .onConflictDoNothing()
+  console.log('site_settings: fila por defecto asegurada.')
 }
 finally {
   await client.end()

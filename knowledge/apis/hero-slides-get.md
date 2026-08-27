@@ -19,4 +19,4 @@ Array de `HeroSlide`: `id`, `url` (`/uploads/hero/...`), `alt`, `sortOrder`, `ac
 
 Solo filas con `active = true`. Sin slides, el home usa el color `brand` como fondo.
 
-Copiar JPG a `public/uploads/hero/` no llena esta respuesta. Tras migrate/seed o instalación nueva, volver a subir desde `/admin/slides`. Ver [/playbooks/hero-slides-restore.md](/playbooks/hero-slides-restore.md).
+Copiar JPG a `public/uploads/hero/` no llena esta respuesta. Tras migrate/seed o instalación nueva, volver a subir desde `/admin/personalizar/carrusel`. Ver [/playbooks/hero-slides-restore.md](/playbooks/hero-slides-restore.md).

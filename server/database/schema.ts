@@ -141,3 +141,18 @@ export const heroSlides = pgTable('hero_slides', {
 }, table => [
   index('hero_slides_active_sort_idx').on(table.active, table.sortOrder),
 ])
+
+/**
+ * Contenido editable del pie y SPEI (contacto institucional público).
+ * Una sola fila (id = 1); el admin la actualiza desde /admin/personalizar/pie.
+ */
+export const siteSettings = pgTable('site_settings', {
+  id: integer('id').primaryKey().default(1),
+  contactPhone: varchar('contact_phone', { length: 40 }).notNull(),
+  contactEmail: varchar('contact_email', { length: 255 }).notNull(),
+  speiBank: varchar('spei_bank', { length: 120 }).notNull(),
+  speiBeneficiary: varchar('spei_beneficiary', { length: 200 }).notNull(),
+  speiClabe: varchar('spei_clabe', { length: 18 }).notNull(),
+  speiConcept: varchar('spei_concept', { length: 80 }).notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+})

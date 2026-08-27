@@ -175,3 +175,14 @@ export interface ChurchesListResponse {
   churches: Church[]
   source: ChurchesSource
 }
+
+/** Contacto institucional y datos SPEI editables desde el admin. */
+export interface SiteSettings {
+  contactPhone: string
+  contactEmail: string
+  speiBank: string
+  speiBeneficiary: string
+  speiClabe: string
+  speiConcept: string
+  updatedAt: string
+}

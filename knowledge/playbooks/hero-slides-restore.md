@@ -24,7 +24,7 @@ El home solo pinta lo que devuelve la API. Esa API **solo lee PostgreSQL**. Copi
 # Qué hacer
 
 1. Inicia sesión con una cuenta `admin`.
-2. Abre `/admin/slides`.
+2. Abre `/admin/personalizar/carrusel`.
 3. Sube de nuevo cada imagen del reel (archivo + texto alternativo). Eso escribe el fichero **y** la fila juntos.
 
 No hace falta insertar SQL a mano. Si en disco quedaron JPG huérfanos de una instalación anterior, se pueden borrar; el alta desde el panel crea nombres uuid nuevos.

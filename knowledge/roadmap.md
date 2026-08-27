@@ -3,15 +3,15 @@ type: Reference
 title: Roadmap
 description: Hecho, en curso y fuera de alcance hasta tener pasarela o fiscal.
 tags: [roadmap]
-timestamp: 2026-08-19T00:00:00Z
+timestamp: 2026-08-27T00:00:00Z
 ---
 
 # Hecho
 
 - Sitio público: home, iglesias, donación, historial, login, registro, perfil.
-- Panel `/admin` (stats, carrusel, donaciones, usuarios).
-- Persistencia PostgreSQL (donantes, campañas, donaciones, slides, consentimientos).
-- Tutorial SPEI en `/spei` (datos bancarios, pasos, copia al portapapeles).
+- Panel `/admin` (stats, **Personalizar** con Carrusel y Pie, donaciones, usuarios).
+- Persistencia PostgreSQL (donantes, campañas, donaciones, slides, consentimientos, `site_settings`).
+- Tutorial SPEI en `/spei` (datos bancarios desde `site_settings`, pasos, copia al portapapeles).
 - **Cumplimiento LFPDPPP:** aviso integral (`/privacidad`), términos (`/terminos`), aviso simplificado en formularios, tabla `consents`, ARCO en `/perfil`, datos fiscales bajo demanda (`wants_receipt`), geolocalización opt-in en iglesias, rate limiting en auth/donaciones. Ver [/legal/](/legal/).
 - Límite de tasa por IP en login, registro, donaciones y escrituras de `/api/me`.
 

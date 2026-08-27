@@ -4,7 +4,7 @@ title: Restricciones de formularios
 description: Límites y formatos de los campos de entrada en cliente y servidor.
 resource: utils/fieldLimits.ts
 tags: [validation, forms, ux]
-timestamp: 2026-08-07T00:00:00Z
+timestamp: 2026-08-27T00:00:00Z
 ---
 
 # Fuente
@@ -27,6 +27,10 @@ Constantes y helpers en `utils/fieldLimits.ts`. Misma fuente para páginas Vue y
 | Monto de donación | $1 – $999,999.99 MXN; máx. 2 decimales; sin notación científica |
 | Búsqueda de iglesias | máx. 100 caracteres |
 | Imagen del hero | JPG/PNG/WebP; máx. 3 MB; alt máx. 160 |
+| Pie: teléfono | 10–15 dígitos; display máx. 40 |
+| Pie: correo | mismo formato que correo de cuenta |
+| SPEI: banco / beneficiario / concepto | máx. 120 / 200 / 80 |
+| SPEI: CLABE | exactamente 18 dígitos |
 
 # Dónde se aplica
 
@@ -40,6 +44,8 @@ Constantes y helpers en `utils/fieldLimits.ts`. Misma fuente para páginas Vue y
 | `POST /api/auth/login` | correo |
 | `PATCH /api/me` | perfil; RFC/C.P. validados solo con `wantsReceipt: true` |
 | `POST /api/donations` | monto, `consent` |
+| `/admin/personalizar/pie` | contacto y SPEI (`site_settings`) |
+| `PATCH /api/admin/site-settings` | mismos límites del pie |
 
 # Comportamiento de UI
 
