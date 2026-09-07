@@ -4,7 +4,7 @@ title: Esquema PostgreSQL
 description: Tablas, llaves y restricciones de la base propia de donantes y donaciones.
 resource: server/database/schema.ts
 tags: [data, postgres, drizzle]
-timestamp: 2026-08-27T00:00:00Z
+timestamp: 2026-09-07T00:00:00Z
 ---
 
 # Ubicación
@@ -67,6 +67,19 @@ Separar el perfil de la cuenta acota el manejo de PII: la tabla de acceso no con
 | `created_at` / `updated_at` | timestamptz | |
 
 Índices: `donations_user_created_idx` (historial por donante) y `donations_campaign_idx` (reportes por campaña).
+
+### Extensión planificada (pasarelas v1)
+
+Aún no migrada. Al implementar cobro real:
+
+| Cambio | Detalle |
+|--------|---------|
+| Enums | `method` + `paypal`; `status` + `refunded`; `payment_provider` (`mercadopago`, `paypal`, `spei_manual`); `payment_mode` (`test`, `live`) |
+| Columnas en `donations` | `provider`, `provider_reference`, `provider_payment_id`, `paid_at` |
+| Tabla `payment_events` | Idempotencia/auditoría append-only; unique `(provider, provider_event_id)`; sin body PII |
+| Tabla `payment_settings` | Una fila (`id=1`): proveedor de tarjeta activo, modo, flags de métodos; **sin secretos** |
+
+Ver [/decisions/pasarela-provider-agnostica.md](/decisions/pasarela-provider-agnostica.md).
 
 ## `consents` — evidencia de consentimiento
 

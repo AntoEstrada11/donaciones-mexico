@@ -60,9 +60,10 @@ No hay cookies de aplicación, analítica ni píxeles de terceros. Solo `session
 |---------|----------|------|
 | `universal.org.mx` (directorio WP) | Solo latitud y longitud | Nunca correo, nombre, teléfono ni RFC |
 | Imágenes de iglesias | Petición del navegador a URLs externas | Expone IP y referer del visitante |
+| MercadoPago (**planificado**) | Monto, moneda, `external_reference` (id de donación); datos que el pagador ingresa en el checkout alojado | Encargado de cobro; declarar en aviso y subir `LEGAL.noticeVersion` antes de producción. Ver [/integrations/mercadopago.md](/integrations/mercadopago.md) |
+| PayPal (**planificado**) | Idem vía Orders v2 / checkout alojado | Idem. Ver [/integrations/paypal.md](/integrations/paypal.md) |
 
-No hay pasarela de pago ni correo transaccional implementados. Si se agregan, hay que declararlos
-en el aviso y subir `LEGAL.noticeVersion`.
+Hoy el cobro real no está implementado. Al encender las pasarelas hay que declararlas en el aviso, actualizar este inventario y subir `LEGAL.noticeVersion`. No hay correo transaccional implementado.
 
 # Nunca se expone en API
 

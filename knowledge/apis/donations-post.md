@@ -22,7 +22,7 @@ timestamp: 2026-08-07T00:00:00Z
 | `churchId` | string | requerido; id externo de la API de iglesias (máx. 64) |
 | `campaignId` | string (uuid) | requerido; debe existir en `campaigns` |
 | `amount` | number | requerido; entre $1 y $999,999.99 MXN |
-| `method` | string | `card` o default `spei` |
+| `method` | string | `spei` (default), `card` o (previsto) `paypal` |
 | `consent` | boolean | **requerido y en `true`**; consentimiento expreso para datos sensibles |
 
 # Respuesta
@@ -47,5 +47,6 @@ timestamp: 2026-08-07T00:00:00Z
   [/decisions/consentimiento-datos-sensibles.md](/decisions/consentimiento-datos-sensibles.md).
 - El orden de validación es: campos, monto, campaña, consentimiento. Un `422` implica que el resto
   del cuerpo ya era válido.
-- No hay cobro real; el estado `pending` no cambia hasta que exista pasarela o conciliación SPEI.
+- Hoy no hay cobro real; el estado `pending` no cambia hasta pasarela o conciliación SPEI manual.
+- **Diseño aceptado (código pendiente):** tras crear la donación, `POST /api/payments/checkout` redirige a MercadoPago o PayPal; el webhook marca `paid`/`failed`. SPEI CLABE sigue siendo manual. Ver [/decisions/pasarela-provider-agnostica.md](/decisions/pasarela-provider-agnostica.md) y [/apis/payments-checkout.md](/apis/payments-checkout.md).
 - Límites de monto: [/data/field-limits.md](/data/field-limits.md).

@@ -16,9 +16,10 @@ timestamp: 2026-08-18T00:00:00Z
 | Base de datos | Usuario dedicado de aplicación, puerto publicado solo en `127.0.0.1` | `DATABASE_URL`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` |
 | Público | Coordenadas por defecto del directorio | `runtimeConfig.public.defaultLatitude` / `defaultLongitude` |
 | Iglesias (servidor) | Odoo IURD; URL pública, key solo servidor | `NUXT_CHURCHES_API_URL`, `NUXT_CHURCHES_API_KEY`, `NUXT_CHURCHES_API_ALLOWED_HOST` |
+| Pasarelas (**planificado**) | Secretos solo en env; modo test/live vía `payment_settings` | `NUXT_MP_ACCESS_TOKEN_*`, `NUXT_MP_WEBHOOK_SECRET_*`, `NUXT_PAYPAL_CLIENT_ID_*`, `NUXT_PAYPAL_CLIENT_SECRET_*`, `NUXT_PAYPAL_WEBHOOK_ID_*`, `NUXT_PUBLIC_SITE_URL` |
 | Límite de tasa | En memoria por IP y ruta (`server/middleware/rateLimit.ts`) | — |
 
-Detalle de cupos, ventanas y limitaciones multi-instancia: [/security/rate-limiting.md](/security/rate-limiting.md).
+Detalle de cupos, ventanas y limitaciones multi-instancia: [/security/rate-limiting.md](/security/rate-limiting.md). Decisiones de cobro: [/decisions/checkout-hospedado-pci.md](/decisions/checkout-hospedado-pci.md).
 
 # Límites de tasa
 
@@ -27,6 +28,8 @@ Detalle de cupos, ventanas y limitaciones multi-instancia: [/security/rate-limit
 | `POST /api/auth/login` | 10 por IP cada 5 min |
 | `POST /api/auth/register` | 5 por IP cada 15 min |
 | `POST /api/donations` | 20 por IP cada 5 min |
+| `POST /api/payments/checkout` (**previsto**) | ~20 por IP cada 5 min |
+| `/api/payments/webhook/*` (**previsto**) | **Sin** límite por IP; firma + idempotencia |
 | `/api/me` (escrituras) | 60 por IP cada 5 min |
 | `GET /api/churches` | 60 por IP cada 5 min |
 
@@ -41,6 +44,7 @@ El contador vive en memoria del proceso. Con varias instancias hay que moverlo a
 - La IP asociada a un consentimiento se guarda como HMAC, nunca en claro.
 - Nunca se registran datos personales en logs. Regla operativa: `.cursor/rules/pii-handling.mdc`.
 - El RFC se almacena en claro; si se emiten CFDI conviene evaluar cifrado de columna con `pgcrypto`.
+- Cobro: checkout alojado (sin PAN en el sitio); webhooks con verificación de firma; `payment_events` sin body PII. Ver [/integrations/](/integrations/).
 - Plazos de conservación: [/security/data-retention.md](/security/data-retention.md). Inventario completo: [/data/personal-data-inventory.md](/data/personal-data-inventory.md).
 
 # Prohibido en este bundle

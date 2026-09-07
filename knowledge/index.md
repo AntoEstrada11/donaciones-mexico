@@ -9,7 +9,7 @@ Base de conocimiento OKF del proyecto. Empieza aquí (progressive disclosure).
 # Proyecto
 
 * [Donaciones México](project.md) - Plataforma de donaciones en línea IURD México.
-* [Arquitectura](architecture.md) - Componentes Nuxt, Nitro, PostgreSQL e iglesias WP.
+* [Arquitectura](architecture.md) - Componentes Nuxt, Nitro, PostgreSQL, iglesias y cobros.
 * [Roadmap](roadmap.md) - Hecho, pendiente de producto y endurecimiento.
 
 # APIs
@@ -26,9 +26,13 @@ Base de conocimiento OKF del proyecto. Empieza aquí (progressive disclosure).
 * [Legal y privacidad (LFPDPPP)](legal/) - Aviso, consentimiento, checklist pre-publicación.
 * [Inventario de datos personales](data/personal-data-inventory.md) - Qué se trata, con qué finalidad y por cuánto tiempo.
 
+# Integraciones
+
+* [Pasarelas de pago](integrations/) - MercadoPago (principal) y PayPal; Stripe/Openpay en fase 2.
+
 # Playbooks
 
-* [Operación](playbooks/) - Correr en local, migraciones, respaldos y despliegue.
+* [Operación](playbooks/) - Correr en local, migraciones, respaldos, despliegue y pasarelas.
 
 # Decisiones
 

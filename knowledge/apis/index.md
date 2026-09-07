@@ -10,6 +10,8 @@
 * [GET /api/campaigns](campaigns-get.md) - Campañas activas.
 * [GET /api/donations](donations-get.md) - Historial del donante (requiere sesión).
 * [POST /api/donations](donations-post.md) - Alta de donación (monto $1–$999,999.99).
+* [POST /api/payments/checkout](payments-checkout.md) - Inicio de cobro alojado (**planificado**).
+* [Webhooks de pasarela](payments-webhook.md) - MP y PayPal (**planificado**).
 * [GET /api/hero-slides](hero-slides-get.md) - Slides activas del carrusel del home.
 * [GET /api/site-settings](site-settings-get.md) - Contacto y SPEI del pie (públicos).
 * [GET /api/churches](churches-get.md) - Directorio (proxy Odoo + fallback de muestra).

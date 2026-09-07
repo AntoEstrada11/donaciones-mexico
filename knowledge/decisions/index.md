@@ -9,6 +9,8 @@
 * [Datos fiscales solo bajo demanda](minimizacion-datos-fiscales.md) - RFC y domicilio condicionados al recibo deducible.
 * [Contenido legal en páginas vs i18n](contenido-legal-en-paginas.md) - Dónde vive el aviso integral vs etiquetas UI.
 * [Iglesias directo desde Odoo](churches-odoo-direct.md) - Sustituye el proxy vía WordPress.
+* [Pasarela provider-agnóstica](pasarela-provider-agnostica.md) - Puerto interno + adaptadores; MP + PayPal en v1.
+* [Checkout alojado y secretos en env](checkout-hospedado-pci.md) - Redirect SAQ-A; llaves fuera del panel.
 * [Iglesias vía WordPress](churches-external-api.md) - Superada el 2026-08-19.
 
 ## Superadas

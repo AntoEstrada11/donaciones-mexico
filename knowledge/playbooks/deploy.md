@@ -46,4 +46,4 @@ Ver lista completa en [/legal/aviso-privacidad.md](/legal/aviso-privacidad.md#ch
 # Notas
 
 - No commitear `.env`.
-- Las pasarelas de pago reales aún no están en el alcance; las donaciones quedan en `pending`.
+- Las pasarelas de cobro real aún no están implementadas en código; las donaciones quedan en `pending`. Arquitectura acordada: [/integrations/](/integrations/) y [/decisions/pasarela-provider-agnostica.md](/decisions/pasarela-provider-agnostica.md).

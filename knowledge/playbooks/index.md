@@ -9,3 +9,6 @@
 * [Desplegar](deploy.md) - Build de producción y orden de migraciones.
 * [Atender una solicitud ARCO](arco-request.md) - Acceso, rectificación, cancelación u oposición en 20 días hábiles.
 * [Vulneración de datos personales](data-breach.md) - Contener, evaluar y notificar una filtración.
+* [Configurar pasarelas de pago](payments-setup.md) - Apps, llaves test/live y URLs de webhook (MP + PayPal).
+* [Probar webhooks de pasarela](payments-webhook-testing.md) - Sandbox, túnel, firma e idempotencia.
+* [Rotar secretos de pasarela](rotate-payment-secrets.md) - Rotación sin dejar el cobro caído.

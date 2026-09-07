@@ -8,7 +8,7 @@ timestamp: 2026-08-18T00:00:00Z
 
 # Resumen
 
-Sitio web Nuxt 3 para que donantes en México registren cuenta, elijan iglesia y campaña, y generen donaciones (SPEI/tarjeta, sin pasarela real aún). Inspirado en [doar.universal.org](https://doar.universal.org). Los datos de donantes y donaciones viven en una base PostgreSQL propia; ya no hay integración con Odoo.
+Sitio web Nuxt 3 para que donantes en México registren cuenta, elijan iglesia y campaña, y generen donaciones (SPEI hoy; tarjeta/PayPal con arquitectura de pasarela acordada, cobro real pendiente de implementar). Inspirado en [doar.universal.org](https://doar.universal.org). Los datos de donantes y donaciones viven en una base PostgreSQL propia; ya no hay integración con Odoo para esos datos.
 
 El sitio cumple la LFPDPPP vigente (21/03/2025): aviso integral y simplificado, consentimiento expreso para datos sensibles (creencias religiosas), derechos ARCO en autoservicio y minimización de datos fiscales. Ver [/legal/](/legal/).
 
@@ -24,6 +24,7 @@ El sitio cumple la LFPDPPP vigente (21/03/2025): aviso integral y simplificado, 
 | Auth | Token HMAC propio + scrypt; cuentas en la tabla `users` |
 | Privacidad | Aviso en `/privacidad`, tabla `consents`, ARCO en `/perfil`; config en `utils/legal.ts` |
 | Iglesias | API Odoo IURD MX vía Nitro; JSON de muestra si Odoo cae |
+| Cobros | Diseño: MercadoPago (principal) + PayPal; checkout alojado; secretos en env. Ver [/integrations/](/integrations/) |
 
 # Entradas útiles
 
@@ -37,4 +38,4 @@ El sitio cumple la LFPDPPP vigente (21/03/2025): aviso integral y simplificado, 
 
 # Estado
 
-Fase funcional: registro, login, perfil (con ARCO), directorio de iglesias, alta de donaciones, historial, panel admin (**Personalizar**: carrusel y pie/SPEI), tutorial SPEI (`/spei`) y páginas legales (`/privacidad`, `/terminos`), persistido en PostgreSQL. Sin cobros reales, sin donación recurrente ni emisión de CFDI. Pendiente jurídico: confirmar domicilio y buzón ARCO en `utils/legal.ts`. Backlog: [/roadmap.md](/roadmap.md).
+Fase funcional: registro, login, perfil (con ARCO), directorio de iglesias, alta de donaciones `pending`, historial, panel admin (**Personalizar**: carrusel y pie/SPEI), tutorial SPEI (`/spei`) y páginas legales (`/privacidad`, `/terminos`), persistido en PostgreSQL. **Sin cobros reales aún**; arquitectura de pasarelas documentada (MP + PayPal v1). Sin donación recurrente ni emisión de CFDI. Pendiente jurídico: confirmar domicilio y buzón ARCO en `utils/legal.ts`. Backlog: [/roadmap.md](/roadmap.md).
