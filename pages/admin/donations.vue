@@ -10,7 +10,7 @@ const donations = ref<AdminDonationRow[]>([])
 const loading = ref(true)
 const error = ref('')
 
-const statuses: Donation['status'][] = ['pending', 'paid', 'failed', 'cancelled']
+const statuses: Donation['status'][] = ['pending', 'paid', 'failed', 'cancelled', 'refunded']
 
 async function load() {
   loading.value = true

@@ -26,6 +26,7 @@ export async function getAdminStats(): Promise<AdminStats> {
     pending: 0,
     failed: 0,
     cancelled: 0,
+    refunded: 0,
   }
   for (const row of statusRows) {
     donationsByStatus[row.status] = Number(row.total)
@@ -165,7 +166,7 @@ export async function listAdminDonations(limit = 100): Promise<AdminDonationRow[
   }))
 }
 
-const ALLOWED_STATUS: Donation['status'][] = ['paid', 'pending', 'failed', 'cancelled']
+const ALLOWED_STATUS: Donation['status'][] = ['paid', 'pending', 'failed', 'cancelled', 'refunded']
 
 export async function updateDonationStatus(
   id: string,

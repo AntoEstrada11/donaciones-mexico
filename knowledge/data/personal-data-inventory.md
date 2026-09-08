@@ -4,7 +4,7 @@ title: Inventario de datos personales
 description: Qué dato se recaba, dónde vive, con qué finalidad, base legal y plazo de conservación.
 resource: server/database/schema.ts
 tags: [privacy, lfpdppp, pii, compliance]
-timestamp: 2026-08-19T00:00:00Z
+timestamp: 2026-09-07T00:00:00Z
 ---
 
 # Para qué sirve
@@ -60,10 +60,10 @@ No hay cookies de aplicación, analítica ni píxeles de terceros. Solo `session
 |---------|----------|------|
 | `universal.org.mx` (directorio WP) | Solo latitud y longitud | Nunca correo, nombre, teléfono ni RFC |
 | Imágenes de iglesias | Petición del navegador a URLs externas | Expone IP y referer del visitante |
-| MercadoPago (**planificado**) | Monto, moneda, `external_reference` (id de donación); datos que el pagador ingresa en el checkout alojado | Encargado de cobro; declarar en aviso y subir `LEGAL.noticeVersion` antes de producción. Ver [/integrations/mercadopago.md](/integrations/mercadopago.md) |
-| PayPal (**planificado**) | Idem vía Orders v2 / checkout alojado | Idem. Ver [/integrations/paypal.md](/integrations/paypal.md) |
+| MercadoPago | Monto, moneda, `external_reference` (id de donación); datos de tarjeta solo en el checkout alojado | Encargado de cobro. Ver [/integrations/mercadopago.md](/integrations/mercadopago.md) |
+| PayPal | Idem vía Orders v2 / checkout alojado | Encargado de cobro. Ver [/integrations/paypal.md](/integrations/paypal.md) |
 
-Hoy el cobro real no está implementado. Al encender las pasarelas hay que declararlas en el aviso, actualizar este inventario y subir `LEGAL.noticeVersion`. No hay correo transaccional implementado.
+Al cambiar encargados o finalidades se sube `LEGAL.noticeVersion`. No hay correo transaccional implementado.
 
 # Nunca se expone en API
 

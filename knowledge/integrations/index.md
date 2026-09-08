@@ -1,6 +1,6 @@
 # Integraciones
 
-Pasarelas y terceros de cobro. El contrato interno vive en `server/payments/` (cuando se implemente); aquí se documenta el alcance acordado.
+Pasarelas y terceros de cobro. Contrato interno: `server/payments/`.
 
 ## Vigentes (v1 — diseño aceptado; código pendiente)
 

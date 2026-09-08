@@ -62,24 +62,41 @@ Separar el perfil de la cuenta acota el manejo de PII: la tabla de acceso no con
 | `campaign_id` | uuid FK | → `campaigns.id` |
 | `amount` | numeric(12,2) | exacto; nunca punto flotante |
 | `currency` | varchar(3) | default `MXN` |
-| `status` | enum `donation_status` | `paid`, `pending`, `failed`, `cancelled` |
-| `method` | enum `donation_method` | `spei`, `card` |
+| `status` | enum `donation_status` | `paid`, `pending`, `failed`, `cancelled`, `refunded` |
+| `method` | enum `donation_method` | `spei`, `card`, `paypal` |
+| `provider` | enum `payment_provider` nullable | `mercadopago`, `paypal`, `spei_manual` |
+| `provider_reference` | varchar(128) | Preference / Order id |
+| `provider_payment_id` | varchar(128) | Payment / capture id |
+| `paid_at` | timestamptz | |
 | `created_at` / `updated_at` | timestamptz | |
 
-Índices: `donations_user_created_idx` (historial por donante) y `donations_campaign_idx` (reportes por campaña).
+Índices: `donations_user_created_idx`, `donations_campaign_idx`, `donations_provider_ref_idx`.
 
-### Extensión planificada (pasarelas v1)
+## `payment_events` — idempotencia de webhooks
 
-Aún no migrada. Al implementar cobro real:
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | uuid PK | |
+| `provider` | enum `payment_provider` | |
+| `provider_event_id` | varchar(128) | unique compuesto con provider |
+| `donation_id` | uuid FK nullable | |
+| `event_type` | varchar(80) | |
+| `mapped_status` | enum `donation_status` nullable | |
+| `created_at` | timestamptz | |
 
-| Cambio | Detalle |
-|--------|---------|
-| Enums | `method` + `paypal`; `status` + `refunded`; `payment_provider` (`mercadopago`, `paypal`, `spei_manual`); `payment_mode` (`test`, `live`) |
-| Columnas en `donations` | `provider`, `provider_reference`, `provider_payment_id`, `paid_at` |
-| Tabla `payment_events` | Idempotencia/auditoría append-only; unique `(provider, provider_event_id)`; sin body PII |
-| Tabla `payment_settings` | Una fila (`id=1`): proveedor de tarjeta activo, modo, flags de métodos; **sin secretos** |
+Sin body PII. Unique: `payment_events_provider_event_key`.
 
-Ver [/decisions/pasarela-provider-agnostica.md](/decisions/pasarela-provider-agnostica.md).
+## `payment_settings` — preferencias de cobro (sin secretos)
+
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | integer PK | siempre `1` |
+| `card_provider` | enum | v1: `mercadopago` |
+| `mode` | enum `payment_mode` | `test` / `live` |
+| `card_enabled` / `paypal_enabled` / `spei_manual_enabled` | boolean | |
+| `updated_at` | timestamptz | |
+
+Admin: `/admin/personalizar/cobros`.
 
 ## `consents` — evidencia de consentimiento
 

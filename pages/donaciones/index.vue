@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Campaign, Donation } from '~/types'
+import type { Campaign, Donation, DonationMethod, PaymentMethodsPublic } from '~/types'
 
 definePageMeta({ middleware: 'auth' })
 
@@ -16,11 +16,12 @@ watch(hydrated, (ready) => {
 }, { immediate: true })
 
 const { data: campaigns, pending: campaignsPending } = await useFetch<Campaign[]>('/api/campaigns')
+const { data: methods } = await useFetch<PaymentMethodsPublic>('/api/payments/methods')
 
 const selectedCampaignId = ref<string | null>(null)
 const amount = ref<number | null>(null)
 const customAmount = ref('')
-const paymentMethod = ref<'spei' | 'card'>('spei')
+const paymentMethod = ref<DonationMethod>('spei')
 const consent = ref(false)
 const submitting = ref(false)
 const success = ref(false)
@@ -29,6 +30,22 @@ const submitError = ref('')
 const presetAmounts = [100, 200, 500, 1000]
 const amountMin = FIELD_LIMITS.amount.min
 const amountMax = FIELD_LIMITS.amount.max
+
+const availableMethods = computed(() => {
+  const m = methods.value
+  if (!m) return [] as DonationMethod[]
+  const list: DonationMethod[] = []
+  if (m.spei) list.push('spei')
+  if (m.card) list.push('card')
+  if (m.paypal) list.push('paypal')
+  return list
+})
+
+watch(availableMethods, (list) => {
+  if (list.length && !list.includes(paymentMethod.value)) {
+    paymentMethod.value = list[0]
+  }
+}, { immediate: true })
 
 const selectedCampaign = computed(() =>
   campaigns.value?.find(c => c.id === selectedCampaignId.value) ?? null,
@@ -54,6 +71,7 @@ const canSubmit = computed(() =>
   && selectedCampaignId.value
   && finalAmount.value
   && consent.value
+  && availableMethods.value.includes(paymentMethod.value)
   && !submitting.value,
 )
 
@@ -63,7 +81,6 @@ function selectPreset(value: number) {
   submitError.value = ''
 }
 
-/** Solo dígitos y un punto decimal (máx. 2 decimales). type=number permite "e" de notación científica. */
 function onCustomInput(event: Event) {
   const input = event.target as HTMLInputElement
   const cleaned = sanitizeAmountInput(input.value)
@@ -108,7 +125,7 @@ async function submitDonation() {
   submitError.value = ''
 
   try {
-    await $fetch<Donation>('/api/donations', {
+    const donation = await $fetch<Donation>('/api/donations', {
       method: 'POST',
       headers: optionalAuthHeaders(),
       body: {
@@ -120,7 +137,23 @@ async function submitDonation() {
       },
     })
 
-    success.value = true
+    if (paymentMethod.value === 'spei') {
+      success.value = true
+      return
+    }
+
+    const checkout = await $fetch<{ redirectUrl: string }>('/api/payments/checkout', {
+      method: 'POST',
+      headers: optionalAuthHeaders(),
+      body: { donationId: donation.id },
+    })
+
+    if (import.meta.client && checkout.redirectUrl) {
+      window.location.href = checkout.redirectUrl
+      return
+    }
+
+    submitError.value = t('donation.checkoutError')
   }
   catch (e: unknown) {
     const msg = (e as { data?: { statusMessage?: string } })?.data?.statusMessage
@@ -136,7 +169,7 @@ function startNewDonation() {
   selectedCampaignId.value = null
   amount.value = null
   customAmount.value = ''
-  paymentMethod.value = 'spei'
+  paymentMethod.value = availableMethods.value[0] || 'spei'
   consent.value = false
 }
 </script>
@@ -162,7 +195,7 @@ function startNewDonation() {
         <p class="mb-6 text-gray-600">
           {{ t('donation.successDesc') }}
         </p>
-        <div v-if="paymentMethod === 'spei'" class="mb-6 text-left">
+        <div class="mb-6 text-left">
           <p class="mb-3 text-center text-sm text-ink">
             {{ t('spei.afterDonate') }}
           </p>
@@ -194,7 +227,6 @@ function startNewDonation() {
         </p>
       </header>
 
-      <!-- Iglesia seleccionada -->
       <section class="card mb-6">
         <p class="mb-1 text-xs font-semibold uppercase tracking-wider text-brand">
           {{ t('donation.selectedChurch') }}
@@ -214,7 +246,6 @@ function startNewDonation() {
         </button>
       </section>
 
-      <!-- Tipo de donación -->
       <section class="mb-6">
         <h2 class="mb-3 font-semibold text-ink">
           {{ t('donation.campaignLabel') }}
@@ -245,7 +276,6 @@ function startNewDonation() {
         </div>
       </section>
 
-      <!-- Monto -->
       <section class="mb-6">
         <h2 class="mb-3 font-semibold text-ink">
           {{ t('donation.amountLabel') }}
@@ -287,13 +317,16 @@ function startNewDonation() {
         </p>
       </section>
 
-      <!-- Método de pago -->
       <section class="mb-8">
         <h2 class="mb-3 font-semibold text-ink">
           {{ t('donation.methodLabel') }}
         </h2>
-        <div class="grid gap-3 sm:grid-cols-2">
+        <p v-if="!availableMethods.length" class="text-sm text-amber-700">
+          {{ t('donation.methodUnavailable') }}
+        </p>
+        <div v-else class="grid gap-3 sm:grid-cols-2">
           <button
+            v-if="availableMethods.includes('spei')"
             type="button"
             class="card text-left transition"
             :class="paymentMethod === 'spei'
@@ -316,6 +349,7 @@ function startNewDonation() {
             </NuxtLink>
           </button>
           <button
+            v-if="availableMethods.includes('card')"
             type="button"
             class="card text-left transition"
             :class="paymentMethod === 'card'
@@ -330,10 +364,25 @@ function startNewDonation() {
               {{ t('donation.methodCardDesc') }}
             </p>
           </button>
+          <button
+            v-if="availableMethods.includes('paypal')"
+            type="button"
+            class="card text-left transition"
+            :class="paymentMethod === 'paypal'
+              ? 'border-brand ring-2 ring-brand/20'
+              : 'hover:border-brand/40'"
+            @click="paymentMethod = 'paypal'"
+          >
+            <h3 class="font-semibold text-ink">
+              {{ t('donation.methodPaypal') }}
+            </h3>
+            <p class="mt-1 text-sm text-gray-600">
+              {{ t('donation.methodPaypalDesc') }}
+            </p>
+          </button>
         </div>
       </section>
 
-      <!-- Resumen -->
       <section v-if="selectedCampaign && finalAmount" class="card mb-6 bg-brand-light/50">
         <h2 class="mb-2 font-semibold text-ink">
           {{ t('donation.summary') }}
@@ -372,11 +421,15 @@ function startNewDonation() {
         :disabled="!canSubmit"
         @click="submitDonation"
       >
-        {{ submitting ? t('donation.submitting') : t('donation.submit') }}
+        {{
+          submitting
+            ? (paymentMethod === 'spei' ? t('donation.submitting') : t('donation.redirecting'))
+            : t('donation.submit')
+        }}
       </button>
 
-      <p class="mt-4 text-center text-xs text-gray-400">
-        {{ t('donation.mockNote') }}
+      <p class="mt-4 text-center text-xs text-gray-500">
+        {{ t('donation.secureRedirectNote') }}
       </p>
     </template>
   </div>

@@ -9,6 +9,9 @@ const RULES: Array<{ prefix: string, rule: RateLimitRule, methods?: string[] }> 
   { prefix: '/api/auth/password-reset', rule: { limit: 10, windowMs: 15 * 60_000 }, methods: ['POST'] },
   { prefix: '/api/admin/users', rule: { limit: 60, windowMs: 5 * 60_000 } },
   { prefix: '/api/churches', rule: { limit: 60, windowMs: 5 * 60_000 }, methods: ['GET'] },
+  { prefix: '/api/payments/checkout', rule: { limit: 20, windowMs: 5 * 60_000 }, methods: ['POST'] },
+  { prefix: '/api/payments/paypal/capture', rule: { limit: 20, windowMs: 5 * 60_000 }, methods: ['POST'] },
+  { prefix: '/api/payments/mercadopago/sync', rule: { limit: 20, windowMs: 5 * 60_000 }, methods: ['POST'] },
 ]
 
 export default defineEventHandler((event) => {

@@ -14,14 +14,16 @@ timestamp: 2026-09-07T00:00:00Z
 - Tutorial SPEI en `/spei` (datos bancarios desde `site_settings`, pasos, copia al portapapeles).
 - **Cumplimiento LFPDPPP:** aviso integral (`/privacidad`), términos (`/terminos`), aviso simplificado en formularios, tabla `consents`, ARCO en `/perfil`, datos fiscales bajo demanda (`wants_receipt`), geolocalización opt-in en iglesias, rate limiting en auth/donaciones. Ver [/legal/](/legal/).
 - Límite de tasa por IP en login, registro, donaciones y escrituras de `/api/me`.
-- **Arquitectura de pasarelas acordada** (código pendiente): puerto interno + adaptadores; v1 MercadoPago + PayPal; checkout alojado; secretos en env. Ver [/decisions/pasarela-provider-agnostica.md](/decisions/pasarela-provider-agnostica.md).
+- **Pasarela v1 implementada:** MercadoPago Checkout Pro + PayPal Orders v2; webhooks firmados; panel Cobros; tablas `payment_*`. Ver [/decisions/pasarela-provider-agnostica.md](/decisions/pasarela-provider-agnostica.md).
+- Límite de tasa por IP en login, registro, donaciones, checkout y escrituras de `/api/me`.
+- **Arquitectura de pasarelas:** puerto interno + adaptadores; checkout alojado; secretos en env.
 
 # En curso / siguiente implementación
 
 | Ítem | Nota |
 |------|------|
-| Pasarela v1 (única) | MercadoPago Checkout Pro + PayPal Orders v2; webhooks firmados; panel Cobros; migración `payment_*`. Plan de implementación en Cursor. |
-| Declarar encargados en aviso | Al activar cobro real: MP y PayPal en aviso + bump `LEGAL.noticeVersion` + inventario PII. |
+| Credenciales test/live en host | [/playbooks/payments-setup.md](/playbooks/payments-setup.md); panel Cobros. |
+| Túnel local (ngrok) | `NUXT_PAYMENT_WEBHOOK_BASE_URL` + `vite.allowedHosts`; puerto del túnel = puerto de Nuxt. |
 
 # Pendiente de producto
 

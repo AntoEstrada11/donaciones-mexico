@@ -1,7 +1,10 @@
 # Directory Update Log
 
 ## 2026-09-07
-* **Update**: Arquitectura de pasarelas documentada (código pendiente): puerto interno + adaptadores; v1 MercadoPago + PayPal; checkout alojado; secretos en env; Stripe/Openpay en fase 2. Decisiones [/decisions/pasarela-provider-agnostica.md](/decisions/pasarela-provider-agnostica.md) y [/decisions/checkout-hospedado-pci.md](/decisions/checkout-hospedado-pci.md). Integraciones [/integrations/](/integrations/). APIs planificadas [/apis/payments-checkout.md](/apis/payments-checkout.md) y [/apis/payments-webhook.md](/apis/payments-webhook.md). Playbooks de setup, webhooks y rotación de secretos. Actualizados roadmap, architecture, schema (extensión prevista), inventario PII, layers y project.
+* **Update**: Pasarela v1 implementada y endurecida en local: `server/payments/` (MP + PayPal), checkout/webhooks, `POST /api/payments/mercadopago/sync` al volver de Checkout Pro, `NUXT_PAYMENT_WEBHOOK_BASE_URL` (ngrok) separado de `NUXT_PUBLIC_SITE_URL` (retorno), `vite.server.allowedHosts` para túneles, ping sin firma en modo test del simulador MP. Panel `/admin/personalizar/cobros`. Aviso `LEGAL.noticeVersion` 2026-09-07. Migración `0005_skinny_pet_avengers.sql`.
+
+## 2026-09-07 (diseño)
+* **Update**: Arquitectura de pasarelas documentada: puerto interno + adaptadores; v1 MercadoPago + PayPal; checkout alojado; secretos en env; Stripe/Openpay en fase 2. Decisiones [/decisions/pasarela-provider-agnostica.md](/decisions/pasarela-provider-agnostica.md) y [/decisions/checkout-hospedado-pci.md](/decisions/checkout-hospedado-pci.md).
 
 ## 2026-08-27
 * **Update**: OKF: rutas reales de slides (`/api/admin/slides`), `ConfirmDialog`, y `refreshNuxtData('site-settings')` tras guardar el pie. Ver [/apis/admin.md](/apis/admin.md), [/apis/site-settings-get.md](/apis/site-settings-get.md), [/data/spei-bank.md](/data/spei-bank.md).

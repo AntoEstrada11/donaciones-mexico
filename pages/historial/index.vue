@@ -40,6 +40,7 @@ const statusLabels: Record<Donation['status'], string> = {
   pending: 'donation.statusPending',
   failed: 'donation.statusFailed',
   cancelled: 'donation.statusCancelled',
+  refunded: 'donation.statusRefunded',
 }
 
 const statusColors: Record<Donation['status'], string> = {
@@ -47,6 +48,7 @@ const statusColors: Record<Donation['status'], string> = {
   pending: 'bg-yellow-100 text-yellow-700',
   failed: 'bg-red-100 text-red-700',
   cancelled: 'bg-gray-100 text-gray-600',
+  refunded: 'bg-purple-100 text-purple-700',
 }
 
 function formatDate(iso: string) {

@@ -14,8 +14,8 @@ export const LEGAL = {
    * Se estampa en cada consentimiento guardado. Si cambia el texto del aviso,
    * sube esta versión para saber qué redacción aceptó cada persona.
    */
-  noticeVersion: '2026-08-19',
-  noticeDate: '19 de agosto de 2026',
+  noticeVersion: '2026-09-07',
+  noticeDate: '7 de septiembre de 2026',
   /** Autoridad vigente tras la desaparición del INAI. */
   autoridad: 'Secretaría Anticorrupción y Buen Gobierno',
 } as const

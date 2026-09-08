@@ -30,9 +30,40 @@ export interface Donation {
   campaignId: string
   amount: number
   currency: string
-  status: 'paid' | 'pending' | 'failed' | 'cancelled'
-  method: string
+  status: 'paid' | 'pending' | 'failed' | 'cancelled' | 'refunded'
+  method: 'spei' | 'card' | 'paypal' | string
   createdAt: string
+  provider?: PaymentProvider | null
+  providerReference?: string | null
+  providerPaymentId?: string | null
+  paidAt?: string | null
+}
+
+export type PaymentProvider = 'mercadopago' | 'paypal' | 'spei_manual'
+export type PaymentMode = 'test' | 'live'
+export type DonationMethod = 'spei' | 'card' | 'paypal'
+
+/** Preferencias de cobro editables en admin (sin secretos). */
+export interface PaymentSettings {
+  cardProvider: PaymentProvider
+  mode: PaymentMode
+  cardEnabled: boolean
+  paypalEnabled: boolean
+  speiManualEnabled: boolean
+  updatedAt: string
+  /** Indicadores de credenciales presentes en env (nunca los valores). */
+  credentials: {
+    mercadopago: boolean
+    paypal: boolean
+  }
+}
+
+/** Métodos disponibles para el formulario de donación. */
+export interface PaymentMethodsPublic {
+  spei: boolean
+  card: boolean
+  paypal: boolean
+  mode: PaymentMode
 }
 
 export interface AuthResponse {

@@ -4,26 +4,24 @@ title: POST /api/payments/checkout
 description: Inicia cobro alojado para una donación pending (MercadoPago o PayPal).
 resource: /api/payments/checkout
 tags: [api, payments]
-status: planned
+status: implemented
 timestamp: 2026-09-07T00:00:00Z
 ---
 
-# Estado
-
-**Diseño aceptado; implementación pendiente.** Ver [/decisions/pasarela-provider-agnostica.md](/decisions/pasarela-provider-agnostica.md).
-
-# Contrato previsto
+# Contrato
 
 - **Método:** `POST`
-- **Auth:** sesión opcional; si hay usuario, la donación debe ser suya (o anónima).
+- **Auth:** sesión opcional; si la donación tiene `user_id`, debe coincidir con la sesión.
 - **Body:** `{ donationId }` (uuid).
 - **Comportamiento:** lee monto y método de la fila `donations` (nunca del cliente); enruta al adaptador activo; persiste `provider` + `providerReference`; responde `{ redirectUrl }`.
+- **Implementación:** `server/api/payments/checkout.post.ts` + `server/payments/`.
 
-# Errores previstos
+# Errores
 
 | Código | Causa |
 |--------|--------|
-| 400 | Donación inexistente o no `pending` |
+| 400 | Donación inexistente o no `pending`; método SPEI |
+| 403 | Donación de otro usuario |
 | 503 | Credenciales del modo activo ausentes / método deshabilitado |
 | 429 | Límite de tasa por IP |
 

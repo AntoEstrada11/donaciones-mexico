@@ -12,8 +12,10 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core'
 
-export const donationStatusEnum = pgEnum('donation_status', ['paid', 'pending', 'failed', 'cancelled'])
-export const donationMethodEnum = pgEnum('donation_method', ['spei', 'card'])
+export const donationStatusEnum = pgEnum('donation_status', ['paid', 'pending', 'failed', 'cancelled', 'refunded'])
+export const donationMethodEnum = pgEnum('donation_method', ['spei', 'card', 'paypal'])
+export const paymentProviderEnum = pgEnum('payment_provider', ['mercadopago', 'paypal', 'spei_manual'])
+export const paymentModeEnum = pgEnum('payment_mode', ['test', 'live'])
 export const userRoleEnum = pgEnum('user_role', ['donor', 'admin'])
 export const donorStatusEnum = pgEnum('donor_status', ['active', 'deactivated'])
 export const consentTypeEnum = pgEnum('consent_type', ['privacy_notice', 'sensitive_data', 'marketing'])
@@ -101,12 +103,52 @@ export const donations = pgTable('donations', {
   currency: varchar('currency', { length: 3 }).notNull().default('MXN'),
   status: donationStatusEnum('status').notNull().default('pending'),
   method: donationMethodEnum('method').notNull().default('spei'),
+  /** Proveedor que creó el cobro; spei_manual para transferencia CLABE. */
+  provider: paymentProviderEnum('provider'),
+  /** Preference id / Order id del proveedor. */
+  providerReference: varchar('provider_reference', { length: 128 }),
+  /** Payment / capture id definitivo. */
+  providerPaymentId: varchar('provider_payment_id', { length: 128 }),
+  paidAt: timestamp('paid_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, table => [
   index('donations_user_created_idx').on(table.userId, table.createdAt),
   index('donations_campaign_idx').on(table.campaignId),
+  index('donations_provider_ref_idx').on(table.provider, table.providerReference),
 ])
+
+/**
+ * Auditoría idempotente de webhooks de pasarela.
+ * No guarda el body completo (PII del pagador).
+ */
+export const paymentEvents = pgTable('payment_events', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  provider: paymentProviderEnum('provider').notNull(),
+  providerEventId: varchar('provider_event_id', { length: 128 }).notNull(),
+  donationId: uuid('donation_id').references(() => donations.id, { onDelete: 'set null' }),
+  eventType: varchar('event_type', { length: 80 }).notNull(),
+  mappedStatus: donationStatusEnum('mapped_status'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, table => [
+  uniqueIndex('payment_events_provider_event_key').on(table.provider, table.providerEventId),
+  index('payment_events_donation_idx').on(table.donationId),
+])
+
+/**
+ * Preferencias operativas de cobro (sin secretos).
+ * Una sola fila (id = 1); el admin la edita en /admin/personalizar/cobros.
+ */
+export const paymentSettings = pgTable('payment_settings', {
+  id: integer('id').primaryKey().default(1),
+  /** Proveedor de tarjeta activo (v1: mercadopago). */
+  cardProvider: paymentProviderEnum('card_provider').notNull().default('mercadopago'),
+  mode: paymentModeEnum('mode').notNull().default('test'),
+  cardEnabled: boolean('card_enabled').notNull().default(false),
+  paypalEnabled: boolean('paypal_enabled').notNull().default(false),
+  speiManualEnabled: boolean('spei_manual_enabled').notNull().default(true),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+})
 
 /**
  * Evidencia de consentimiento. La carga de probarlo es del responsable, así que

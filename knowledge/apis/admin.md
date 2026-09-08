@@ -28,6 +28,8 @@ Todas las rutas exigen `Authorization: Bearer` con `role === admin` (`requireAdm
 | PATCH | `/api/admin/users/:id/role` | **Retirado** — responde `410`; el rol admin vendrá de servicio externo |
 | GET | `/api/admin/site-settings` | Contacto y SPEI del pie |
 | PATCH | `/api/admin/site-settings` | Actualiza contacto y SPEI |
+| GET | `/api/admin/payment-settings` | Modo, métodos y flags de credenciales (sin secretos) |
+| PATCH | `/api/admin/payment-settings` | Actualiza preferencias de cobro |
 
 El rol admin sigue en la base (`users.role`) y se asigna con `npm run db:promote-admin`. Ya no se promueve desde el panel.
 
@@ -39,6 +41,6 @@ El carrusel **no** lista el directorio. Solo muestra filas de esa tabla. En una 
 
 # UI
 
-Panel en `/admin` (middleware `admin`). **Personalizar** agrupa Carrusel (`/admin/personalizar/carrusel`) y Pie (`/admin/personalizar/pie`). `/admin/slides` redirige al carrusel. Confirmaciones destructivas o de publicación usan `ConfirmDialog` (no `window.confirm`). Ver [/decisions/admin-role.md](/decisions/admin-role.md).
+Panel en `/admin` (middleware `admin`). **Personalizar** agrupa Carrusel, Pie y Cobros (`/admin/personalizar/cobros`). `/admin/slides` redirige al carrusel. Confirmaciones destructivas o de publicación usan `ConfirmDialog` (no `window.confirm`). Ver [/decisions/admin-role.md](/decisions/admin-role.md).
 
 Público de settings: [/apis/site-settings-get.md](/apis/site-settings-get.md). Tras `PATCH /api/admin/site-settings`, la UI llama `refreshNuxtData('site-settings')` para actualizar pie y SPEI en la misma sesión (no usar `clearNuxtData`: deja el footer vacío).

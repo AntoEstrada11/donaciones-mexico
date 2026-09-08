@@ -1,6 +1,6 @@
 import { desc, eq } from 'drizzle-orm'
 import { campaigns, donations } from '../database/schema'
-import type { Campaign, Donation } from '~/types'
+import type { Campaign, Donation, DonationMethod } from '~/types'
 
 function toDonation(row: typeof donations.$inferSelect): Donation {
   return {
@@ -12,6 +12,10 @@ function toDonation(row: typeof donations.$inferSelect): Donation {
     status: row.status,
     method: row.method,
     createdAt: row.createdAt.toISOString(),
+    provider: row.provider,
+    providerReference: row.providerReference,
+    providerPaymentId: row.providerPaymentId,
+    paidAt: row.paidAt ? row.paidAt.toISOString() : null,
   }
 }
 
@@ -38,6 +42,12 @@ export async function findCampaignById(id: string) {
   return row ?? null
 }
 
+export async function getDonationRow(id: string) {
+  const db = useDatabase()
+  const [row] = await db.select().from(donations).where(eq(donations.id, id)).limit(1)
+  return row ?? null
+}
+
 export async function listDonationsByUser(userId: string): Promise<Donation[]> {
   const db = useDatabase()
   const rows = await db
@@ -54,9 +64,11 @@ export async function createDonation(input: {
   churchId: string
   campaignId: string
   amount: number
-  method: 'spei' | 'card'
+  method: DonationMethod
 }): Promise<Donation> {
   const db = useDatabase()
+
+  const provider = input.method === 'spei' ? 'spei_manual' as const : null
 
   const [row] = await db
     .insert(donations)
@@ -67,6 +79,7 @@ export async function createDonation(input: {
       amount: input.amount.toFixed(2),
       method: input.method,
       status: 'pending',
+      provider,
     })
     .returning()
 

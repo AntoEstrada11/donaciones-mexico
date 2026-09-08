@@ -3,7 +3,7 @@ type: Integration
 title: MercadoPago
 description: Proveedor principal de cobro en v1 (Checkout Pro, webhooks firmados).
 tags: [integration, payments, mercadopago]
-status: planned
+status: implemented
 timestamp: 2026-09-07T00:00:00Z
 ---
 
@@ -14,9 +14,11 @@ Proveedor **principal** de tarjeta en México (v1). Donación única vía Prefer
 # Flujo v1
 
 1. `POST /api/donations` crea la donación `pending` (consentimiento como hoy).
-2. `POST /api/payments/checkout` crea Preference con `external_reference = donation.id`, monto desde BD, `notification_url` y `back_urls` → `/donaciones/gracias`.
-3. Redirect a `init_point`.
-4. Webhook `POST /api/payments/webhook/mercadopago`: verificar `x-signature` (HMAC-SHA256, manifest `id:;request-id:;ts:;`, `timingSafeEqual`), responder 200, luego `GET /v1/payments/{id}` para el estado real.
+2. `POST /api/payments/checkout` crea Preference (`external_reference = donation.id`, monto desde BD). `notification_url` usa `NUXT_PAYMENT_WEBHOOK_BASE_URL` (o site URL). `back_urls` usan HTTPS (en local: túnel) para permitir `auto_return`.
+3. Redirect a `init_point` / `sandbox_init_point`.
+4. Webhook firmado y/o `POST /api/payments/mercadopago/sync` al volver a `/donaciones/gracias` con `payment_id`.
+
+Código: `server/payments/mercadopago.ts`. Dev: `vite.server.allowedHosts` debe incluir el dominio del túnel o Vite responde **403**.
 
 # Credenciales (solo env)
 

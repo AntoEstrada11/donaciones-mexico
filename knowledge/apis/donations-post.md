@@ -48,5 +48,5 @@ timestamp: 2026-08-07T00:00:00Z
 - El orden de validación es: campos, monto, campaña, consentimiento. Un `422` implica que el resto
   del cuerpo ya era válido.
 - Hoy no hay cobro real; el estado `pending` no cambia hasta pasarela o conciliación SPEI manual.
-- **Diseño aceptado (código pendiente):** tras crear la donación, `POST /api/payments/checkout` redirige a MercadoPago o PayPal; el webhook marca `paid`/`failed`. SPEI CLABE sigue siendo manual. Ver [/decisions/pasarela-provider-agnostica.md](/decisions/pasarela-provider-agnostica.md) y [/apis/payments-checkout.md](/apis/payments-checkout.md).
+- Tras crear la donación con método `card` o `paypal`, el cliente llama `POST /api/payments/checkout` y redirige al proveedor; el webhook (o captura PayPal) marca `paid`/`failed`. SPEI CLABE sigue siendo manual. Ver [/apis/payments-checkout.md](/apis/payments-checkout.md).
 - Límites de monto: [/data/field-limits.md](/data/field-limits.md).

@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
-import { campaigns, siteSettings } from './schema.ts'
+import { campaigns, paymentSettings, siteSettings } from './schema.ts'
 import { DEFAULT_SITE_SETTINGS } from '../../utils/siteSettingsDefaults.ts'
 
 interface SeedCampaign {
@@ -51,6 +51,19 @@ try {
     .values({ id: 1, ...DEFAULT_SITE_SETTINGS })
     .onConflictDoNothing()
   console.log('site_settings: fila por defecto asegurada.')
+
+  await db
+    .insert(paymentSettings)
+    .values({
+      id: 1,
+      cardProvider: 'mercadopago',
+      mode: 'test',
+      cardEnabled: false,
+      paypalEnabled: false,
+      speiManualEnabled: true,
+    })
+    .onConflictDoNothing()
+  console.log('payment_settings: fila por defecto asegurada.')
 }
 finally {
   await client.end()

@@ -3,7 +3,7 @@ type: Integration
 title: PayPal
 description: Método de cobro adicional en v1 (Orders v2 CAPTURE, webhooks RSA-SHA256).
 tags: [integration, payments, paypal]
-status: planned
+status: implemented
 timestamp: 2026-09-07T00:00:00Z
 ---
 
@@ -15,8 +15,10 @@ Método **adicional** junto a MercadoPago (v1). Donación única vía Orders API
 
 1. Donación `pending` como hoy.
 2. `POST /api/payments/checkout` crea Order con `custom_id = donation.id`, monto MXN desde BD; devuelve el enlace `approve`.
-3. Redirect al checkout PayPal; al volver, captura idempotente si aplica + página `/donaciones/gracias`.
-4. Webhook `POST /api/payments/webhook/paypal`: verificar firma RSA-SHA256 (mensaje `transmissionId|transmissionTime|webhookId|crc32(rawBody)`; cert desde `paypal-cert-url` con host `*.paypal.com`), ventana de replay ~5 min; confirmar estado por API.
+3. Redirect al checkout PayPal; al volver, `POST /api/payments/paypal/capture` + página `/donaciones/gracias`.
+4. Webhook `POST /api/payments/webhook/paypal`: verificar firma RSA-SHA256; confirmar estado por API.
+
+Código: `server/payments/paypal.ts`.
 
 # Credenciales (solo env)
 

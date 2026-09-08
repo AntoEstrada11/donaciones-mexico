@@ -12,8 +12,8 @@ timestamp: 2026-09-07T00:00:00Z
 2. Auth: registro/login contra la tabla `users` → token Bearer HMAC → guardado en `sessionStorage` (`composables/useAuth.ts`).
 3. Perfil (`/api/me`): lee y escribe `users` + `donor_profiles` en PostgreSQL.
 4. Iglesias: Nitro (`GET /api/churches`) consulta Odoo IURD (`miembros.iurdsys.net`); si falla, sirve `server/data/churches.json`. El cliente usa `useChurches`. Las donaciones guardan el identificador externo.
-5. Campañas y donaciones: Nitro consulta PostgreSQL mediante Drizzle. `POST /api/donations` persiste la donación `pending` y la asocia al donante si hay sesión. El cobro real (diseño aceptado, código pendiente) va por `POST /api/payments/checkout` → adaptador MercadoPago/PayPal → webhook firmado. Ver [/decisions/pasarela-provider-agnostica.md](/decisions/pasarela-provider-agnostica.md).
-6. Pie y SPEI directo: `GET /api/site-settings` lee `site_settings`; el admin edita en `/admin/personalizar/pie`. Es independiente del SPEI/cobro de pasarela.
+5. Campañas y donaciones: Nitro consulta PostgreSQL. `POST /api/donations` crea `pending`. Cobro tarjeta/PayPal: `POST /api/payments/checkout` → adaptador → redirect; webhooks firmados y sync al retorno (`/donaciones/gracias`). SPEI CLABE sigue manual vía `site_settings`. Ver [/decisions/pasarela-provider-agnostica.md](/decisions/pasarela-provider-agnostica.md).
+6. Pie y SPEI directo: `GET /api/site-settings`. Admin: `/admin/personalizar/pie` y **Cobros** (`/admin/personalizar/cobros`).
 7. Validación de formularios: `utils/fieldLimits.ts` en cliente y servidor (ver [/data/field-limits.md](/data/field-limits.md)).
 8. Privacidad: registro y donación exigen consentimiento expreso, que Nitro valida y guarda en `consents`. El titular ejerce sus derechos ARCO desde `/perfil` (ver [/data/personal-data-inventory.md](/data/personal-data-inventory.md)).
 
@@ -22,7 +22,7 @@ timestamp: 2026-09-07T00:00:00Z
 | Pieza | Rol |
 |-------|-----|
 | `pages/` | Rutas UI: `/`, `/iglesias`, `/donaciones`, `/historial`, `/login`, `/registro`, `/perfil`, `/spei`, `/privacidad`, `/terminos`, `/admin`, `/admin/personalizar/*` |
-| `server/payments/` | **Planificado:** puerto interno + adaptadores MP/PayPal |
+| `server/payments/` | Puerto interno + adaptadores MercadoPago / PayPal |
 | `utils/fieldLimits.ts` | Límites y sanitización compartidos UI + API |
 | `utils/siteSettingsDefaults.ts` | Semilla de contacto y SPEI |
 | `utils/legal.ts` | Identidad del responsable, versión del aviso, plazos ARCO y de conservación |
@@ -44,7 +44,7 @@ timestamp: 2026-09-07T00:00:00Z
 | `composables/useChurches.ts` | Fetch a `/api/churches` y caché en sessionStorage |
 | `components/HeroCarousel.vue` | Fondo del home con slides y degradado |
 | `components/SpeiBankDetails.vue` | CLABE, banco y concepto con botón copiar |
-| `components/AdminPersonalizeNav.vue` | Subnav Carrusel / Pie (y Cobros cuando exista) bajo Personalizar |
+| `components/AdminPersonalizeNav.vue` | Subnav Carrusel / Pie / Cobros bajo Personalizar |
 | `components/PrivacyNoticeShort.vue` | Aviso simplificado junto a cada formulario |
 | `components/LegalConsent.vue` | Casilla de consentimiento expreso, nunca premarcada |
 | `pages/admin/` | Panel operativo (stats, personalizar, donaciones, usuarios) |

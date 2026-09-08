@@ -1,4 +1,5 @@
 import { formatAmountMaxLabel, isValidAmount } from '../../utils/fieldLimits'
+import type { DonationMethod } from '~/types'
 
 export default defineEventHandler(async (event) => {
   const session = optionalSession(event)
@@ -27,8 +28,6 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'La campaña no existe' })
   }
 
-  // El donativo revela creencias religiosas, así que exige consentimiento expreso
-  // incluso cuando se dona sin sesión iniciada.
   if (body?.consent !== true) {
     throw createError({
       statusCode: 422,
@@ -36,7 +35,24 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // Redondeo a centavos para no arrastrar basura de float desde el cliente.
+  const rawMethod = String(body.method || 'spei')
+  const method: DonationMethod = rawMethod === 'card'
+    ? 'card'
+    : rawMethod === 'paypal'
+      ? 'paypal'
+      : 'spei'
+
+  const settings = await getPaymentSettings()
+  if (method === 'spei' && !settings.speiManualEnabled) {
+    throw createError({ statusCode: 400, statusMessage: 'SPEI no está disponible' })
+  }
+  if (method === 'card' && !(settings.cardEnabled && settings.credentials.mercadopago)) {
+    throw createError({ statusCode: 503, statusMessage: 'Pago con tarjeta no disponible' })
+  }
+  if (method === 'paypal' && !(settings.paypalEnabled && settings.credentials.paypal)) {
+    throw createError({ statusCode: 503, statusMessage: 'PayPal no está disponible' })
+  }
+
   const amountRounded = Math.round(amount * 100) / 100
 
   const donation = await createDonation({
@@ -44,7 +60,7 @@ export default defineEventHandler(async (event) => {
     churchId: String(body.churchId).slice(0, 64),
     campaignId: campaign.id,
     amount: amountRounded,
-    method: body.method === 'card' ? 'card' : 'spei',
+    method,
   })
 
   await recordConsentBundle({

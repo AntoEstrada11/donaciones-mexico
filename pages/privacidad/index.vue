@@ -198,6 +198,18 @@ useHead({
             teléfono ni datos fiscales.
           </li>
           <li>
+            <strong>MercadoPago:</strong> si elige pagar con tarjeta, lo redirigimos al checkout
+            alojado de Mercado Pago, S.A. de C.V. (encargado de cobro). Recibe el monto, la moneda y
+            un identificador de la donación; usted ingresa los datos de su tarjeta directamente en
+            ese sitio. Nosotros no almacenamos número de tarjeta ni CVV.
+          </li>
+          <li>
+            <strong>PayPal:</strong> si elige PayPal, lo redirigimos al checkout de PayPal
+            (PayPal, Inc. / PayPal México). Recibe el monto, la moneda y un identificador de la
+            donación. Los datos de su cuenta PayPal se tratan en ese entorno; no los almacenamos en
+            este sitio.
+          </li>
+          <li>
             <strong>Autoridades:</strong> cuando exista un requerimiento fundado y motivado de una
             autoridad competente.
           </li>
