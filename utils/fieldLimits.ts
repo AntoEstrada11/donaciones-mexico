@@ -13,6 +13,9 @@ export const FIELD_LIMITS = {
   state: { max: 120 },
   zip: { length: 5 },
   rfc: { min: 12, max: 13 },
+  fiscalName: { min: 1, max: 160 },
+  taxRegime: { max: 8 },
+  cfdiUse: { max: 8 },
   amount: { min: 1, max: 999_999.99, maxDecimals: 2, maxWholeDigits: 6 },
   search: { max: 100 },
   heroImage: {

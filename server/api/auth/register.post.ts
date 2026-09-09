@@ -51,11 +51,24 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const user = await createUser({
-    email,
-    name: name.trim(),
-    passwordHash: hashPassword(password),
-  })
+  let user
+  try {
+    user = await createUser({
+      email,
+      name: name.trim(),
+      passwordHash: hashPassword(password),
+    })
+  }
+  catch (error) {
+    throwIfDatabaseError(error)
+  }
+
+  if (!user) {
+    throw createError({
+      statusCode: 503,
+      statusMessage: 'El servicio de datos no está disponible. Intente más tarde.',
+    })
+  }
 
   await recordConsentBundle({
     event,

@@ -1,10 +1,10 @@
 ---
 type: API Endpoint
 title: POST /api/donations
-description: Registra una donación en estado pending en PostgreSQL.
+description: Registra una donación en pending; el checkout de tarjeta o PayPal es un POST aparte.
 resource: /api/donations
 tags: [api, donations]
-timestamp: 2026-08-07T00:00:00Z
+timestamp: 2026-09-09T00:00:00Z
 ---
 
 # Contrato
@@ -22,20 +22,23 @@ timestamp: 2026-08-07T00:00:00Z
 | `churchId` | string | requerido; id externo de la API de iglesias (máx. 64) |
 | `campaignId` | string (uuid) | requerido; debe existir en `campaigns` |
 | `amount` | number | requerido; entre $1 y $999,999.99 MXN |
-| `method` | string | `spei` (default), `card` o (previsto) `paypal` |
+| `method` | string | `spei` (default), `card` o `paypal` |
 | `consent` | boolean | **requerido y en `true`**; consentimiento expreso para datos sensibles |
+| `wantsReceipt` | boolean | si `true`, exige sesión y texto CFDI 4.0 |
 
 # Respuesta
 
-`Donation` con `id` uuid, `currency: MXN` y `status: pending`.
+`{ donation, checkoutUrl, uma? }`. `checkoutUrl` queda `null`; el cliente inicia el cobro con `POST /api/payments/checkout`. `uma` es el acumulado de 6 meses y la clasificación si hay sesión.
 
 # Errores
 
 | Código | Causa |
 |--------|--------|
-| 400 | Faltan campos, monto fuera de rango o campaña inexistente |
+| 400 | Faltan campos, monto fuera de rango, campaña inexistente o método inválido |
+| 401 | `wantsReceipt` sin sesión |
 | 422 | No se aceptó el aviso de privacidad (`consent` distinto de `true`) |
 | 429 | Más de 20 donaciones por IP en 5 minutos |
+| 503 | El método de pasarela no está habilitado o faltan credenciales |
 
 # Notas
 
@@ -47,6 +50,7 @@ timestamp: 2026-08-07T00:00:00Z
   [/decisions/consentimiento-datos-sensibles.md](/decisions/consentimiento-datos-sensibles.md).
 - El orden de validación es: campos, monto, campaña, consentimiento. Un `422` implica que el resto
   del cuerpo ya era válido.
-- Hoy no hay cobro real; el estado `pending` no cambia hasta pasarela o conciliación SPEI manual.
+- El estado `paid` no se asigna en este POST.
 - Tras crear la donación con método `card` o `paypal`, el cliente llama `POST /api/payments/checkout` y redirige al proveedor; el webhook (o captura PayPal) marca `paid`/`failed`. SPEI CLABE sigue siendo manual. Ver [/apis/payments-checkout.md](/apis/payments-checkout.md).
+- PayPal y Mercado Pago reciben solo monto, MXN y el uuid de la donación.
 - Límites de monto: [/data/field-limits.md](/data/field-limits.md).

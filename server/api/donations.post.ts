@@ -1,7 +1,7 @@
 import { formatAmountMaxLabel, isValidAmount } from '../../utils/fieldLimits'
-import type { DonationMethod } from '~/types'
+import type { DonationCreateResponse, DonationMethod } from '~/types'
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async (event): Promise<DonationCreateResponse> => {
   const session = optionalSession(event)
   if (session) {
     await assertDonorAccountActive(session.sub)
@@ -53,6 +53,26 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 503, statusMessage: 'PayPal no está disponible' })
   }
 
+  if (body?.wantsReceipt === true) {
+    if (!session?.sub) {
+      throw createError({
+        statusCode: 401,
+        statusMessage: 'Inicie sesión para solicitar factura.',
+      })
+    }
+    await updateDonorProfile(session.sub, {
+      wantsReceipt: true,
+      fiscalName: body.fiscalName !== undefined ? String(body.fiscalName) : undefined,
+      rfc: body.rfc !== undefined ? String(body.rfc) : undefined,
+      zip: body.zip !== undefined ? String(body.zip) : undefined,
+      taxRegime: body.taxRegime !== undefined ? String(body.taxRegime) : undefined,
+      cfdiUse: body.cfdiUse !== undefined ? String(body.cfdiUse) : undefined,
+    })
+  }
+  else if (body?.wantsReceipt === false && session?.sub) {
+    await updateDonorProfile(session.sub, { wantsReceipt: false })
+  }
+
   const amountRounded = Math.round(amount * 100) / 100
 
   const donation = await createDonation({
@@ -69,5 +89,7 @@ export default defineEventHandler(async (event) => {
     donationId: donation.id,
   })
 
-  return donation
+  const uma = session?.sub ? await refreshDonorCompliance(session.sub) : undefined
+
+  return { donation, checkoutUrl: null, uma }
 })

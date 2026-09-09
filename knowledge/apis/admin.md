@@ -20,7 +20,7 @@ Todas las rutas exigen `Authorization: Bearer` con `role === admin` (`requireAdm
 | POST | `/api/admin/slides` | Multipart: `file` + `alt` opcional (JPG/PNG/WebP ≤ 3 MB) |
 | PATCH | `/api/admin/slides/:id` | `alt`, `active`, `sortOrder` |
 | DELETE | `/api/admin/slides/:id` | Borra fila y archivo en disco |
-| GET | `/api/admin/donations` | Listado reciente enriquecido |
+| GET | `/api/admin/donations` | Hasta 500, con iglesia y tipo |
 | PATCH | `/api/admin/donations/:id` | `{ status }` |
 | GET | `/api/admin/users` | Listado de usuarios con estado y último cambio |
 | PATCH | `/api/admin/users/:id/status` | `{ status: "active" \| "deactivated" }` — solo donantes |

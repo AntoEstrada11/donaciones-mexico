@@ -13,6 +13,9 @@ export default defineEventHandler(async (event) => {
   if (body?.state !== undefined) patch.state = String(body.state || '')
   if (body?.zip !== undefined) patch.zip = String(body.zip || '')
   if (body?.rfc !== undefined) patch.rfc = String(body.rfc || '')
+  if (body?.fiscalName !== undefined) patch.fiscalName = String(body.fiscalName || '')
+  if (body?.taxRegime !== undefined) patch.taxRegime = String(body.taxRegime || '')
+  if (body?.cfdiUse !== undefined) patch.cfdiUse = String(body.cfdiUse || '')
 
   return await updateDonorProfile(session.sub, patch)
 })

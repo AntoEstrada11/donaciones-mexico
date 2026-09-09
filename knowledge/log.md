@@ -1,10 +1,23 @@
 # Directory Update Log
 
+## 2026-09-09
+* **Update**: La pasarela base es la de `origin/main` (`server/payments/`, cobros, checkout/webhooks). Auth Hub, CFDI/UMA y panel agrupado se conservan encima. Aviso `LEGAL.noticeVersion` 2026-09-09.
+* **Update**: Panel de donaciones agrupado por iglesia, tipo y estado. JSON y specs del hero en [/playbooks/personalize.md](/playbooks/personalize.md).
+* **Update**: Auth Hub en Oracle `http://159.54.159.34:8000`. Captura CFDI 4.0 en texto, clasificación UMA y alertas; sin Odoo ni PDFs. Ver [/playbooks/auth-hub.md](/playbooks/auth-hub.md) y [/decisions/captura-progresiva.md](/decisions/captura-progresiva.md).
+
 ## 2026-09-07
-* **Update**: Pasarela v1 implementada y endurecida en local: `server/payments/` (MP + PayPal), checkout/webhooks, `POST /api/payments/mercadopago/sync` al volver de Checkout Pro, `NUXT_PAYMENT_WEBHOOK_BASE_URL` (ngrok) separado de `NUXT_PUBLIC_SITE_URL` (retorno), `vite.server.allowedHosts` para túneles, ping sin firma en modo test del simulador MP. Panel `/admin/personalizar/cobros`. Aviso `LEGAL.noticeVersion` 2026-09-07. Migración `0005_skinny_pet_avengers.sql`.
+* **Update**: Pasarela v1 implementada y endurecida en local: `server/payments/` (MP + PayPal), checkout/webhooks, `POST /api/payments/mercadopago/sync` al volver de Checkout Pro, `NUXT_PAYMENT_WEBHOOK_BASE_URL` (ngrok) separado de `NUXT_PUBLIC_SITE_URL` (retorno), `vite.server.allowedHosts` para túneles, ping sin firma en modo test del simulador MP. Panel `/admin/personalizar/cobros`. Migración `0005_skinny_pet_avengers.sql`.
 
 ## 2026-09-07 (diseño)
 * **Update**: Arquitectura de pasarelas documentada: puerto interno + adaptadores; v1 MercadoPago + PayPal; checkout alojado; secretos en env; Stripe/Openpay en fase 2. Decisiones [/decisions/pasarela-provider-agnostica.md](/decisions/pasarela-provider-agnostica.md) y [/decisions/checkout-hospedado-pci.md](/decisions/checkout-hospedado-pci.md).
+
+## 2026-09-04
+* **Update**: Una sola pantalla Iniciar sesión: donante o personal del hub; el panel no exige cambiar la URL. Ver [/decisions/donor-vs-operator-auth.md](/decisions/donor-vs-operator-auth.md).
+* **Update**: Presets de monto rellenan el campo y quedan marcados. Superadmin del Auth Hub entra a `/admin` aunque no tenga membresía `donaciones`. Ver [/playbooks/auth-hub.md](/playbooks/auth-hub.md).
+* **Update**: Vercel usa Neon (`donaciones-mexico-db`) para registro y donaciones; Docker sigue solo en local. Ver [/playbooks/vercel.md](/playbooks/vercel.md).
+* **Update**: `npm run db:setup` arranca Postgres 17 en Docker, migra y siembra. Ver [/playbooks/run-local.md](/playbooks/run-local.md).
+* **Update**: Donantes: `/registro` y `/login` locales. Operadores: `/admin/login` vía Auth Hub. Ver [/decisions/donor-vs-operator-auth.md](/decisions/donor-vs-operator-auth.md).
+
 
 ## 2026-08-27
 * **Update**: OKF: rutas reales de slides (`/api/admin/slides`), `ConfirmDialog`, y `refreshNuxtData('site-settings')` tras guardar el pie. Ver [/apis/admin.md](/apis/admin.md), [/apis/site-settings-get.md](/apis/site-settings-get.md), [/data/spei-bank.md](/data/spei-bank.md).

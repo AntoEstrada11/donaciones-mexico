@@ -53,8 +53,8 @@ useHead({
         <ul class="mt-3 list-disc space-y-1 pl-5">
           <li><strong>Identificación y contacto:</strong> nombre, correo electrónico y teléfono.</li>
           <li><strong>Datos de acceso:</strong> la contraseña que usted define, que guardamos cifrada en un solo sentido y que nadie en la Iglesia puede leer.</li>
-          <li><strong>Datos fiscales (opcionales):</strong> RFC, calle, ciudad, estado y código postal. Solo se los pedimos si usted solicita un recibo deducible de impuestos.</li>
-          <li><strong>Datos del donativo:</strong> iglesia elegida, tipo de donación, monto, método de pago y fecha.</li>
+          <li><strong>Datos fiscales (opcionales):</strong> nombre o razón social, RFC, código postal fiscal, régimen fiscal, uso de CFDI y, si los proporciona, calle, ciudad y estado. Solo se los pedimos si usted marca que requiere factura. No recabamos aún identificaciones en imagen o PDF.</li>
+          <li><strong>Datos del donativo:</strong> iglesia elegida, tipo de donación, monto, método de pago (SPEI, PayPal o Mercado Pago), identificador del cobro en la pasarela y fecha.</li>
           <li><strong>Ubicación aproximada (opcional):</strong> las coordenadas de su dispositivo, únicamente si usted autoriza el permiso de ubicación para ordenar el directorio de iglesias por cercanía. No se guardan en su cuenta.</li>
           <li><strong>Datos técnicos:</strong> versión del aviso que aceptó, fecha del consentimiento, navegador y una huella cifrada de su dirección IP, como evidencia de que el consentimiento fue otorgado.</li>
         </ul>
@@ -196,6 +196,11 @@ useHead({
             únicamente las coordenadas de su dispositivo al servicio de directorio alojado en
             universal.org.mx para ordenar las iglesias por cercanía. No enviamos su nombre, correo,
             teléfono ni datos fiscales.
+          </li>
+          <li>
+            <strong>Auth Hub:</strong> si inicia sesión con la cuenta central de la Iglesia, el
+            correo y la contraseña se validan en ese servicio. No enviamos RFC, domicilio ni
+            historial de donativos.
           </li>
           <li>
             <strong>MercadoPago:</strong> si elige pagar con tarjeta, lo redirigimos al checkout

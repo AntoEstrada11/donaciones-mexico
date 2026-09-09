@@ -45,7 +45,7 @@ onMounted(async () => {
     <p v-else-if="error" class="text-sm text-red-600">
       {{ error }}
     </p>
-    <div v-else-if="stats" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div v-else-if="stats" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <article class="rounded-lg border border-gray-200 bg-white p-5">
         <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
           {{ t('admin.stats.users') }}
@@ -81,6 +81,48 @@ onMounted(async () => {
           {{ stats.activeSlides }}
         </p>
       </article>
+      <article class="rounded-lg border border-amber-200 bg-amber-50 p-5">
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+          {{ t('admin.stats.pld') }}
+        </p>
+        <p class="mt-2 text-3xl font-bold text-ink">
+          {{ stats.pldPending }}
+        </p>
+      </article>
+      <article class="rounded-lg border border-red-200 bg-red-50 p-5">
+        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">
+          {{ t('admin.stats.sat') }}
+        </p>
+        <p class="mt-2 text-3xl font-bold text-ink">
+          {{ stats.satReport }}
+        </p>
+      </article>
+    </div>
+    <div v-if="stats && !loading && !error" class="mt-8 grid gap-4 sm:grid-cols-3">
+      <NuxtLink to="/admin/donations" class="card transition hover:border-brand/40">
+        <h2 class="font-semibold text-ink">
+          {{ t('admin.openDonations') }}
+        </h2>
+        <p class="mt-1 text-sm text-gray-600">
+          {{ t('admin.openDonationsDesc') }}
+        </p>
+      </NuxtLink>
+      <NuxtLink to="/admin/users" class="card transition hover:border-brand/40">
+        <h2 class="font-semibold text-ink">
+          {{ t('admin.openUsers') }}
+        </h2>
+        <p class="mt-1 text-sm text-gray-600">
+          {{ t('admin.openUsersDesc') }}
+        </p>
+      </NuxtLink>
+      <NuxtLink to="/admin/personalizar" class="card transition hover:border-brand/40">
+        <h2 class="font-semibold text-ink">
+          {{ t('admin.openPersonalize') }}
+        </h2>
+        <p class="mt-1 text-sm text-gray-600">
+          {{ t('admin.openPersonalizeDesc') }}
+        </p>
+      </NuxtLink>
     </div>
   </div>
 </template>

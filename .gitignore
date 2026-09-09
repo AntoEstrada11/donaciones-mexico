@@ -37,3 +37,5 @@ public/uploads/**
 # Carta personal (no es del proyecto)
 tmp-carta/
 .tmp-img-edit/
+.vercel
+.env*

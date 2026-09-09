@@ -22,11 +22,13 @@ Constantes y helpers en `utils/fieldLimits.ts`. Misma fuente para páginas Vue y
 | Dirección | máx. 200 |
 | Ciudad / Estado | máx. 120 |
 | C.P. | opcional; exactamente 5 dígitos |
-| RFC | opcional; solo si `wantsReceipt`; 12 (moral) o 13 (física); patrón SAT básico; mayúsculas |
+| RFC | opcional; solo si factura; 12 o 13 |
+| Razón social fiscal | 1–160; solo si factura |
+| Régimen fiscal / uso CFDI | catálogo en `utils/cfdiCatalog.ts` |
 | Consentimiento (`consent`) | boolean; **obligatorio `true`** en registro y donación (validación servidor) |
 | Monto de donación | $1 – $999,999.99 MXN; máx. 2 decimales; sin notación científica |
 | Búsqueda de iglesias | máx. 100 caracteres |
-| Imagen del hero | JPG/PNG/WebP; máx. 3 MB; alt máx. 160 |
+| Imagen del hero | JPG/PNG/WebP; máx. 3 MB; alt máx. 160; recomendado 1920×800 |
 | Pie: teléfono | 10–15 dígitos; display máx. 40 |
 | Pie: correo | mismo formato que correo de cuenta |
 | SPEI: banco / beneficiario / concepto | máx. 120 / 200 / 80 |
@@ -38,7 +40,7 @@ Constantes y helpers en `utils/fieldLimits.ts`. Misma fuente para páginas Vue y
 |------------|-----|
 | `/login`, `/registro` | correo, contraseña; registro además exige `consent` |
 | `/perfil` | nombre, teléfono; fiscal solo si `wantsReceipt` (RFC, domicilio, C.P.) |
-| `/donaciones` | monto; `consent` obligatorio antes de enviar |
+| `/donaciones` | monto; `consent`; método `spei` \| `paypal` \| `mercadopago` |
 | `/iglesias` | búsqueda; geolocalización solo tras botón explícito |
 | `POST /api/auth/register` | correo, contraseña, nombre, `consent`, `marketing?` |
 | `POST /api/auth/login` | correo |

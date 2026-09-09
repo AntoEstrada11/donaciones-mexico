@@ -42,6 +42,8 @@ export async function getAdminStats(): Promise<AdminStats> {
     admins: Number(userCounts?.admins ?? 0),
     donationsByStatus,
     activeSlides: Number(slideCount?.total ?? 0),
+    pldPending: await countCompliance('pld_pending'),
+    satReport: await countCompliance('sat_report'),
   }
 }
 
@@ -136,7 +138,7 @@ export async function updateDonorStatusForAdmin(
   return row
 }
 
-export async function listAdminDonations(limit = 100): Promise<AdminDonationRow[]> {
+export async function listAdminDonations(limit = 500): Promise<AdminDonationRow[]> {
   const db = useDatabase()
   const rows = await db
     .select({
@@ -144,6 +146,7 @@ export async function listAdminDonations(limit = 100): Promise<AdminDonationRow[
       userEmail: users.email,
       userName: users.name,
       campaignName: campaigns.name,
+      campaignType: campaigns.type,
     })
     .from(donations)
     .leftJoin(users, eq(donations.userId, users.id))
@@ -151,7 +154,45 @@ export async function listAdminDonations(limit = 100): Promise<AdminDonationRow[
     .orderBy(desc(donations.createdAt))
     .limit(limit)
 
-  return rows.map(({ donation, userEmail, userName, campaignName }) => ({
+  const churchNames = await churchNameMap()
+
+  return rows.map(({ donation, userEmail, userName, campaignName, campaignType }) =>
+    toAdminDonationRow(donation, {
+      userEmail,
+      userName,
+      campaignName,
+      campaignType,
+      churchName: churchNames.get(donation.churchExternalId) ?? null,
+    }),
+  )
+}
+
+async function churchNameMap() {
+  const names = new Map<string, string>()
+  try {
+    const config = useRuntimeConfig().public
+    const { churches } = await listChurches(Number(config.defaultLatitude), Number(config.defaultLongitude))
+    for (const church of churches) {
+      names.set(church.id, church.name)
+    }
+  }
+  catch {
+    /* el listado sigue con el id de iglesia */
+  }
+  return names
+}
+
+function toAdminDonationRow(
+  donation: typeof donations.$inferSelect,
+  extra: {
+    userEmail: string | null
+    userName: string | null
+    campaignName: string | null
+    campaignType: string | null
+    churchName: string | null
+  },
+): AdminDonationRow {
+  return {
     id: donation.id,
     churchId: donation.churchExternalId,
     campaignId: donation.campaignId,
@@ -160,10 +201,12 @@ export async function listAdminDonations(limit = 100): Promise<AdminDonationRow[
     status: donation.status,
     method: donation.method,
     createdAt: donation.createdAt.toISOString(),
-    userEmail: userEmail ?? null,
-    userName: userName ?? null,
-    campaignName: campaignName ?? null,
-  }))
+    userEmail: extra.userEmail,
+    userName: extra.userName,
+    campaignName: extra.campaignName,
+    campaignType: extra.campaignType,
+    churchName: extra.churchName,
+  }
 }
 
 const ALLOWED_STATUS: Donation['status'][] = ['paid', 'pending', 'failed', 'cancelled', 'refunded']
@@ -187,11 +230,16 @@ export async function updateDonationStatus(
     throw createError({ statusCode: 404, statusMessage: 'Donación no encontrada' })
   }
 
+  if (row.userId && row.status === 'paid') {
+    await refreshDonorCompliance(row.userId)
+  }
+
   const [enriched] = await db
     .select({
       userEmail: users.email,
       userName: users.name,
       campaignName: campaigns.name,
+      campaignType: campaigns.type,
     })
     .from(donations)
     .leftJoin(users, eq(donations.userId, users.id))
@@ -199,17 +247,13 @@ export async function updateDonationStatus(
     .where(eq(donations.id, id))
     .limit(1)
 
-  return {
-    id: row.id,
-    churchId: row.churchExternalId,
-    campaignId: row.campaignId,
-    amount: Number(row.amount),
-    currency: row.currency,
-    status: row.status,
-    method: row.method,
-    createdAt: row.createdAt.toISOString(),
+  const churchNames = await churchNameMap()
+
+  return toAdminDonationRow(row, {
     userEmail: enriched?.userEmail ?? null,
     userName: enriched?.userName ?? null,
     campaignName: enriched?.campaignName ?? null,
-  }
+    campaignType: enriched?.campaignType ?? null,
+    churchName: churchNames.get(row.churchExternalId) ?? null,
+  })
 }

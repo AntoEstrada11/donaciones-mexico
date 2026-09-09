@@ -92,6 +92,15 @@ export function useAuth() {
     return response
   }
 
+  async function adminLogin(email: string, password: string) {
+    const response = await $fetch<AuthResponse>('/api/auth/admin-login', {
+      method: 'POST',
+      body: { email, password },
+    })
+    setSession(response)
+    return response
+  }
+
   function logout() {
     user.value = null
     persistUser(null)
@@ -178,6 +187,7 @@ export function useAuth() {
     isAdmin,
     register,
     login,
+    adminLogin,
     logout,
     fetchProfile,
     updateProfile,

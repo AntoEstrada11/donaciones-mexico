@@ -7,16 +7,17 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-donaciones}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-donaciones}
       POSTGRES_DB: ${POSTGRES_DB:-donaciones}
-    # Solo accesible desde la propia máquina; nunca exponer 5432 a Internet.
+    # Solo el host local; Vercel no puede usar este contenedor.
     ports:
       - '127.0.0.1:5432:5432'
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER:-donaciones} -d ${POSTGRES_DB:-donaciones}']
-      interval: 10s
+      interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 10s
 
 volumes:
   db-data:

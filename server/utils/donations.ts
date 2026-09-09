@@ -59,6 +59,23 @@ export async function listDonationsByUser(userId: string): Promise<Donation[]> {
   return rows.map(toDonation)
 }
 
+export async function findDonationForUser(id: string, userId: string) {
+  const db = useDatabase()
+  const [row] = await db.select().from(donations).where(eq(donations.id, id)).limit(1)
+  if (!row || row.userId !== userId) return null
+  return toDonation(row)
+}
+
+export async function findDonationByProviderPaymentId(providerPaymentId: string) {
+  const db = useDatabase()
+  const [row] = await db
+    .select()
+    .from(donations)
+    .where(eq(donations.providerPaymentId, providerPaymentId))
+    .limit(1)
+  return row ? toDonation(row) : null
+}
+
 export async function createDonation(input: {
   userId: string | null
   churchId: string
@@ -84,4 +101,45 @@ export async function createDonation(input: {
     .returning()
 
   return toDonation(row)
+}
+
+export async function attachProviderPaymentId(id: string, providerPaymentId: string) {
+  const db = useDatabase()
+  await db
+    .update(donations)
+    .set({ providerPaymentId, updatedAt: new Date() })
+    .where(eq(donations.id, id))
+}
+
+/** Idempotente: no degrada un cobro ya `paid`. */
+export async function applyGatewayStatus(input: {
+  donationId: string
+  status: Donation['status']
+  providerPaymentId?: string
+}): Promise<Donation | null> {
+  const db = useDatabase()
+  const [current] = await db.select().from(donations).where(eq(donations.id, input.donationId)).limit(1)
+  if (!current) return null
+  if (current.status === 'paid') return toDonation(current)
+
+  const paidAt = input.status === 'paid'
+    ? (current.paidAt ?? new Date())
+    : current.paidAt
+
+  const [row] = await db
+    .update(donations)
+    .set({
+      status: input.status,
+      providerPaymentId: input.providerPaymentId ?? current.providerPaymentId,
+      paidAt,
+      updatedAt: new Date(),
+    })
+    .where(eq(donations.id, input.donationId))
+    .returning()
+
+  if (row?.status === 'paid' && row.userId) {
+    await refreshDonorCompliance(row.userId)
+  }
+
+  return row ? toDonation(row) : null
 }

@@ -21,10 +21,18 @@ Cambió `server/database/schema.ts`, o hay que preparar una base nueva.
 # Base nueva desde cero
 
 ```bash
-docker compose up -d
+npm run db:setup
+```
+
+O el equivalente:
+
+```bash
+npm run db:up
 npm run db:migrate
 npm run db:seed
 ```
+
+Los scripts de Node 22 usan `--experimental-strip-types` para ejecutar los `.ts`.
 
 # Importar usuarios del store anterior
 

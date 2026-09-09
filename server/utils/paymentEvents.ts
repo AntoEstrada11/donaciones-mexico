@@ -129,5 +129,9 @@ export async function applyProviderStatus(input: {
     .where(eq(donations.id, input.donationId))
     .returning()
 
+  if (row?.status === 'paid' && row.userId) {
+    await refreshDonorCompliance(row.userId)
+  }
+
   return row ? toDonation(row) : null
 }

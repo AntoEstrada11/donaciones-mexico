@@ -1,5 +1,7 @@
 import { and, eq, ne, sql } from 'drizzle-orm'
+import { randomBytes } from 'node:crypto'
 import { donorProfiles, userStatusEvents, users } from '../database/schema'
+import { isValidCfdiUse, isValidTaxRegime } from '../../utils/cfdiCatalog'
 import type { AppUser, DonorProfile, DonorStatus } from '~/types'
 import {
   FIELD_LIMITS,
@@ -34,6 +36,9 @@ export interface ProfileInput {
   state?: string | null
   zip?: string | null
   rfc?: string | null
+  fiscalName?: string | null
+  taxRegime?: string | null
+  cfdiUse?: string | null
 }
 
 function toAppUser(row: typeof users.$inferSelect): AppUser {
@@ -66,6 +71,61 @@ export async function findUserById(id: string): Promise<AppUser | null> {
   return row ? toAppUser(row) : null
 }
 
+export async function findUserByHubId(hubUserId: string): Promise<AppUser | null> {
+  const db = useDatabase()
+  const [row] = await db.select().from(users).where(eq(users.hubUserId, hubUserId)).limit(1)
+  return row ? toAppUser(row) : null
+}
+
+/** Crea o enlaza la fila local tras un login válido en Auth Hub. No guarda el token del hub. */
+export async function upsertUserFromAuthHub(input: {
+  hubUserId: string
+  email: string
+  name: string
+  role: 'admin' | 'donor'
+}): Promise<AppUser> {
+  const db = useDatabase()
+  const email = normalizeEmail(input.email)
+  const name = sanitizeNameInput(input.name).trim() || email.split('@')[0] || 'Donante'
+
+  const existing = await findUserByHubId(input.hubUserId) || await findUserByEmail(email)
+  if (existing) {
+    const [row] = await db
+      .update(users)
+      .set({
+        email,
+        name,
+        role: input.role,
+        hubUserId: input.hubUserId,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, existing.id))
+      .returning()
+    return toAppUser(row)
+  }
+
+  return await db.transaction(async (tx) => {
+    const [row] = await tx
+      .insert(users)
+      .values({
+        email,
+        name,
+        passwordHash: hashPassword(randomBytes(32).toString('hex')),
+        role: input.role,
+        hubUserId: input.hubUserId,
+      })
+      .returning()
+
+    await tx.insert(donorProfiles).values({ userId: row.id })
+    await tx.insert(userStatusEvents).values({
+      userId: row.id,
+      status: 'active',
+      actorUserId: null,
+    })
+    return toAppUser(row)
+  })
+}
+
 export async function createUser(input: {
   email: string
   name: string
@@ -78,7 +138,7 @@ export async function createUser(input: {
     return await db.transaction(async (tx) => {
       const [row] = await tx
         .insert(users)
-        .values({ email, name: input.name, passwordHash: input.passwordHash })
+        .values({ email, name: input.name, passwordHash: input.passwordHash, role: 'donor' })
         .returning()
 
       await tx.insert(donorProfiles).values({ userId: row.id })
@@ -96,7 +156,7 @@ export async function createUser(input: {
     if (isUniqueViolation(error, 'users_email_key')) {
       throw createError({ statusCode: 409, statusMessage: 'Este correo ya está registrado' })
     }
-    throw error
+    throwIfDatabaseError(error)
   }
 }
 
@@ -122,6 +182,10 @@ export async function getDonorProfile(userId: string): Promise<DonorProfile | nu
     state: row.profile?.state ?? null,
     zip: row.profile?.zip ?? null,
     rfc: row.profile?.rfc ?? null,
+    fiscalName: row.profile?.fiscalName ?? null,
+    taxRegime: row.profile?.taxRegime ?? null,
+    cfdiUse: row.profile?.cfdiUse ?? null,
+    complianceStatus: row.profile?.complianceStatus ?? 'rapid',
     profileComplete: row.user.profileComplete,
   }
 }
@@ -188,26 +252,51 @@ export async function updateDonorProfile(userId: string, input: ProfileInput): P
   const rfc = input.rfc !== undefined
     ? sanitizeRfcInput(input.rfc || '') || null
     : current.rfc
+  const fiscalName = input.fiscalName !== undefined
+    ? sanitizeNameInput(input.fiscalName || '').trim() || null
+    : current.fiscalName
+  const taxRegime = input.taxRegime !== undefined
+    ? String(input.taxRegime || '').trim() || null
+    : current.taxRegime
+  const cfdiUse = input.cfdiUse !== undefined
+    ? String(input.cfdiUse || '').trim() || null
+    : current.cfdiUse
 
   if (wantsReceipt) {
-    if (zip && !isValidZip(zip)) {
-      throw createError({ statusCode: 400, statusMessage: 'El código postal debe tener 5 dígitos' })
+    if (!fiscalName || !isValidName(fiscalName)) {
+      throw createError({ statusCode: 400, statusMessage: 'Indique el nombre o razón social fiscal' })
     }
-
-    if (rfc && !isValidRfc(rfc)) {
+    if (!zip || !isValidZip(zip)) {
+      throw createError({ statusCode: 400, statusMessage: 'El código postal fiscal debe tener 5 dígitos' })
+    }
+    if (!rfc || !isValidRfc(rfc)) {
       throw createError({
         statusCode: 400,
         statusMessage: 'El RFC debe tener 12 o 13 caracteres válidos',
       })
     }
+    if (!taxRegime || !isValidTaxRegime(taxRegime)) {
+      throw createError({ statusCode: 400, statusMessage: 'Seleccione un régimen fiscal válido' })
+    }
+    if (!cfdiUse || !isValidCfdiUse(cfdiUse)) {
+      throw createError({ statusCode: 400, statusMessage: 'Seleccione un uso de CFDI válido' })
+    }
   }
 
   const profileComplete = Boolean(name && phoneDigits)
 
-  // Minimización: si el donante ya no quiere recibo, no conservamos sus datos fiscales.
   const fiscal = wantsReceipt
-    ? { street, city, state, zip, rfc }
-    : { street: null, city: null, state: null, zip: null, rfc: null }
+    ? { street, city, state, zip, rfc, fiscalName, taxRegime, cfdiUse }
+    : {
+        street: null,
+        city: null,
+        state: null,
+        zip: null,
+        rfc: null,
+        fiscalName: null,
+        taxRegime: null,
+        cfdiUse: null,
+      }
 
   const values = {
     phone,
@@ -238,7 +327,8 @@ export async function updateDonorProfile(userId: string, input: ProfileInput): P
   }
 
   const updated = await getDonorProfile(userId)
-  return updated as DonorProfile
+  await refreshDonorCompliance(userId)
+  return (await getDonorProfile(userId)) as DonorProfile
 }
 
 /**

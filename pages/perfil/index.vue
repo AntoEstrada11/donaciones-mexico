@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { ConsentType, DonorProfile } from '~/types'
+import { CFDI_USES, TAX_REGIMES, isValidCfdiUse, isValidTaxRegime } from '~/utils/cfdiCatalog'
 
 const { t } = useI18n()
 const {
@@ -27,6 +28,9 @@ const form = reactive({
   state: '',
   zip: '',
   rfc: '',
+  fiscalName: '',
+  taxRegime: '',
+  cfdiUse: 'D04',
 })
 
 const marketing = ref(false)
@@ -56,6 +60,9 @@ onMounted(async () => {
     form.state = profile.value.state || ''
     form.zip = profile.value.zip || ''
     form.rfc = profile.value.rfc || ''
+    form.fiscalName = profile.value.fiscalName || profile.value.name || ''
+    form.taxRegime = profile.value.taxRegime || ''
+    form.cfdiUse = profile.value.cfdiUse || 'D04'
 
     const consents = await fetchConsents()
     marketing.value = consents.marketing === true
@@ -108,11 +115,20 @@ function validateForm(): string | null {
   }
   // Los datos fiscales solo se validan si el donante pidió recibo deducible.
   if (form.wantsReceipt) {
+    if (!isValidName(form.fiscalName)) {
+      return t('donation.invoiceRequired')
+    }
     if (!isValidZip(form.zip)) {
       return t('validation.zip')
     }
     if (!isValidRfc(form.rfc)) {
       return t('validation.rfc')
+    }
+    if (!isValidTaxRegime(form.taxRegime)) {
+      return t('donation.invoiceRequired')
+    }
+    if (!isValidCfdiUse(form.cfdiUse)) {
+      return t('donation.invoiceRequired')
     }
   }
   return null
@@ -138,6 +154,9 @@ async function onSubmit() {
     form.state = profile.value.state || ''
     form.zip = profile.value.zip || ''
     form.rfc = profile.value.rfc || ''
+    form.fiscalName = profile.value.fiscalName || ''
+    form.taxRegime = profile.value.taxRegime || ''
+    form.cfdiUse = profile.value.cfdiUse || 'D04'
     success.value = true
   }
   catch (e: unknown) {
@@ -287,6 +306,19 @@ async function onDelete() {
 
           <div v-if="form.wantsReceipt" class="mt-4 grid gap-4 sm:grid-cols-2">
             <div class="sm:col-span-2">
+              <label for="fiscal-name" class="mb-1 block text-sm font-medium text-ink">
+                {{ t('profile.fiscalName') }}
+              </label>
+              <input
+                id="fiscal-name"
+                :value="form.fiscalName"
+                type="text"
+                :maxlength="FIELD_LIMITS.fiscalName.max"
+                class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+                @input="form.fiscalName = sanitizeNameInput(($event.target as HTMLInputElement).value)"
+              >
+            </div>
+            <div class="sm:col-span-2">
               <label for="rfc" class="mb-1 block text-sm font-medium text-ink">
                 {{ t('profile.rfc') }}
               </label>
@@ -301,6 +333,36 @@ async function onDelete() {
                 class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm uppercase focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
                 @input="onRfcInput"
               >
+            </div>
+
+            <div>
+              <label for="tax-regime" class="mb-1 block text-sm font-medium text-ink">
+                {{ t('profile.taxRegime') }}
+              </label>
+              <select
+                id="tax-regime"
+                v-model="form.taxRegime"
+                class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+              >
+                <option value="">{{ t('profile.select') }}</option>
+                <option v-for="item in TAX_REGIMES" :key="item.code" :value="item.code">
+                  {{ item.code }} — {{ item.label }}
+                </option>
+              </select>
+            </div>
+            <div>
+              <label for="cfdi-use" class="mb-1 block text-sm font-medium text-ink">
+                {{ t('profile.cfdiUse') }}
+              </label>
+              <select
+                id="cfdi-use"
+                v-model="form.cfdiUse"
+                class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+              >
+                <option v-for="item in CFDI_USES" :key="item.code" :value="item.code">
+                  {{ item.code }} — {{ item.label }}
+                </option>
+              </select>
             </div>
 
             <div class="sm:col-span-2">

@@ -13,19 +13,20 @@ Plataforma de donaciones en línea para la Iglesia Universal del Reino de Dios e
 ```bash
 npm install
 cp .env.example .env
-docker compose up -d
-npm run db:migrate
-npm run db:seed
+npm run db:setup
 npm run dev
 ```
 
-Abra [http://localhost:3000](http://localhost:3000).
+En Windows, `DATABASE_URL` debe usar `127.0.0.1` (ya viene así en `.env.example`). Abra [http://localhost:3000](http://localhost:3000).
+
+Postgres vive en Docker (`donaciones-db`). Vercel **no** usa este contenedor: allá hace falta otra `DATABASE_URL` (Neon u otro host). Ver [`knowledge/playbooks/run-local.md`](knowledge/playbooks/run-local.md) y [`knowledge/playbooks/vercel.md`](knowledge/playbooks/vercel.md).
 
 ## Scripts de base de datos
 
 | Script | Descripción |
 |--------|-------------|
-| `npm run db:generate` | Genera el SQL de migración a partir de `server/database/schema.ts` |
+| `npm run db:setup` | Docker up + migraciones + semilla de campañas |
+| `npm run db:up` / `db:down` | Arrancar o parar Postgres |
 | `npm run db:migrate` | Aplica las migraciones pendientes |
 | `npm run db:seed` | Siembra las campañas desde `server/data/campaigns.json` |
 | `npm run db:import-users` | Migración única del store legado `server/data/users.json` |

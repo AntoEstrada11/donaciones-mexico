@@ -8,13 +8,16 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "node --env-file=.env server/database/migrate.ts",
-    "db:seed": "node --env-file=.env server/database/seed.ts",
-    "db:import-users": "node --env-file=.env server/database/import-users.ts",
-    "db:promote-admin": "node --env-file=.env server/database/promote-admin.ts",
-    "db:set-password": "node --env-file=.env server/database/set-password.ts",
-    "db:sync-churches": "node --env-file=.env server/database/sync-churches-fallback.ts"
+    "db:migrate": "node --experimental-strip-types --env-file=.env server/database/migrate.ts",
+    "db:seed": "node --experimental-strip-types --env-file=.env server/database/seed.ts",
+    "db:setup": "npm run db:up && npm run db:migrate && npm run db:seed",
+    "db:import-users": "node --experimental-strip-types --env-file=.env server/database/import-users.ts",
+    "db:promote-admin": "node --experimental-strip-types --env-file=.env server/database/promote-admin.ts",
+    "db:set-password": "node --experimental-strip-types --env-file=.env server/database/set-password.ts",
+    "db:sync-churches": "node --experimental-strip-types --env-file=.env server/database/sync-churches-fallback.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.45.2",
@@ -26,6 +29,7 @@
   "devDependencies": {
     "@nuxtjs/i18n": "^9.3.1",
     "@nuxtjs/tailwindcss": "^6.13.1",
+    "@types/node": "^26.5.0",
     "drizzle-kit": "^0.31.6",
     "typescript": "^5.8.2"
   }

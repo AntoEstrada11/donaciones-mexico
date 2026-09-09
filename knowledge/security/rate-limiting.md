@@ -27,10 +27,15 @@ Respuesta al exceder cupo: `429` con header `Retry-After` (segundos).
 | Prefijo de ruta | Límite | Ventana | Métodos |
 |-----------------|--------|---------|---------|
 | `/api/auth/login` | 10 | 5 min | todos |
+| `/api/auth/admin-login` | 10 | 5 min | todos |
 | `/api/auth/register` | 5 | 15 min | todos |
 | `/api/donations` | 20 | 5 min | todos |
 | `/api/me` | 60 | 5 min | POST, PATCH, DELETE (GET excluido) |
 | `/api/churches` | 60 | 5 min | GET |
+| `/api/payments/checkout` | 20 | 5 min | POST |
+| `/api/payments/paypal/capture` | 20 | 5 min | POST |
+| `/api/payments/mercadopago/sync` | 20 | 5 min | POST |
+| `/api/payments/webhook` | 120 | 5 min | todos |
 
 La IP se obtiene con `getRequestIP(event, { xForwardedFor: true })`. Detrás de un proxy inverso
 confiable debe configurarse el encabezado `X-Forwarded-For` correctamente.

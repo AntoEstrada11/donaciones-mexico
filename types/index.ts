@@ -1,5 +1,6 @@
 export type UserRole = 'donor' | 'admin'
 export type DonorStatus = 'active' | 'deactivated'
+export type DonorComplianceStatus = 'rapid' | 'cfdi' | 'pld_pending' | 'sat_report'
 
 export interface Church {
   id: string
@@ -24,6 +25,8 @@ export interface Campaign {
   type: string
 }
 
+export type DonationMethod = 'spei' | 'card' | 'paypal'
+
 export interface Donation {
   id: string
   churchId: string
@@ -31,7 +34,7 @@ export interface Donation {
   amount: number
   currency: string
   status: 'paid' | 'pending' | 'failed' | 'cancelled' | 'refunded'
-  method: 'spei' | 'card' | 'paypal' | string
+  method: DonationMethod
   createdAt: string
   provider?: PaymentProvider | null
   providerReference?: string | null
@@ -41,7 +44,6 @@ export interface Donation {
 
 export type PaymentProvider = 'mercadopago' | 'paypal' | 'spei_manual'
 export type PaymentMode = 'test' | 'live'
-export type DonationMethod = 'spei' | 'card' | 'paypal'
 
 /** Preferencias de cobro editables en admin (sin secretos). */
 export interface PaymentSettings {
@@ -64,6 +66,19 @@ export interface PaymentMethodsPublic {
   card: boolean
   paypal: boolean
   mode: PaymentMode
+}
+
+export interface DonationCreateResponse {
+  donation: Donation
+  checkoutUrl: string | null
+  uma?: UmaSnapshot
+}
+
+export interface UmaSnapshot {
+  paidInWindow: number
+  pldThreshold: number
+  satThreshold: number
+  status: DonorComplianceStatus
 }
 
 export interface AuthResponse {
@@ -99,6 +114,10 @@ export interface DonorProfile {
   state: string | null
   zip: string | null
   rfc: string | null
+  fiscalName: string | null
+  taxRegime: string | null
+  cfdiUse: string | null
+  complianceStatus: DonorComplianceStatus
   profileComplete: boolean
 }
 
@@ -132,6 +151,10 @@ export interface DataExport {
     state: string | null
     zip: string | null
     rfc: string | null
+    fiscalName: string | null
+    taxRegime: string | null
+    cfdiUse: string | null
+    complianceStatus: DonorComplianceStatus
   }
   donations: Donation[]
   consents: ConsentRecord[]
@@ -151,6 +174,8 @@ export interface AdminStats {
   admins: number
   donationsByStatus: Record<Donation['status'], number>
   activeSlides: number
+  pldPending: number
+  satReport: number
 }
 
 export interface AdminUserRow {
@@ -169,6 +194,8 @@ export interface AdminDonationRow extends Donation {
   userEmail: string | null
   userName: string | null
   campaignName: string | null
+  campaignType: string | null
+  churchName: string | null
 }
 
 export interface ChurchApiItem {

@@ -16,9 +16,9 @@ timestamp: 2026-08-06T00:00:00Z
 
 # Respuesta
 
-Array de `Donation` ordenado por fecha descendente: `id`, `churchId`, `campaignId`, `amount`, `currency`, `status`, `method`, `createdAt`.
+Array de `Donation` ordenado por fecha descendente: `id`, `churchId`, `campaignId`, `amount`, `currency`, `status`, `method` (`spei`, `paypal`, `mercadopago` o `card` histórico), `createdAt`.
 
-`amount` se convierte de `NUMERIC` a número en la frontera del repositorio.
+`GET /api/donations/:id` (sesión + dueño) sirve para consultar el estado al volver de Mercado Pago.
 
 # Errores
 

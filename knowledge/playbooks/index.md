@@ -7,6 +7,8 @@
 * [Cambiar contraseña](set-password.md) - Resetear hash de una cuenta o crear el primer admin.
 * [Respaldo y restauración](db-backup.md) - `pg_dump`, `pg_restore` y respaldo programado.
 * [Desplegar](deploy.md) - Build de producción y orden de migraciones.
+* [Auth Hub](auth-hub.md) - Probar api-hub, web-hub y login de este sitio.
+* [Personalizar pie y carrusel](personalize.md) - JSON de `site_settings` y medidas del hero.
 * [Atender una solicitud ARCO](arco-request.md) - Acceso, rectificación, cancelación u oposición en 20 días hábiles.
 * [Vulneración de datos personales](data-breach.md) - Contener, evaluar y notificar una filtración.
 * [Configurar pasarelas de pago](payments-setup.md) - Apps, llaves test/live y URLs de webhook (MP + PayPal).

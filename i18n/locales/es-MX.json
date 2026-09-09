@@ -92,6 +92,7 @@
     "amountPlaceholder": "0.00",
     "amountRange": "Monto entre ${min} y ${max} MXN.",
     "amountRequired": "Seleccione o escriba un monto válido.",
+    "invoiceRequired": "Para factura indique razón social, RFC, C.P. fiscal, régimen y uso de CFDI.",
     "methodLabel": "Método de pago",
     "methodSpei": "Transferencia bancaria SPEI",
     "methodCard": "Tarjeta",
@@ -113,6 +114,11 @@
     "viewHistory": "Ver historial",
     "newDonation": "Nueva donación",
     "secureRedirectNote": "Al pagar con tarjeta o PayPal saldrá del sitio al checkout seguro del proveedor. No almacenamos datos de su tarjeta.",
+    "returnTitle": "Regreso del pago",
+    "returnPaid": "El cobro fue confirmado.",
+    "returnPending": "El pago quedó pendiente. Revise el historial en unos minutos.",
+    "returnCancel": "Canceló el pago. Puede intentarlo de nuevo.",
+    "returnError": "No se pudo confirmar el cobro. Si le descontaron, revise el historial o escriba a privacidad.",
     "statusPaid": "Pagada",
     "statusPending": "Pendiente",
     "statusFailed": "Fallida",
@@ -125,9 +131,13 @@
     "thanksCancelled": "El pago fue cancelado. Puede intentar de nuevo cuando lo desee.",
     "thanksLoading": "Confirmando el estado del pago…"
   },
+  "uma": {
+    "pldDonor": "Por disposición fiscal y de prevención de lavado de dinero, su acumulado de 6 meses alcanzó 1,605 UMA. Por ahora no pedimos documentos; el expediente PLD se habilitará después. Un administrador ya fue notificado en el panel.",
+    "satDonor": "Su acumulado de 6 meses alcanzó el umbral de reporte ante el SAT (3,210 UMA). El administrador del sitio debe dar seguimiento. No se piden documentos en esta fase."
+  },
   "login": {
     "title": "Iniciar sesión",
-    "subtitle": "Acceda a su cuenta para ver su perfil e historial.",
+    "subtitle": "Donantes y personal del sitio usan esta misma pantalla. Si su cuenta es de operación, se abre el panel.",
     "email": "Correo electrónico",
     "emailPlaceholder": "correo{'@'}ejemplo.com",
     "password": "Contraseña",
@@ -136,7 +146,15 @@
     "submitting": "Ingresando…",
     "required": "Ingrese correo y contraseña.",
     "error": "No se pudo iniciar sesión. Intente de nuevo.",
-    "noAccount": "¿No tiene cuenta?"
+    "noAccount": "¿No tiene cuenta?",
+    "staffLink": "Acceso de operación (Auth Hub)",
+    "staffHint": "Esta pantalla es solo para donantes. El personal del sitio (incluido superadmin del hub) entra en Acceso de operación.",
+    "staffRequired": "Esta cuenta es de operación. Use Acceso de operación, no esta pantalla."
+  },
+  "adminLogin": {
+    "title": "Acceso de operación",
+    "subtitle": "Entre con la misma cuenta del Auth Hub. Un superadmin del hub entra al panel aunque no tenga membresía en la app donaciones. Los donantes usan Iniciar sesión.",
+    "error": "No se pudo entrar al panel. Verifique su cuenta de operación."
   },
   "register": {
     "title": "Crear cuenta",
@@ -167,6 +185,10 @@
     "zipPlaceholder": "00000",
     "rfc": "RFC",
     "rfcPlaceholder": "XAXX010101000",
+    "fiscalName": "Nombre o razón social (CFDI)",
+    "taxRegime": "Régimen fiscal",
+    "cfdiUse": "Uso de CFDI",
+    "select": "Seleccione…",
     "save": "Guardar cambios",
     "saving": "Guardando…",
     "saved": "Perfil actualizado correctamente.",
@@ -190,6 +212,12 @@
   "admin": {
     "title": "Administración",
     "subtitle": "Herramientas para operar el sitio de donaciones.",
+    "openDonations": "Revisar donaciones",
+    "openDonationsDesc": "Estados pendientes y pagados.",
+    "openUsers": "Cuentas de donantes",
+    "openUsersDesc": "Alta, baja y restablecer acceso.",
+    "openPersonalize": "Personalizar el sitio",
+    "openPersonalizeDesc": "Carrusel del inicio y datos del pie.",
     "nav": {
       "overview": "Resumen",
       "personalize": "Personalizar",
@@ -254,7 +282,9 @@
       "admins": "{count} administradores",
       "pending": "Donaciones pendientes",
       "paid": "Donaciones pagadas",
-      "slides": "Slides activas"
+      "slides": "Slides activas",
+      "pld": "Umbral PLD (1,605 UMA)",
+      "sat": "Aviso SAT (3,210 UMA)"
     },
     "slides": {
       "title": "Carrusel del inicio",
@@ -262,7 +292,7 @@
       "upload": "Subir imagen",
       "uploading": "Subiendo…",
       "altPlaceholder": "Texto alternativo (opcional)",
-      "limits": "JPG, PNG o WebP · máximo 3 MB",
+      "limits": "JPG, PNG o WebP · máximo 3 MB · recomendado 1920×800 px (horizontal)",
       "fileRequired": "Seleccione una imagen.",
       "uploaded": "Imagen subida correctamente.",
       "uploadError": "No se pudo subir la imagen.",
@@ -281,14 +311,18 @@
     },
     "donations": {
       "title": "Donaciones",
-      "subtitle": "Consulte y actualice el estado de las donaciones.",
-      "empty": "No hay donaciones registradas.",
+      "subtitle": "Filtre y agrupe por iglesia, tipo de donación y estado.",
+      "empty": "No hay donaciones con esos filtros.",
       "date": "Fecha",
       "donor": "Donante",
-      "campaign": "Campaña",
+      "church": "Iglesia",
+      "campaign": "Tipo",
+      "type": "Tipo de donación",
       "amount": "Monto",
       "status": "Estado",
-      "anonymous": "Sin sesión"
+      "anonymous": "Sin sesión",
+      "all": "Todas",
+      "groupBy": "Agrupar por"
     },
     "users": {
       "title": "Usuarios",
@@ -379,7 +413,7 @@
     "deleteError": "No se pudo eliminar la cuenta.",
     "arcoContact": "También puede ejercer sus derechos escribiendo a {email}.",
     "fiscalToggle": "Quiero recibir un recibo deducible de impuestos",
-    "fiscalNote": "Solo pedimos RFC y domicilio si desea recibo deducible. Puede donar sin proporcionarlos."
+    "fiscalNote": "Solo pedimos datos fiscales en texto si desea factura (CFDI 4.0). No suba PDFs en este paso."
   },
   "common": {
     "loading": "Cargando…",

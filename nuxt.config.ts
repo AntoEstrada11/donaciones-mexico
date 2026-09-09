@@ -1,3 +1,4 @@
+/// <reference types="node" />
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-06',
   devtools: { enabled: true },
@@ -79,6 +80,8 @@ export default defineNuxtConfig({
       defaultLatitude: 19.392531016453,
       defaultLongitude: -99.18114903857942,
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || '',
+      authHubUrl: process.env.NUXT_PUBLIC_AUTH_HUB_URL || '',
+      appCode: process.env.NUXT_PUBLIC_APP_CODE || 'donaciones',
     },
   },
 })

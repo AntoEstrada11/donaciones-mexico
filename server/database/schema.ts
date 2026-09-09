@@ -19,6 +19,7 @@ export const paymentModeEnum = pgEnum('payment_mode', ['test', 'live'])
 export const userRoleEnum = pgEnum('user_role', ['donor', 'admin'])
 export const donorStatusEnum = pgEnum('donor_status', ['active', 'deactivated'])
 export const consentTypeEnum = pgEnum('consent_type', ['privacy_notice', 'sensitive_data', 'marketing'])
+export const donorComplianceEnum = pgEnum('donor_compliance_status', ['rapid', 'cfdi', 'pld_pending', 'sat_report'])
 
 /** Cuenta de acceso del donante. El correo es único pero puede cambiar, por eso la PK es sintética. */
 export const users = pgTable('users', {
@@ -30,10 +31,13 @@ export const users = pgTable('users', {
   /** Solo aplica a donantes; los admin se consideran siempre operativos. */
   status: donorStatusEnum('status').notNull().default('active'),
   profileComplete: boolean('profile_complete').notNull().default(false),
+  /** Id del usuario en Auth Hub; nulo si la cuenta nació solo en este sitio. */
+  hubUserId: varchar('hub_user_id', { length: 64 }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, table => [
   uniqueIndex('users_email_key').on(table.email),
+  uniqueIndex('users_hub_user_id_key').on(table.hubUserId),
 ])
 
 /** Historial de cambios de estado de donantes (activo / baja). */
@@ -75,6 +79,12 @@ export const donorProfiles = pgTable('donor_profiles', {
   state: varchar('state', { length: 120 }),
   zip: varchar('zip', { length: 10 }),
   rfc: varchar('rfc', { length: 13 }),
+  /** Nombre o razón social como en la constancia (CFDI 4.0). */
+  fiscalName: varchar('fiscal_name', { length: 160 }),
+  taxRegime: varchar('tax_regime', { length: 8 }),
+  cfdiUse: varchar('cfdi_use', { length: 8 }),
+  /** rapid | cfdi | umbral PLD | aviso SAT. Sin expediente documental aún. */
+  complianceStatus: donorComplianceEnum('compliance_status').notNull().default('rapid'),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, table => [
   uniqueIndex('donor_profiles_phone_digits_key').on(table.phoneDigits),

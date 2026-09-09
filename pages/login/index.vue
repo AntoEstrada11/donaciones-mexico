@@ -1,7 +1,23 @@
 <script setup lang="ts">
 const { t } = useI18n()
-const { login, isLoggedIn } = useAuth()
+const { login, isLoggedIn, isAdmin } = useAuth()
 const route = useRoute()
+
+function safeInternalPath(value: unknown) {
+  if (typeof value !== 'string') return null
+  if (!value.startsWith('/') || value.startsWith('//') || value.includes('\\')) return null
+  return value
+}
+
+function destination(role: 'admin' | 'donor') {
+  const requested = safeInternalPath(route.query.redirect)
+  if (role === 'admin') {
+    if (requested && (requested === '/admin' || requested.startsWith('/admin/'))) return requested
+    return '/admin'
+  }
+  if (requested && !requested.startsWith('/admin')) return requested
+  return '/perfil'
+}
 
 const email = ref('')
 const password = ref('')
@@ -10,8 +26,7 @@ const error = ref('')
 
 onMounted(() => {
   if (isLoggedIn.value) {
-    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/perfil'
-    navigateTo(redirect)
+    navigateTo(destination(isAdmin.value ? 'admin' : 'donor'))
   }
 })
 
@@ -38,9 +53,8 @@ async function onSubmit() {
   error.value = ''
 
   try {
-    await login(email.value.trim(), password.value)
-    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/perfil'
-    await navigateTo(redirect)
+    const session = await login(email.value.trim(), password.value)
+    await navigateTo(destination(session.role === 'admin' ? 'admin' : 'donor'))
   }
   catch (e: unknown) {
     const msg = (e as { data?: { statusMessage?: string } })?.data?.statusMessage
