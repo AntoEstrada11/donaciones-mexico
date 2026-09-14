@@ -20,7 +20,9 @@ El Auth Hub es para quien opera el sitio. Los donantes finales se dan de alta aq
 
 La UI es una sola. Un donante no pasa por el hub. Un operador (superadmin o membresía admin) llega a `/admin` tras el mismo formulario. `/admin/login` redirige a `/login`.
 
-El operador **no dona** con esa cuenta: el menú no muestra Donar / Iglesias / Historial / Perfil de donante, las rutas `/donaciones`, `/iglesias`, `/historial` y `/perfil` redirigen al panel, y `POST /api/donations` responde 403.
+`POST /api/auth/login` consulta **Auth Hub primero**. Si el correo existe como donante local y se valida antes que el hub, el personal entra con `role: donor` y el menú muestra Donar. Tras un login de operador se actualiza `users.role` a `admin`.
+
+El operador **no dona** con esa cuenta: el menú no muestra Donar / Iglesias / Historial / Perfil de donante, las rutas `/donaciones`, `/iglesias`, `/historial` y `/perfil` redirigen al panel, y `POST /api/donations` (y checkout) responde 403 si el token o la fila en `users` es `admin`. Hay que **cerrar sesión e iniciar de nuevo** para que el token y la cookie `donaciones-role` coincidan con el rol actual.
 
 Quién es administrador en este sitio:
 

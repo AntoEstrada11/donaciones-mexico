@@ -103,8 +103,17 @@ export function optionalSession(event: H3Event): SessionPayload | null {
 }
 
 /** El personal opera el panel; no dona con esa cuenta. */
-export function assertNotOperator(session: SessionPayload | null) {
-  if (session?.role === 'admin') {
+export async function assertNotOperator(session: SessionPayload | null) {
+  if (!session) return
+  if (session.role === 'admin') {
+    throw createError({
+      statusCode: 403,
+      statusMessage: 'El personal no registra donaciones con esta cuenta.',
+    })
+  }
+  const { findUserById } = await import('./users')
+  const row = await findUserById(session.sub)
+  if (row?.role === 'admin') {
     throw createError({
       statusCode: 403,
       statusMessage: 'El personal no registra donaciones con esta cuenta.',

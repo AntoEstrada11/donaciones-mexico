@@ -3,8 +3,9 @@ import { isValidEmail, sanitizeEmailInput } from '../../../utils/fieldLimits'
 import { tryOperatorAuth } from '../../utils/operatorAuth'
 
 /**
- * Una sola puerta: donante local o operador del Auth Hub.
- * Si el correo ya es donante, no se consulta el hub.
+ * Una sola puerta: operador del Auth Hub primero, luego donante local.
+ * Si se consulta primero la fila donante, un operador con el mismo correo
+ * entra como donante y ve Donar.
  */
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -25,12 +26,46 @@ export default defineEventHandler(async (event) => {
     })
   }
 
+  let operator: AuthResponse | null = null
+  try {
+    operator = await tryOperatorAuth(email, password)
+  }
+  catch (error) {
+    throwIfDatabaseError(error)
+    throw error
+  }
+
+  if (operator) return operator
+
   let user
   try {
     user = await findUserByEmail(email)
   }
   catch (error) {
     throwIfDatabaseError(error)
+  }
+
+  if (user?.role === 'admin') {
+    if (!verifyPassword(password, user.passwordHash)) {
+      throw createError({
+        statusCode: 401,
+        statusMessage: 'Correo o contraseña incorrectos',
+      })
+    }
+    const response: AuthResponse = {
+      token: signToken({
+        sub: user.id,
+        email: user.email,
+        name: user.name,
+        role: 'admin',
+      }),
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: 'admin',
+      profileComplete: user.profileComplete,
+    }
+    return response
   }
 
   if (user?.role === 'donor') {
@@ -63,17 +98,6 @@ export default defineEventHandler(async (event) => {
     }
     return response
   }
-
-  let operator: AuthResponse | null = null
-  try {
-    operator = await tryOperatorAuth(email, password)
-  }
-  catch (error) {
-    throwIfDatabaseError(error)
-    throw error
-  }
-
-  if (operator) return operator
 
   throw createError({
     statusCode: 401,

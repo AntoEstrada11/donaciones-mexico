@@ -1,5 +1,8 @@
 # Directory Update Log
 
+## 2026-09-14
+* **Update**: Login consulta Auth Hub antes que donante local para que el personal no entre como donante. Cookie `donaciones-role` y rol del JWT para el menú. `assertNotOperator` también mira `users.role`. Ver [/decisions/donor-vs-operator-auth.md](/decisions/donor-vs-operator-auth.md).
+
 ## 2026-09-10
 * **Update**: `POST /api/dev/contacts` carga donantes ficticios solo en `nuxt dev`. Ver [/playbooks/dev-bulk-contacts.md](/playbooks/dev-bulk-contacts.md).
 

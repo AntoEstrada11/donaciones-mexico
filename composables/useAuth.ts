@@ -11,6 +11,26 @@ export interface AuthUser {
   profileComplete: boolean
 }
 
+function roleFromToken(token: string): UserRole | null {
+  try {
+    const data = token.split('.')[0]
+    if (!data) return null
+    const padded = data.replace(/-/g, '+').replace(/_/g, '/')
+    const json = atob(padded + '='.repeat((4 - (padded.length % 4)) % 4))
+    const payload = JSON.parse(json) as { role?: string, exp?: number }
+    if (typeof payload.exp === 'number' && payload.exp < Date.now() / 1000) return null
+    if (payload.role === 'admin' || payload.role === 'donor') return payload.role
+  }
+  catch {
+    return null
+  }
+  return null
+}
+
+function resolveRole(user: AuthUser): UserRole {
+  return roleFromToken(user.token) || (user.role === 'admin' ? 'admin' : 'donor')
+}
+
 function readStoredUser(): AuthUser | null {
   if (!import.meta.client) return null
   try {
@@ -19,7 +39,7 @@ function readStoredUser(): AuthUser | null {
     const parsed = JSON.parse(raw) as AuthUser
     return {
       ...parsed,
-      role: parsed.role === 'admin' ? 'admin' : 'donor',
+      role: resolveRole(parsed),
     }
   }
   catch {
@@ -27,7 +47,8 @@ function readStoredUser(): AuthUser | null {
   }
 }
 
-function persistUser(user: AuthUser | null) {
+function persistUser(user: AuthUser | null, roleCookie: { value: UserRole | null | undefined }) {
+  roleCookie.value = user ? user.role : null
   if (!import.meta.client) return
   if (!user) {
     sessionStorage.removeItem(USER_KEY)
@@ -42,16 +63,24 @@ function authHeaders(token: string) {
 
 export function useAuth() {
   const user = useState<AuthUser | null>('auth-user', () => null)
+  const roleCookie = useCookie<UserRole | null>('donaciones-role', {
+    path: '/',
+    sameSite: 'lax',
+  })
 
   if (import.meta.client && !user.value) {
     user.value = readStoredUser()
+    if (user.value) roleCookie.value = user.value.role
+    else if (roleCookie.value) roleCookie.value = null
   }
 
   const isLoggedIn = computed(() => !!user.value?.token)
-  const isAdmin = computed(() => user.value?.role === 'admin')
+  const isAdmin = computed(() =>
+    user.value ? user.value.role === 'admin' : roleCookie.value === 'admin',
+  )
 
   function setSession(response: AuthResponse) {
-    user.value = {
+    const next: AuthUser = {
       token: response.token,
       id: response.id,
       name: response.name,
@@ -59,7 +88,9 @@ export function useAuth() {
       role: response.role === 'admin' ? 'admin' : 'donor',
       profileComplete: response.profileComplete,
     }
-    persistUser(user.value)
+    next.role = resolveRole(next)
+    user.value = next
+    persistUser(user.value, roleCookie)
   }
 
   function requireToken() {
@@ -103,7 +134,7 @@ export function useAuth() {
 
   function logout() {
     user.value = null
-    persistUser(null)
+    persistUser(null, roleCookie)
   }
 
   async function fetchProfile(): Promise<DonorProfile> {
@@ -123,7 +154,7 @@ export function useAuth() {
       name: profile.name,
       profileComplete: profile.profileComplete,
     }
-    persistUser(user.value)
+    persistUser(user.value, roleCookie)
     return profile
   }
 

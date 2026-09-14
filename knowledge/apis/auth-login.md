@@ -35,6 +35,6 @@ timestamp: 2026-08-07T00:00:00Z
 
 # Notas
 
-Donante local o, si no lo es, operador vía Auth Hub. Respuesta con `role` `donor` o `admin`. Ver [/decisions/donor-vs-operator-auth.md](/decisions/donor-vs-operator-auth.md).
+Operador vía Auth Hub primero; si no aplica, donante o admin local. Respuesta con `role` `donor` o `admin`. Ver [/decisions/donor-vs-operator-auth.md](/decisions/donor-vs-operator-auth.md).
 
 El `sub` del token es el uuid del usuario, no el correo. Ver [/data/field-limits.md](/data/field-limits.md).
