@@ -1,6 +1,6 @@
 # Playbooks
 
-* [Correr en local](run-local.md) - Base en Docker y servidor de desarrollo.
+* [Carga masiva de contactos de prueba](dev-bulk-contacts.md) - JSON ficticio contra `POST /api/dev/contacts` (solo `nuxt dev`).
 * [Migraciones de base de datos](db-migrations.md) - Drizzle, esquema e importación del store legado.
 * [Carrusel tras instalación nueva](hero-slides-restore.md) - Copiar JPG no restaura el reel; hay que subirlos en `/admin/personalizar/carrusel`.
 * [Promover administrador](promote-admin.md) - Asignar role admin por correo.

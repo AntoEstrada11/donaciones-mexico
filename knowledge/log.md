@@ -1,6 +1,11 @@
 # Directory Update Log
 
+## 2026-09-10
+* **Update**: `POST /api/dev/contacts` carga donantes ficticios solo en `nuxt dev`. Ver [/playbooks/dev-bulk-contacts.md](/playbooks/dev-bulk-contacts.md).
+
 ## 2026-09-09
+* **Update**: Perfil muestra confirmación al guardar y recarga los datos. Donar: el botón confirma igual y señala lo que falta. Páginas de donante a ancho `max-w-6xl`.
+* **Update**: Operadores no donan: menú y rutas de donante van al panel; `POST /api/donations` 403. El listado admin agrupa por sección y ya no espera a Odoo ni se rompe con estado `refunded`. Catálogos públicos (`campaigns`, slides, métodos) se reutilizan por clave. Ver [/decisions/donor-vs-operator-auth.md](/decisions/donor-vs-operator-auth.md).
 * **Update**: La pasarela base es la de `origin/main` (`server/payments/`, cobros, checkout/webhooks). Auth Hub, CFDI/UMA y panel agrupado se conservan encima. Aviso `LEGAL.noticeVersion` 2026-09-09.
 * **Update**: Panel de donaciones agrupado por iglesia, tipo y estado. JSON y specs del hero en [/playbooks/personalize.md](/playbooks/personalize.md).
 * **Update**: Auth Hub en Oracle `http://159.54.159.34:8000`. Captura CFDI 4.0 en texto, clasificación UMA y alertas; sin Odoo ni PDFs. Ver [/playbooks/auth-hub.md](/playbooks/auth-hub.md) y [/decisions/captura-progresiva.md](/decisions/captura-progresiva.md).

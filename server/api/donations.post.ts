@@ -3,6 +3,7 @@ import type { DonationCreateResponse, DonationMethod } from '~/types'
 
 export default defineEventHandler(async (event): Promise<DonationCreateResponse> => {
   const session = optionalSession(event)
+  assertNotOperator(session)
   if (session) {
     await assertDonorAccountActive(session.sub)
   }

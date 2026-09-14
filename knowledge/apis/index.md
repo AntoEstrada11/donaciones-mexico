@@ -15,7 +15,7 @@
 * [GET /api/hero-slides](hero-slides-get.md) - Slides activas del carrusel del home.
 * [GET /api/site-settings](site-settings-get.md) - Contacto y SPEI del pie (públicos).
 * [GET /api/churches](churches-get.md) - Directorio (proxy Odoo + fallback de muestra).
-* [Admin API](admin.md) - Stats, slides, site-settings, donaciones y usuarios (requireAdmin).
+* [POST /api/dev/contacts](dev-contacts.md) - Alta masiva de donantes ficticios (`nuxt dev` solamente).
 * [Iglesias (externa Odoo)](churches-external.md) - API en miembros.iurdsys.net consultada por Nitro.
 
 Límites compartidos: [/data/field-limits.md](/data/field-limits.md).

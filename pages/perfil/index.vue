@@ -2,9 +2,11 @@
 import type { ConsentType, DonorProfile } from '~/types'
 import { CFDI_USES, TAX_REGIMES, isValidCfdiUse, isValidTaxRegime } from '~/utils/cfdiCatalog'
 
+definePageMeta({ middleware: 'donor' })
+
 const { t } = useI18n()
+const route = useRoute()
 const {
-  isLoggedIn,
   fetchProfile,
   updateProfile,
   downloadMyData,
@@ -44,25 +46,24 @@ const deletePassword = ref('')
 const deleting = ref(false)
 const deleteError = ref('')
 
-onMounted(async () => {
-  if (!isLoggedIn.value) {
-    await navigateTo('/login?redirect=/perfil')
-    return
-  }
+function applyProfile(me: DonorProfile) {
+  profile.value = me
+  form.name = me.name
+  form.phone = me.phone || ''
+  form.wantsReceipt = me.wantsReceipt
+  form.street = me.street || ''
+  form.city = me.city || ''
+  form.state = me.state || ''
+  form.zip = me.zip || ''
+  form.rfc = me.rfc || ''
+  form.fiscalName = me.fiscalName || me.name || ''
+  form.taxRegime = me.taxRegime || ''
+  form.cfdiUse = me.cfdiUse || 'D04'
+}
 
+onMounted(async () => {
   try {
-    profile.value = await fetchProfile()
-    form.name = profile.value.name
-    form.phone = profile.value.phone || ''
-    form.wantsReceipt = profile.value.wantsReceipt
-    form.street = profile.value.street || ''
-    form.city = profile.value.city || ''
-    form.state = profile.value.state || ''
-    form.zip = profile.value.zip || ''
-    form.rfc = profile.value.rfc || ''
-    form.fiscalName = profile.value.fiscalName || profile.value.name || ''
-    form.taxRegime = profile.value.taxRegime || ''
-    form.cfdiUse = profile.value.cfdiUse || 'D04'
+    applyProfile(await fetchProfile())
 
     const consents = await fetchConsents()
     marketing.value = consents.marketing === true
@@ -139,6 +140,10 @@ async function onSubmit() {
   if (validationError) {
     error.value = validationError
     success.value = false
+    await nextTick()
+    if (import.meta.client) {
+      document.getElementById('perfil-error')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
     return
   }
 
@@ -147,17 +152,14 @@ async function onSubmit() {
   success.value = false
 
   try {
-    profile.value = await updateProfile({ ...form })
-    form.wantsReceipt = profile.value.wantsReceipt
-    form.street = profile.value.street || ''
-    form.city = profile.value.city || ''
-    form.state = profile.value.state || ''
-    form.zip = profile.value.zip || ''
-    form.rfc = profile.value.rfc || ''
-    form.fiscalName = profile.value.fiscalName || ''
-    form.taxRegime = profile.value.taxRegime || ''
-    form.cfdiUse = profile.value.cfdiUse || 'D04'
+    const updated = await updateProfile({ ...form })
+    applyProfile(updated)
     success.value = true
+    await navigateTo({ path: '/perfil', query: { guardado: '1' } })
+    await nextTick()
+    if (import.meta.client) {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
   }
   catch (e: unknown) {
     const msg = (e as { data?: { statusMessage?: string } })?.data?.statusMessage
@@ -222,7 +224,7 @@ async function onDelete() {
 </script>
 
 <template>
-  <div class="mx-auto max-w-2xl px-4 py-10 md:px-6">
+  <div id="perfil-top" class="page-shell">
     <header class="mb-8">
       <h1 class="section-title">
         {{ t('profile.title') }}
@@ -237,6 +239,29 @@ async function onDelete() {
     </div>
 
     <template v-else>
+      <div
+        v-if="success || route.query.guardado"
+        class="mb-8 rounded-lg border border-green-200 bg-green-50 px-4 py-4 text-sm text-green-900"
+        role="status"
+      >
+        <p class="font-semibold">{{ t('profile.savedBanner') }}</p>
+        <dl class="mt-3 grid gap-2 sm:grid-cols-2">
+          <div>
+            <dt class="text-xs text-green-800">{{ t('profile.name') }}</dt>
+            <dd class="font-medium">{{ profile?.name }}</dd>
+          </div>
+          <div v-if="profile?.wantsReceipt">
+            <dt class="text-xs text-green-800">{{ t('profile.rfc') }}</dt>
+            <dd class="font-medium">{{ profile?.rfc || '—' }}</dd>
+          </div>
+          <div v-if="profile?.wantsReceipt">
+            <dt class="text-xs text-green-800">{{ t('profile.fiscalName') }}</dt>
+            <dd class="font-medium">{{ profile?.fiscalName || '—' }}</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="grid items-start gap-8 lg:grid-cols-[minmax(0,1.35fr)_minmax(16rem,0.75fr)]">
       <form class="card space-y-4" @submit.prevent="onSubmit">
         <div class="grid gap-4 sm:grid-cols-2">
           <div class="sm:col-span-2">
@@ -429,7 +454,7 @@ async function onDelete() {
           </div>
         </div>
 
-        <p v-if="error" class="text-sm text-red-600">
+        <p v-if="error" id="perfil-error" class="text-sm text-red-600">
           {{ error }}
         </p>
         <p v-if="success" class="text-sm text-green-700">
@@ -446,7 +471,7 @@ async function onDelete() {
         </button>
       </form>
 
-      <section class="card mt-8 space-y-6">
+      <section class="card space-y-6">
         <header>
           <h2 class="text-lg font-bold text-ink">
             {{ t('legal.privacySection') }}
@@ -569,6 +594,7 @@ async function onDelete() {
           </NuxtLink>
         </p>
       </section>
+      </div>
     </template>
   </div>
 </template>

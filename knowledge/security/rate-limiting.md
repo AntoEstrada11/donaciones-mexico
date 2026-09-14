@@ -35,7 +35,7 @@ Respuesta al exceder cupo: `429` con header `Retry-After` (segundos).
 | `/api/payments/checkout` | 20 | 5 min | POST |
 | `/api/payments/paypal/capture` | 20 | 5 min | POST |
 | `/api/payments/mercadopago/sync` | 20 | 5 min | POST |
-| `/api/payments/webhook` | 120 | 5 min | todos |
+| `/api/dev/contacts` | 20 | 5 min | POST (`nuxt dev`) |
 
 La IP se obtiene con `getRequestIP(event, { xForwardedFor: true })`. Detrás de un proxy inverso
 confiable debe configurarse el encabezado `X-Forwarded-For` correctamente.

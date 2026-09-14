@@ -20,6 +20,8 @@ El Auth Hub es para quien opera el sitio. Los donantes finales se dan de alta aq
 
 La UI es una sola. Un donante no pasa por el hub. Un operador (superadmin o membresía admin) llega a `/admin` tras el mismo formulario. `/admin/login` redirige a `/login`.
 
+El operador **no dona** con esa cuenta: el menú no muestra Donar / Iglesias / Historial / Perfil de donante, las rutas `/donaciones`, `/iglesias`, `/historial` y `/perfil` redirigen al panel, y `POST /api/donations` responde 403.
+
 Quién es administrador en este sitio:
 
 1. `is_superadmin` en Auth Hub (cubre toda la plataforma, incluida donaciones).

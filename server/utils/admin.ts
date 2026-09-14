@@ -154,7 +154,7 @@ export async function listAdminDonations(limit = 500): Promise<AdminDonationRow[
     .orderBy(desc(donations.createdAt))
     .limit(limit)
 
-  const churchNames = await churchNameMap()
+  const churchNames = await churchNamesWithoutRemoteFetch()
 
   return rows.map(({ donation, userEmail, userName, campaignName, campaignType }) =>
     toAdminDonationRow(donation, {
@@ -165,21 +165,6 @@ export async function listAdminDonations(limit = 500): Promise<AdminDonationRow[
       churchName: churchNames.get(donation.churchExternalId) ?? null,
     }),
   )
-}
-
-async function churchNameMap() {
-  const names = new Map<string, string>()
-  try {
-    const config = useRuntimeConfig().public
-    const { churches } = await listChurches(Number(config.defaultLatitude), Number(config.defaultLongitude))
-    for (const church of churches) {
-      names.set(church.id, church.name)
-    }
-  }
-  catch {
-    /* el listado sigue con el id de iglesia */
-  }
-  return names
 }
 
 function toAdminDonationRow(
@@ -247,7 +232,7 @@ export async function updateDonationStatus(
     .where(eq(donations.id, id))
     .limit(1)
 
-  const churchNames = await churchNameMap()
+  const churchNames = await churchNamesWithoutRemoteFetch()
 
   return toAdminDonationRow(row, {
     userEmail: enriched?.userEmail ?? null,

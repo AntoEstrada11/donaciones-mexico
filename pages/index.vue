@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import type { Campaign, HeroSlide } from '~/types'
-
 const { t } = useI18n()
-const { isLoggedIn } = useAuth()
+const { isLoggedIn, isAdmin } = useAuth()
 
-const donateEntry = computed(() =>
-  isLoggedIn.value ? '/iglesias' : '/login?redirect=/iglesias',
-)
+const donateEntry = computed(() => {
+  if (isAdmin.value) return '/admin'
+  return isLoggedIn.value ? '/iglesias' : '/login?redirect=/iglesias'
+})
 
-const { data: campaigns, pending } = await useFetch<Campaign[]>('/api/campaigns')
-const { data: heroSlides } = await useFetch<HeroSlide[]>('/api/hero-slides')
+const { data: campaigns, pending } = await useCampaigns()
+const { data: heroSlides } = await useHeroSlides()
 
 const steps = computed(() => [
   { title: t('home.step1Title'), desc: t('home.step1Desc'), icon: '🔐' },
@@ -35,10 +34,10 @@ const steps = computed(() => [
           </p>
           <div class="mt-8 flex flex-wrap gap-4">
             <NuxtLink :to="donateEntry" class="btn-primary bg-accent text-ink hover:bg-accent-dark">
-              {{ t('home.ctaDonate') }}
+              {{ isAdmin ? t('home.ctaAdmin') : t('home.ctaDonate') }}
             </NuxtLink>
             <NuxtLink
-              v-if="isLoggedIn"
+              v-if="isLoggedIn && !isAdmin"
               to="/iglesias"
               class="btn-secondary border-white/30 bg-transparent text-white hover:bg-white/10"
             >

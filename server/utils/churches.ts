@@ -154,6 +154,24 @@ export async function listChurches(latitude: number, longitude: number): Promise
   }
 }
 
+/** Nombres para el panel: caché de Odoo si ya existe; si no, JSON local. No espera a Odoo. */
+export async function churchNamesWithoutRemoteFetch(): Promise<Map<string, string>> {
+  const names = new Map<string, string>()
+  const now = Date.now()
+  for (const entry of remoteCache.values()) {
+    if (entry.expiresAt > now) {
+      for (const church of entry.churches) {
+        names.set(church.id, church.name)
+      }
+      if (names.size) return names
+    }
+  }
+  for (const church of await loadSample()) {
+    names.set(church.id, church.name)
+  }
+  return names
+}
+
 // Para tests internos / invalidación manual si hiciera falta en el futuro.
 export function clearChurchesRemoteCache() {
   remoteCache.clear()

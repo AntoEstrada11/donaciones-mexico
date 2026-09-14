@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { Church } from '~/types'
 
-definePageMeta({ middleware: 'auth' })
+definePageMeta({ middleware: 'donor' })
 
 const { t } = useI18n()
 const config = useRuntimeConfig()
@@ -59,7 +59,7 @@ const filtered = computed(() => {
 </script>
 
 <template>
-  <div class="mx-auto max-w-6xl px-4 py-10 md:px-6">
+  <div class="page-shell">
     <header class="mb-8">
       <h1 class="section-title">
         {{ t('churches.title') }}
@@ -82,7 +82,7 @@ const filtered = computed(() => {
       >
     </div>
 
-    <div class="mb-8 rounded-lg border border-gray-200 bg-gray-50 p-4 md:max-w-2xl">
+    <div class="mb-8 rounded-lg border border-gray-200 bg-gray-50 p-4">
       <h2 class="text-sm font-semibold text-ink">
         {{ t('legal.geoTitle') }}
       </h2>

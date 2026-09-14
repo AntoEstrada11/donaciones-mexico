@@ -14,7 +14,7 @@ const RULES: Array<{ prefix: string, rule: RateLimitRule, methods?: string[] }> 
   { prefix: '/api/payments/paypal/capture', rule: { limit: 20, windowMs: 5 * 60_000 }, methods: ['POST'] },
   { prefix: '/api/payments/paypal-capture', rule: { limit: 30, windowMs: 5 * 60_000 }, methods: ['POST'] },
   { prefix: '/api/payments/mercadopago/sync', rule: { limit: 20, windowMs: 5 * 60_000 }, methods: ['POST'] },
-  { prefix: '/api/payments/webhook', rule: { limit: 120, windowMs: 5 * 60_000 } },
+  { prefix: '/api/dev/contacts', rule: { limit: 20, windowMs: 5 * 60_000 }, methods: ['POST'] },
   { prefix: '/api/webhooks', rule: { limit: 120, windowMs: 5 * 60_000 } },
 ]
 

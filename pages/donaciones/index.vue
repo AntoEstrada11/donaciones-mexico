@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { Campaign, DonationCreateResponse, DonationMethod, DonorProfile, PaymentMethodsPublic } from '~/types'
+import type { DonationCreateResponse, DonationMethod, DonorProfile } from '~/types'
 import { CFDI_USES, TAX_REGIMES, isValidCfdiUse, isValidTaxRegime } from '~/utils/cfdiCatalog'
 
-definePageMeta({ middleware: 'auth' })
+definePageMeta({ middleware: 'donor' })
 
 const { t } = useI18n()
 const { selectedChurch, hydrated, clearChurch } = useDonation()
@@ -32,8 +32,8 @@ onMounted(async () => {
   }
 })
 
-const { data: campaigns, pending: campaignsPending } = await useFetch<Campaign[]>('/api/campaigns')
-const { data: methods } = await useFetch<PaymentMethodsPublic>('/api/payments/methods')
+const { data: campaigns, pending: campaignsPending } = await useCampaigns()
+const { data: methods } = await usePaymentMethods()
 
 const selectedCampaignId = ref<string | null>(null)
 const amount = ref<number | null>(null)
@@ -115,6 +115,41 @@ const canSubmit = computed(() =>
   && !submitting.value,
 )
 
+const attempted = ref(false)
+
+const missingSteps = computed(() => {
+  const steps: Array<{ id: string, label: string }> = []
+  if (!selectedCampaignId.value) steps.push({ id: 'campaign', label: t('donation.needCampaign') })
+  if (!finalAmount.value) steps.push({ id: 'amount', label: t('donation.needAmount') })
+  if (!invoiceComplete.value) steps.push({ id: 'invoice', label: t('donation.needInvoice') })
+  if (!availableMethods.value.length || !availableMethods.value.includes(paymentMethod.value)) {
+    steps.push({ id: 'method', label: t('donation.needMethod') })
+  }
+  if (!consent.value) steps.push({ id: 'consent', label: t('donation.needConsent') })
+  return steps
+})
+
+function incompleteClass(id: string) {
+  return attempted.value && missingSteps.value.some(s => s.id === id)
+    ? 'ring-2 ring-amber-400 ring-offset-2'
+    : ''
+}
+
+function goToMissing(id: string) {
+  if (!import.meta.client) return
+  document.getElementById(`bloque-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+}
+
+function onConfirmClick() {
+  if (submitting.value) return
+  if (missingSteps.value.length) {
+    attempted.value = true
+    goToMissing(missingSteps.value[0].id)
+    return
+  }
+  submitDonation()
+}
+
 const umaWarning = computed(() => {
   const status = profile.value?.complianceStatus
   if (status === 'sat_report') return t('uma.satDonor')
@@ -171,7 +206,11 @@ async function submitDonation() {
     return
   }
 
-  if (!canSubmit.value || !finalAmount.value) return
+  if (!canSubmit.value || !finalAmount.value) {
+    attempted.value = true
+    if (missingSteps.value[0]) goToMissing(missingSteps.value[0].id)
+    return
+  }
 
   submitting.value = true
   submitError.value = ''
@@ -231,6 +270,7 @@ async function submitDonation() {
 
 function startNewDonation() {
   success.value = false
+  attempted.value = false
   selectedCampaignId.value = null
   amount.value = null
   customAmount.value = ''
@@ -240,7 +280,7 @@ function startNewDonation() {
 </script>
 
 <template>
-  <div class="mx-auto max-w-2xl px-4 py-10 md:px-6">
+  <div class="page-shell">
     <NuxtLink to="/iglesias" class="mb-6 inline-flex items-center gap-1 text-sm text-brand hover:underline">
       ← {{ t('common.back') }}
     </NuxtLink>
@@ -275,6 +315,9 @@ function startNewDonation() {
           <NuxtLink to="/historial" class="btn-primary">
             {{ t('donation.viewHistory') }}
           </NuxtLink>
+          <NuxtLink to="/perfil" class="btn-secondary">
+            {{ t('nav.profile') }}
+          </NuxtLink>
           <button type="button" class="btn-secondary" @click="startNewDonation">
             {{ t('donation.newDonation') }}
           </button>
@@ -291,6 +334,9 @@ function startNewDonation() {
           {{ t('donation.subtitle') }}
         </p>
       </header>
+
+      <div class="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_19rem]">
+      <div>
 
       <section class="card mb-6">
         <p class="mb-1 text-xs font-semibold uppercase tracking-wider text-brand">
@@ -311,7 +357,7 @@ function startNewDonation() {
         </button>
       </section>
 
-      <section class="mb-6">
+      <section id="bloque-campaign" class="mb-6 rounded-lg p-1" :class="incompleteClass('campaign')">
         <h2 class="mb-3 font-semibold text-ink">
           {{ t('donation.campaignLabel') }}
         </h2>
@@ -341,7 +387,7 @@ function startNewDonation() {
         </div>
       </section>
 
-      <section class="mb-6">
+      <section id="bloque-amount" class="mb-6 rounded-lg p-1" :class="incompleteClass('amount')">
         <h2 class="mb-3 font-semibold text-ink">
           {{ t('donation.amountLabel') }}
           <span v-if="finalAmount" class="ml-2 font-bold text-brand">
@@ -393,7 +439,7 @@ function startNewDonation() {
         {{ umaWarning }}
       </p>
 
-      <section class="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4">
+      <section id="bloque-invoice" class="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4" :class="incompleteClass('invoice')">
         <label class="flex cursor-pointer items-start gap-3 text-sm font-medium text-ink">
           <input
             v-model="wantsReceipt"
@@ -470,7 +516,7 @@ function startNewDonation() {
         </div>
       </section>
 
-      <section class="mb-8">
+      <section id="bloque-method" class="mb-8 rounded-lg p-1" :class="incompleteClass('method')">
         <h2 class="mb-3 font-semibold text-ink">
           {{ t('donation.methodLabel') }}
         </h2>
@@ -536,54 +582,82 @@ function startNewDonation() {
         </div>
       </section>
 
-      <section v-if="selectedCampaign && finalAmount" class="card mb-6 bg-brand-light/50">
-        <h2 class="mb-2 font-semibold text-ink">
-          {{ t('donation.summary') }}
-        </h2>
-        <dl class="space-y-1 text-sm">
-          <div class="flex justify-between">
-            <dt class="text-gray-600">{{ t('donation.summaryChurch') }}</dt>
-            <dd class="font-medium text-ink">{{ selectedChurch.name }}</dd>
-          </div>
-          <div class="flex justify-between">
-            <dt class="text-gray-600">{{ t('donation.summaryCampaign') }}</dt>
-            <dd class="font-medium text-ink">{{ selectedCampaign.name }}</dd>
-          </div>
-          <div class="flex justify-between">
-            <dt class="text-gray-600">{{ t('donation.summaryAmount') }}</dt>
-            <dd class="font-bold text-brand">
-              ${{ finalAmount.toLocaleString('es-MX') }} MXN
-            </dd>
-          </div>
-        </dl>
-      </section>
-
-      <section class="mb-6 space-y-4">
+      <section id="bloque-consent" class="mb-6 space-y-4 rounded-lg p-1" :class="incompleteClass('consent')">
         <PrivacyNoticeShort />
         <LegalConsent v-model:consent="consent" />
       </section>
+      </div>
 
-      <p v-if="submitError" class="mb-4 text-center text-sm text-red-600">
-        {{ submitError }}
-      </p>
+      <aside class="space-y-4 pb-24 lg:sticky lg:top-24 lg:pb-0">
+        <section class="card bg-brand-light/50">
+          <h2 class="mb-2 font-semibold text-ink">
+            {{ t('donation.summary') }}
+          </h2>
+          <dl class="space-y-1 text-sm">
+            <div class="flex justify-between gap-3">
+              <dt class="text-gray-600">{{ t('donation.summaryChurch') }}</dt>
+              <dd class="text-right font-medium text-ink">{{ selectedChurch.name }}</dd>
+            </div>
+            <div class="flex justify-between gap-3">
+              <dt class="text-gray-600">{{ t('donation.summaryCampaign') }}</dt>
+              <dd class="text-right font-medium text-ink">{{ selectedCampaign?.name || '—' }}</dd>
+            </div>
+            <div class="flex justify-between gap-3">
+              <dt class="text-gray-600">{{ t('donation.summaryAmount') }}</dt>
+              <dd class="text-right font-bold text-brand">
+                {{ finalAmount ? `$${finalAmount.toLocaleString('es-MX')} MXN` : '—' }}
+              </dd>
+            </div>
+          </dl>
+        </section>
 
-      <button
-        type="button"
-        class="btn-primary w-full"
-        :class="{ 'cursor-not-allowed opacity-60': !canSubmit }"
-        :disabled="!canSubmit"
-        @click="submitDonation"
-      >
-        {{
-          submitting
-            ? (paymentMethod === 'spei' ? t('donation.submitting') : t('donation.redirecting'))
-            : t('donation.submit')
-        }}
-      </button>
+        <div
+          v-if="attempted && missingSteps.length"
+          class="rounded-lg border border-amber-300 bg-amber-50 p-4"
+          role="alert"
+        >
+          <p class="text-sm font-semibold text-ink">
+            {{ t('donation.missingTitle') }}
+          </p>
+          <p class="mt-1 text-xs text-gray-600">
+            {{ t('donation.tapToComplete') }}
+          </p>
+          <ul class="mt-3 space-y-2">
+            <li v-for="step in missingSteps" :key="step.id">
+              <button
+                type="button"
+                class="w-full rounded-md bg-white px-3 py-2 text-left text-sm font-medium text-ink ring-1 ring-amber-200 hover:bg-amber-100"
+                @click="goToMissing(step.id)"
+              >
+                {{ step.label }}
+              </button>
+            </li>
+          </ul>
+        </div>
 
-      <p class="mt-4 text-center text-xs text-gray-500">
-        {{ t('donation.secureRedirectNote') }}
-      </p>
+        <p v-if="submitError" class="text-sm text-red-600">
+          {{ submitError }}
+        </p>
+
+        <button
+          type="button"
+          class="btn-primary w-full"
+          :class="{ 'opacity-90': submitting }"
+          :disabled="submitting"
+          @click="onConfirmClick"
+        >
+          {{
+            submitting
+              ? (paymentMethod === 'spei' ? t('donation.submitting') : t('donation.redirecting'))
+              : t('donation.submit')
+          }}
+        </button>
+
+        <p class="text-center text-xs text-gray-500">
+          {{ t('donation.secureRedirectNote') }}
+        </p>
+      </aside>
+      </div>
     </template>
   </div>
 </template>

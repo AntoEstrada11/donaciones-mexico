@@ -36,6 +36,7 @@ timestamp: 2026-09-09T00:00:00Z
 |--------|--------|
 | 400 | Faltan campos, monto fuera de rango, campaña inexistente o método inválido |
 | 401 | `wantsReceipt` sin sesión |
+| 403 | Cuenta de administrador (el personal no dona) |
 | 422 | No se aceptó el aviso de privacidad (`consent` distinto de `true`) |
 | 429 | Más de 20 donaciones por IP en 5 minutos |
 | 503 | El método de pasarela no está habilitado o faltan credenciales |

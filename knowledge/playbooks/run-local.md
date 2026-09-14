@@ -26,6 +26,7 @@ npm run db:setup
 
 4. `npm run dev`
 5. [http://localhost:3000](http://localhost:3000) — **Iniciar sesión** cubre donante y operación.
+6. Donantes de prueba: [/playbooks/dev-bulk-contacts.md](/playbooks/dev-bulk-contacts.md).
 
 # Scripts
 

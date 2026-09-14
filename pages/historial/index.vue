@@ -1,19 +1,16 @@
 <script setup lang="ts">
-import type { Campaign, Donation } from '~/types'
+import type { Donation } from '~/types'
+
+definePageMeta({ middleware: 'donor' })
 
 const { t } = useI18n()
-const { isLoggedIn, fetchDonations } = useAuth()
+const { fetchDonations } = useAuth()
 
 const donations = ref<Donation[]>([])
 const authReady = ref(false)
 const loadError = ref('')
 
 onMounted(async () => {
-  if (!isLoggedIn.value) {
-    await navigateTo('/login?redirect=/historial')
-    return
-  }
-
   try {
     donations.value = await fetchDonations()
   }
@@ -25,7 +22,7 @@ onMounted(async () => {
   }
 })
 
-const { data: campaigns } = await useFetch<Campaign[]>('/api/campaigns')
+const { data: campaigns } = await useCampaigns()
 
 const campaignMap = computed(() => {
   const map = new Map<string, string>()
@@ -63,7 +60,7 @@ function formatDate(iso: string) {
 </script>
 
 <template>
-  <div class="mx-auto max-w-3xl px-4 py-10 md:px-6">
+  <div class="page-shell">
     <header class="mb-8">
       <h1 class="section-title">
         {{ t('history.title') }}

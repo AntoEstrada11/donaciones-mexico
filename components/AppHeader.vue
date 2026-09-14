@@ -20,19 +20,21 @@ const navLinks = computed<NavLink[]>(() => {
   ]
 
   if (isLoggedIn.value) {
-    links.push(
-      { id: 'churches', to: '/iglesias', label: t('nav.churches'), match: '/iglesias' },
-      {
-        id: 'donate',
-        to: selectedChurch.value ? '/donaciones' : '/iglesias',
-        label: t('nav.donate'),
-        match: selectedChurch.value ? '/donaciones' : '/iglesias',
-      },
-      { id: 'profile', to: '/perfil', label: t('nav.profile'), match: '/perfil' },
-      { id: 'history', to: '/historial', label: t('nav.history'), match: '/historial' },
-    )
     if (isAdmin.value) {
       links.push({ id: 'admin', to: '/admin', label: t('nav.admin'), match: '/admin' })
+    }
+    else {
+      links.push(
+        { id: 'churches', to: '/iglesias', label: t('nav.churches'), match: '/iglesias' },
+        {
+          id: 'donate',
+          to: selectedChurch.value ? '/donaciones' : '/iglesias',
+          label: t('nav.donate'),
+          match: selectedChurch.value ? '/donaciones' : '/iglesias',
+        },
+        { id: 'profile', to: '/perfil', label: t('nav.profile'), match: '/perfil' },
+        { id: 'history', to: '/historial', label: t('nav.history'), match: '/historial' },
+      )
     }
   }
   else {

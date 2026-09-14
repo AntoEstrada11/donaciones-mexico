@@ -6,6 +6,7 @@ export function useSiteSettings() {
     'site-settings',
     () => $fetch<SiteSettings>('/api/site-settings'),
     {
+      getCachedData: key => useNuxtData<SiteSettings>(key).data.value,
       default: () => ({
         ...DEFAULT_SITE_SETTINGS,
         updatedAt: new Date(0).toISOString(),

@@ -68,10 +68,13 @@ const totals = computed(() => {
     paid: { count: 0, amount: 0 },
     failed: { count: 0, amount: 0 },
     cancelled: { count: 0, amount: 0 },
+    refunded: { count: 0, amount: 0 },
   }
   for (const row of filtered.value) {
-    byStatus[row.status].count += 1
-    byStatus[row.status].amount += row.amount
+    const bucket = byStatus[row.status]
+    if (!bucket) continue
+    bucket.count += 1
+    bucket.amount += row.amount
   }
   return byStatus
 })
@@ -161,7 +164,7 @@ function formatMoney(amount: number) {
       {{ t('common.loading') }}
     </div>
     <template v-else>
-      <div class="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="mb-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <article
           v-for="status in statuses"
           :key="status"
@@ -220,8 +223,8 @@ function formatMoney(amount: number) {
       <p v-if="filtered.length === 0" class="text-gray-500">
         {{ t('admin.donations.empty') }}
       </p>
-      <section v-for="group in groups" :key="group.key" class="mb-8">
-        <h2 class="mb-2 flex flex-wrap items-baseline justify-between gap-2 font-semibold text-ink">
+      <section v-for="group in groups" :key="group.key" class="mb-8 rounded-xl border border-gray-200 bg-gray-50 p-4">
+        <h2 class="mb-3 flex flex-wrap items-baseline justify-between gap-2 border-b border-gray-200 pb-2 text-lg font-semibold text-ink">
           <span>{{ group.label }}</span>
           <span class="text-sm font-normal text-gray-500">
             {{ group.items.length }} · {{ formatMoney(group.amount) }}

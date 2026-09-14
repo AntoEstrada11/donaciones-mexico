@@ -7,6 +7,7 @@ import {
 
 export default defineEventHandler(async (event) => {
   const session = optionalSession(event)
+  assertNotOperator(session)
   if (session) {
     await assertDonorAccountActive(session.sub)
   }

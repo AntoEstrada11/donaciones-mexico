@@ -102,6 +102,16 @@ export function optionalSession(event: H3Event): SessionPayload | null {
   return token ? verifyToken(token) : null
 }
 
+/** El personal opera el panel; no dona con esa cuenta. */
+export function assertNotOperator(session: SessionPayload | null) {
+  if (session?.role === 'admin') {
+    throw createError({
+      statusCode: 403,
+      statusMessage: 'El personal no registra donaciones con esta cuenta.',
+    })
+  }
+}
+
 export function requireAdmin(event: H3Event): SessionPayload {
   const session = requireSession(event)
   if (session.role !== 'admin') {

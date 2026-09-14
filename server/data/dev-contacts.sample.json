@@ -1,0 +1,84 @@
+{
+  "password": "DevPrueba1",
+  "contacts": [
+    {
+      "email": "dev.contacto.01@example.test",
+      "name": "Dev Prueba Uno",
+      "phone": "5510000001",
+      "wantsReceipt": false
+    },
+    {
+      "email": "dev.contacto.02@example.test",
+      "name": "Dev Prueba Dos",
+      "phone": "5510000002",
+      "wantsReceipt": true,
+      "fiscalName": "Dev Prueba Dos",
+      "rfc": "XAXX010101000",
+      "zip": "06600",
+      "taxRegime": "605",
+      "cfdiUse": "D04",
+      "street": "Calle Ficticia 2",
+      "city": "Ciudad de México",
+      "state": "CDMX"
+    },
+    {
+      "email": "dev.contacto.03@example.test",
+      "name": "Dev Prueba Tres",
+      "phone": "5510000003",
+      "wantsReceipt": true,
+      "fiscalName": "Dev Prueba Tres",
+      "rfc": "XAXX010101000",
+      "zip": "44100",
+      "taxRegime": "612",
+      "cfdiUse": "D04",
+      "street": "Av. Ensayo 3",
+      "city": "Guadalajara",
+      "state": "Jalisco"
+    },
+    {
+      "email": "dev.contacto.04@example.test",
+      "name": "Dev Prueba Cuatro",
+      "phone": "5510000004",
+      "wantsReceipt": false
+    },
+    {
+      "email": "dev.contacto.05@example.test",
+      "name": "Dev Prueba Cinco",
+      "phone": "5510000005",
+      "wantsReceipt": true,
+      "fiscalName": "Dev Prueba Cinco",
+      "rfc": "XAXX010101000",
+      "zip": "64000",
+      "taxRegime": "626",
+      "cfdiUse": "S01",
+      "street": "Calle Laboratorio 5",
+      "city": "Monterrey",
+      "state": "Nuevo León"
+    },
+    {
+      "email": "dev.contacto.06@example.test",
+      "name": "Dev Prueba Seis",
+      "phone": "5510000006",
+      "wantsReceipt": false
+    },
+    {
+      "email": "dev.contacto.07@example.test",
+      "name": "Dev Prueba Siete",
+      "phone": "5510000007",
+      "wantsReceipt": true,
+      "fiscalName": "Dev Prueba Siete",
+      "rfc": "XAXX010101000",
+      "zip": "20000",
+      "taxRegime": "616",
+      "cfdiUse": "D04",
+      "city": "Aguascalientes",
+      "state": "Aguascalientes"
+    },
+    {
+      "email": "dev.contacto.08@example.test",
+      "name": "Dev Prueba Ocho",
+      "phone": "5510000008",
+      "wantsReceipt": false
+    }
+  ]
+}
