@@ -1,7 +1,7 @@
 ---
 type: Playbook
 title: Desplegar en Portainer desde Gitea
-description: Stack web + Postgres. Portainer clona el repo; no se usa otro anfitrión de la app.
+description: Stack web + Postgres. El webhook de Gitea usa docker-compose.yml (db y Nuxt).
 tags: [deploy, docker, portainer, gitea]
 timestamp: 2026-09-21T00:00:00Z
 ---
@@ -10,59 +10,43 @@ timestamp: 2026-09-21T00:00:00Z
 
 Publicar Donaciones México en el host donde corre Portainer.
 
+# Qué debe verse en el stack
+
+Dos contenedores: **`donaciones-db`** (Postgres) y **`donaciones-web`** (Nuxt en el puerto 3000). Si solo aparece la base, el compose viejo no traía `web` o Portainer no está reconstruyendo la imagen.
+
 # Piezas en el repo
 
 | Archivo | Uso |
 |---------|-----|
-| `docker-compose.portainer.yml` | Stack: `db` + `web` |
+| `docker-compose.yml` | **db + web** — path por defecto del webhook Gitea → Portainer |
+| `docker-compose.portainer.yml` | El mismo stack (si el stack ya apuntaba a este path) |
 | `Dockerfile` | Build Nuxt → Nitro |
-| `docker-entrypoint.sh` | Migra y arranca `node .output/server/index.mjs` |
-| `docker-compose.yml` | **Solo** Postgres en la PC (`npm run db:up`) |
+| `docker-entrypoint.sh` | Migra y arranca Nitro |
+
+En la PC, `npm run db:up` **solo** levanta `db`, para no pelear el puerto 3000 con `npm run dev`.
 
 # En Portainer
 
-1. **Stacks → Add stack → Repository**.
-2. URL: `https://git.allanmontero.com/aneg/Donaciones-Mexico.git`
-3. Referencia: `refs/heads/main`
-4. **Compose path:** `docker-compose.portainer.yml` (no el `docker-compose.yml` de local).
-5. Auth: usuario Gitea + token de repositorio.
-6. **Environment variables** (no las subas a git):
+1. Stack desde Git, repo Gitea, rama `main`.
+2. **Compose path:** `docker-compose.yml` (o `docker-compose.portainer.yml`; ambos tienen `web`).
+3. Activar **build / recreate / pull and rebuild** del servicio `web`. Sin rebuild, el webhook puede dejar solo Postgres.
+4. Variables de entorno del stack: `POSTGRES_*`, `NUXT_AUTH_SECRET`, `NUXT_PUBLIC_SITE_URL`, Hub, pagos si aplican. Ver tabla abajo.
+5. Tras el primer deploy, semilla de campañas **una vez** en la consola de `donaciones-web`:
+
+```bash
+node --experimental-strip-types server/database/seed.ts
+```
+
+6. Carrusel: subir fotos en `/admin/personalizar/carrusel`.
 
 | Variable | Obligatorio | Nota |
 |----------|-------------|------|
-| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | sí | La app arma `DATABASE_URL` hacia el servicio `db` |
-| `NUXT_AUTH_SECRET` | sí | Largo y distinto al de desarrollo |
-| `NUXT_PUBLIC_SITE_URL` | sí | URL pública HTTPS del sitio (retorno de pago) |
-| `NUXT_PUBLIC_AUTH_HUB_URL` | sí | Hub de operación, sin slash final |
-| `NUXT_PUBLIC_APP_CODE` | no | default `donaciones` |
-| `NUXT_CHURCHES_API_KEY` | si Odoo la exige | |
-| `NUXT_MP_*` / `NUXT_PAYPAL_*` | si cobran | Ver `.env.example` |
-| `WEB_BIND` | no | default `0.0.0.0:3000`. Detrás de Traefik: `127.0.0.1:3000` |
-
-7. Deploy. El primer build tarda (compila Nuxt). **Re-pull y rebuild** tras cada `git push` a `main`, o webhook de Gitea al stack.
-8. Primera vez, semilla de campañas (una vez):
-
-```bash
-docker compose -f docker-compose.portainer.yml exec web node --experimental-strip-types server/database/seed.ts
-```
-
-En Portainer: consola del contenedor `web`, mismo comando sin el `docker compose… exec web`.
-
-9. Carrusel: subir fotos en `/admin/personalizar/carrusel`. El volumen `uploads` sobrevive al redespliegue.
-
-# Red
-
-- Postgres **no** se publica a Internet; solo la red Docker `donaciones`.
-- La web escucha 3000. Ponle proxy TLS (Traefik/Caddy/Nginx) en el mismo host.
-
-# Tras un push
-
-Rebuild de `web` (cambia código). `db-data` no se borra. El entrypoint aplica migraciones Drizzle al arrancar.
-
-# Local
-
-Sigue [`run-local.md`](/playbooks/run-local.md): `docker-compose.yml` + `npm run dev`. No uses el compose de Portainer en la PC salvo para probar el stack completo (`docker compose -f docker-compose.portainer.yml up --build`).
+| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | sí | `DATABASE_URL` hacia el servicio `db` |
+| `NUXT_AUTH_SECRET` | sí | Distinto al de desarrollo |
+| `NUXT_PUBLIC_SITE_URL` | sí | URL pública HTTPS |
+| `NUXT_PUBLIC_AUTH_HUB_URL` | sí | Sin slash final |
+| `WEB_BIND` | no | default `0.0.0.0:3000` |
 
 # Relacionado
 
-[/decisions/portainer-stack.md](/decisions/portainer-stack.md) · [/playbooks/db-migrations.md](/playbooks/db-migrations.md) · [/playbooks/hero-slides-restore.md](/playbooks/hero-slides-restore.md)
+[/decisions/portainer-stack.md](/decisions/portainer-stack.md)

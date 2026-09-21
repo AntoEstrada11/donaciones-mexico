@@ -9,9 +9,7 @@ timestamp: 2026-09-21T00:00:00Z
 
 # Decisión
 
-El sitio en servidor se publica con **Portainer** leyendo **Gitea**. Compose de producción: `docker-compose.portainer.yml`.
-
-`docker-compose.yml` en la raíz queda para desarrollo en la PC (Postgres en `127.0.0.1:5432`).
+El sitio en servidor se publica con **Portainer** leyendo **Gitea**. `docker-compose.yml` define **Postgres y Nuxt**. En la PC, `npm run db:up` arranca solo `db`.
 
 # Relacionado
 

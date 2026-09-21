@@ -1,12 +1,15 @@
-# Stack para Portainer (Gitea). Local con npm run dev sigue usando docker-compose.yml (solo Postgres).
+# Mismo stack que docker-compose.yml (db + web). El webhook de Gitea suele usar docker-compose.yml.
 services:
   db:
     image: postgres:17-alpine
+    container_name: donaciones-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-donaciones}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-donaciones}
       POSTGRES_DB: ${POSTGRES_DB:-donaciones}
+    ports:
+      - '${POSTGRES_BIND:-127.0.0.1:5432}:5432'
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:
@@ -22,6 +25,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: donaciones-web
     restart: unless-stopped
     depends_on:
       db:
