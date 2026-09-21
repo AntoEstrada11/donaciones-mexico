@@ -28,15 +28,16 @@ En la PC, `npm run db:up` **solo** levanta `db`, para no pelear el puerto 3000 c
 
 1. Stack desde Git, repo Gitea, rama `main`.
 2. **Compose path:** `docker-compose.yml`.
-3. Activar **build / recreate / pull and rebuild** del servicio `web`. Sin rebuild, el webhook puede dejar solo Postgres.
-4. Variables de entorno del stack: `POSTGRES_*`, `NUXT_AUTH_SECRET`, `NUXT_PUBLIC_SITE_URL`, Hub, pagos si aplican. Ver tabla abajo.
-5. Tras el primer deploy, semilla de campañas **una vez** en la consola de `donaciones-web`:
+3. Activar **build / recreate / pull and rebuild** del servicio `web`. Sin rebuild, el webhook puede dejar solo Postgres. Use stack **Compose** (no Swarm): Swarm no construye `build:` y exige `depends_on` como lista.
+4. Si Portainer dice `depends_on must be a list`, el compose ya usa `- db` (no `condition: service_healthy`).
+5. Variables de entorno del stack: `POSTGRES_*`, `NUXT_AUTH_SECRET`, `NUXT_PUBLIC_SITE_URL`, Hub, pagos si aplican. Ver tabla abajo.
+6. Tras el primer deploy, semilla de campañas **una vez** en la consola de `donaciones-web`:
 
 ```bash
 node --experimental-strip-types server/database/seed.ts
 ```
 
-6. Carrusel: subir fotos en `/admin/personalizar/carrusel`.
+7. Carrusel: subir fotos en `/admin/personalizar/carrusel`.
 
 | Variable | Obligatorio | Nota |
 |----------|-------------|------|

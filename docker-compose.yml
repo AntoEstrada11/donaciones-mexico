@@ -27,9 +27,9 @@ services:
       dockerfile: Dockerfile
     container_name: donaciones-web
     restart: unless-stopped
+    # Lista (no mapa con condition): Portainer/Swarm exige depends_on como array.
     depends_on:
-      db:
-        condition: service_healthy
+      - db
     ports:
       - '${WEB_BIND:-0.0.0.0:3000}:3000'
     environment:
