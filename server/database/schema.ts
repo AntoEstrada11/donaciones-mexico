@@ -1,5 +1,6 @@
 import {
   boolean,
+  customType,
   index,
   integer,
   numeric,
@@ -12,14 +13,21 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core'
 
+const bytea = customType<{ data: Buffer, driverData: Buffer }>({
+  dataType() {
+    return 'bytea'
+  },
+})
+
 export const donationStatusEnum = pgEnum('donation_status', ['paid', 'pending', 'failed', 'cancelled', 'refunded'])
 export const donationMethodEnum = pgEnum('donation_method', ['spei', 'card', 'paypal'])
 export const paymentProviderEnum = pgEnum('payment_provider', ['mercadopago', 'paypal', 'spei_manual'])
 export const paymentModeEnum = pgEnum('payment_mode', ['test', 'live'])
 export const userRoleEnum = pgEnum('user_role', ['donor', 'admin'])
 export const donorStatusEnum = pgEnum('donor_status', ['active', 'deactivated'])
-export const consentTypeEnum = pgEnum('consent_type', ['privacy_notice', 'sensitive_data', 'marketing'])
+export const consentTypeEnum = pgEnum('consent_type', ['privacy_notice', 'sensitive_data', 'marketing', 'identity_document'])
 export const donorComplianceEnum = pgEnum('donor_compliance_status', ['rapid', 'cfdi', 'pld_pending', 'sat_report'])
+export const identitySideEnum = pgEnum('identity_side', ['front', 'back'])
 
 /** Cuenta de acceso del donante. El correo es único pero puede cambiar, por eso la PK es sintética. */
 export const users = pgTable('users', {
@@ -78,16 +86,30 @@ export const donorProfiles = pgTable('donor_profiles', {
   city: varchar('city', { length: 120 }),
   state: varchar('state', { length: 120 }),
   zip: varchar('zip', { length: 10 }),
+  colony: varchar('colony', { length: 120 }),
   rfc: varchar('rfc', { length: 13 }),
   /** Nombre o razón social como en la constancia (CFDI 4.0). */
   fiscalName: varchar('fiscal_name', { length: 160 }),
   taxRegime: varchar('tax_regime', { length: 8 }),
   cfdiUse: varchar('cfdi_use', { length: 8 }),
-  /** rapid | cfdi | umbral PLD | aviso SAT. Sin expediente documental aún. */
+  /** rapid | cfdi | umbral PLD | aviso SAT. */
   complianceStatus: donorComplianceEnum('compliance_status').notNull().default('rapid'),
+  identityVerifiedAt: timestamp('identity_verified_at', { withTimezone: true }),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, table => [
   uniqueIndex('donor_profiles_phone_digits_key').on(table.phoneDigits),
+])
+
+/** Credencial INE (anverso/reverso). Bytes en la base; no se sirven en URL pública. */
+export const identityDocuments = pgTable('identity_documents', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  side: identitySideEnum('side').notNull(),
+  mime: varchar('mime', { length: 32 }).notNull(),
+  bytes: bytea('bytes').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, table => [
+  uniqueIndex('identity_documents_user_side_key').on(table.userId, table.side),
 ])
 
 export const campaigns = pgTable('campaigns', {
@@ -108,6 +130,8 @@ export const donations = pgTable('donations', {
   userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
   /** Identificador de la iglesia en la API de WordPress; no hay tabla local de iglesias. */
   churchExternalId: varchar('church_external_id', { length: 64 }).notNull(),
+  /** Nombre al momento de donar; el directorio puede cambiar. */
+  churchName: varchar('church_name', { length: 200 }),
   campaignId: uuid('campaign_id').notNull().references(() => campaigns.id),
   amount: numeric('amount', { precision: 12, scale: 2 }).notNull(),
   currency: varchar('currency', { length: 3 }).notNull().default('MXN'),

@@ -1,4 +1,4 @@
-/** Umbrales PLD / SAT en UMA. No hay carga de documentos en esta fase. */
+/** Umbrales PLD / SAT en UMA. El expediente INE se pide al rebasar umbral. */
 
 export const UMA = {
   dailyMxn: 117.31,

@@ -6,6 +6,7 @@ function toDonation(row: typeof donations.$inferSelect): Donation {
   return {
     id: row.id,
     churchId: row.churchExternalId,
+    churchName: row.churchName,
     campaignId: row.campaignId,
     amount: Number(row.amount),
     currency: row.currency,

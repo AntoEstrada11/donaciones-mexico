@@ -2,11 +2,13 @@ import { desc, eq } from 'drizzle-orm'
 import { campaigns, donations } from '../database/schema'
 import type { Campaign, Donation, DonationMethod } from '~/types'
 
-function toDonation(row: typeof donations.$inferSelect): Donation {
+function toDonation(row: typeof donations.$inferSelect, extra?: { campaignName?: string | null }): Donation {
   return {
     id: row.id,
     churchId: row.churchExternalId,
+    churchName: row.churchName,
     campaignId: row.campaignId,
+    campaignName: extra?.campaignName ?? null,
     amount: Number(row.amount),
     currency: row.currency,
     status: row.status,
@@ -51,12 +53,13 @@ export async function getDonationRow(id: string) {
 export async function listDonationsByUser(userId: string): Promise<Donation[]> {
   const db = useDatabase()
   const rows = await db
-    .select()
+    .select({ donation: donations, campaignName: campaigns.name })
     .from(donations)
+    .leftJoin(campaigns, eq(donations.campaignId, campaigns.id))
     .where(eq(donations.userId, userId))
     .orderBy(desc(donations.createdAt))
 
-  return rows.map(toDonation)
+  return rows.map(row => toDonation(row.donation, { campaignName: row.campaignName }))
 }
 
 export async function findDonationForUser(id: string, userId: string) {
@@ -79,6 +82,7 @@ export async function findDonationByProviderPaymentId(providerPaymentId: string)
 export async function createDonation(input: {
   userId: string | null
   churchId: string
+  churchName?: string | null
   campaignId: string
   amount: number
   method: DonationMethod
@@ -92,6 +96,7 @@ export async function createDonation(input: {
     .values({
       userId: input.userId,
       churchExternalId: input.churchId,
+      churchName: input.churchName?.slice(0, 200) || null,
       campaignId: input.campaignId,
       amount: input.amount.toFixed(2),
       method: input.method,

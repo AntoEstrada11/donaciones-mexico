@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ConsentType, DonorProfile } from '~/types'
+import type { ConsentType, DonorProfile, IdentityStatus } from '~/types'
 import { CFDI_USES, TAX_REGIMES, isValidCfdiUse, isValidTaxRegime } from '~/utils/cfdiCatalog'
 
 definePageMeta({ middleware: 'donor' })
@@ -13,6 +13,7 @@ const {
   fetchConsents,
   setConsent,
   deleteAccount,
+  requireToken,
 } = useAuth()
 
 const profile = ref<DonorProfile | null>(null)
@@ -29,6 +30,7 @@ const form = reactive({
   city: '',
   state: '',
   zip: '',
+  colony: '',
   rfc: '',
   fiscalName: '',
   taxRegime: '',
@@ -40,6 +42,12 @@ const marketingSaving = ref(false)
 const marketingMessage = ref('')
 const marketingError = ref('')
 
+const identity = ref<IdentityStatus>({ front: false, back: false, complete: false })
+const identityConsent = ref(false)
+const identityError = ref('')
+const identityBusy = ref<'front' | 'back' | null>(null)
+const colonies = ref<string[]>([])
+const zipHint = ref('')
 const exportError = ref('')
 const showDeleteConfirm = ref(false)
 const deletePassword = ref('')
@@ -55,6 +63,7 @@ function applyProfile(me: DonorProfile) {
   form.city = me.city || ''
   form.state = me.state || ''
   form.zip = me.zip || ''
+  form.colony = me.colony || ''
   form.rfc = me.rfc || ''
   form.fiscalName = me.fiscalName || me.name || ''
   form.taxRegime = me.taxRegime || ''
@@ -64,6 +73,9 @@ function applyProfile(me: DonorProfile) {
 onMounted(async () => {
   try {
     applyProfile(await fetchProfile())
+    identity.value = await $fetch<IdentityStatus>('/api/me/identity', {
+      headers: { Authorization: `Bearer ${requireToken()}` },
+    })
 
     const consents = await fetchConsents()
     marketing.value = consents.marketing === true
@@ -96,12 +108,56 @@ function onStateInput(event: Event) {
   form.state = sanitizeStateInput((event.target as HTMLInputElement).value)
 }
 
-function onZipInput(event: Event) {
+async function onZipInput(event: Event) {
   form.zip = sanitizeZipInput((event.target as HTMLInputElement).value)
+  zipHint.value = ''
+  colonies.value = []
+  if (!isValidZip(form.zip) || form.zip.length !== 5) return
+  try {
+    const result = await $fetch<{ state: string | null, colonies: string[] }>(`/api/zip/${form.zip}`)
+    colonies.value = result.colonies
+    if (result.state) form.state = result.state
+    if (result.colonies.length === 1) form.colony = result.colonies[0]
+    if (!result.colonies.length) zipHint.value = t('profile.zipUnknown')
+  }
+  catch {
+    zipHint.value = t('profile.zipLookupError')
+  }
 }
 
 function onRfcInput(event: Event) {
   form.rfc = sanitizeRfcInput((event.target as HTMLInputElement).value)
+}
+
+async function onIdentityFile(side: 'front' | 'back', event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  if (!file) return
+  if (!identityConsent.value) {
+    identityError.value = t('profile.identityConsentRequired')
+    return
+  }
+  identityBusy.value = side
+  identityError.value = ''
+  try {
+    const body = new FormData()
+    body.set('side', side)
+    body.set('consent', 'true')
+    body.set('file', file)
+    identity.value = await $fetch<IdentityStatus>('/api/me/identity', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${requireToken()}` },
+      body,
+    })
+  }
+  catch (e: unknown) {
+    const msg = (e as { data?: { statusMessage?: string } })?.data?.statusMessage
+    identityError.value = msg || t('profile.identityError')
+  }
+  finally {
+    identityBusy.value = null
+  }
 }
 
 function validateForm(): string | null {
@@ -450,8 +506,76 @@ async function onDelete() {
                 class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
                 @input="onZipInput"
               >
+              <p v-if="zipHint" class="mt-1 text-xs text-gray-500">
+                {{ zipHint }}
+              </p>
+            </div>
+            <div>
+              <label for="colony" class="mb-1 block text-sm font-medium text-ink">
+                {{ t('profile.colony') }}
+              </label>
+              <select
+                v-if="colonies.length"
+                id="colony"
+                v-model="form.colony"
+                class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+              >
+                <option value="">{{ t('profile.select') }}</option>
+                <option v-for="item in colonies" :key="item" :value="item">
+                  {{ item }}
+                </option>
+              </select>
+              <input
+                v-else
+                id="colony"
+                :value="form.colony"
+                type="text"
+                :maxlength="FIELD_LIMITS.colony.max"
+                class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+                @input="form.colony = sanitizeColonyInput(($event.target as HTMLInputElement).value)"
+              >
             </div>
           </div>
+        </div>
+
+        <div class="rounded-lg border border-gray-200 p-4">
+          <h2 class="mb-1 text-sm font-semibold text-ink">
+            {{ t('profile.identityTitle') }}
+          </h2>
+          <p class="mb-3 text-xs text-gray-600">
+            {{ t('profile.identityHint') }}
+          </p>
+          <label class="mb-3 flex cursor-pointer items-start gap-2 text-xs text-ink">
+            <input v-model="identityConsent" type="checkbox" class="mt-0.5">
+            <span>{{ t('profile.identityConsent') }}</span>
+          </label>
+          <div class="grid gap-3 sm:grid-cols-2">
+            <label class="block text-sm">
+              {{ t('profile.identityFront') }}
+              <span v-if="identity.front" class="ml-1 text-green-700">✓</span>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                class="mt-1 block w-full text-xs"
+                :disabled="identityBusy === 'front'"
+                @change="onIdentityFile('front', $event)"
+              >
+            </label>
+            <label class="block text-sm">
+              {{ t('profile.identityBack') }}
+              <span v-if="identity.back" class="ml-1 text-green-700">✓</span>
+              <input
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                class="mt-1 block w-full text-xs"
+                :disabled="identityBusy === 'back'"
+                @change="onIdentityFile('back', $event)"
+              >
+            </label>
+          </div>
+          <p v-if="identityError" class="mt-2 text-sm text-red-600">
+            {{ identityError }}
+          </p>
         </div>
 
         <p v-if="error" id="perfil-error" class="text-sm text-red-600">

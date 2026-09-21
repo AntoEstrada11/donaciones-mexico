@@ -2,6 +2,7 @@ import type { AuthResponse } from '~/types'
 import {
   FIELD_LIMITS,
   isValidEmail,
+  isValidName,
   isValidPassword,
   sanitizeEmailInput,
   sanitizeNameInput,
@@ -11,9 +12,7 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const email = sanitizeEmailInput(String(body?.email || ''))
   const password = String(body?.password || '')
-  const name = sanitizeNameInput(
-    String(body?.name || '').trim() || email.split('@')[0] || 'Donante',
-  )
+  const name = sanitizeNameInput(String(body?.name || '').trim())
 
   if (!email || !password) {
     throw createError({
@@ -36,10 +35,10 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  if (!name.trim()) {
+  if (!isValidName(name)) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'El nombre es requerido',
+      statusMessage: 'Indique su nombre completo (solo letras)',
     })
   }
 

@@ -76,9 +76,11 @@ export default defineEventHandler(async (event): Promise<DonationCreateResponse>
 
   const amountRounded = Math.round(amount * 100) / 100
 
+  const names = await churchNamesWithoutRemoteFetch()
   const donation = await createDonation({
     userId: session?.sub ?? null,
     churchId: String(body.churchId).slice(0, 64),
+    churchName: names.get(String(body.churchId)) ?? null,
     campaignId: campaign.id,
     amount: amountRounded,
     method,

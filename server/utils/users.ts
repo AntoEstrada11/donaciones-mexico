@@ -10,6 +10,7 @@ import {
   isValidRfc,
   isValidZip,
   sanitizeCityInput,
+  sanitizeColonyInput,
   sanitizeNameInput,
   sanitizePhoneInput,
   sanitizeRfcInput,
@@ -35,6 +36,7 @@ export interface ProfileInput {
   city?: string | null
   state?: string | null
   zip?: string | null
+  colony?: string | null
   rfc?: string | null
   fiscalName?: string | null
   taxRegime?: string | null
@@ -181,11 +183,13 @@ export async function getDonorProfile(userId: string): Promise<DonorProfile | nu
     city: row.profile?.city ?? null,
     state: row.profile?.state ?? null,
     zip: row.profile?.zip ?? null,
+    colony: row.profile?.colony ?? null,
     rfc: row.profile?.rfc ?? null,
     fiscalName: row.profile?.fiscalName ?? null,
     taxRegime: row.profile?.taxRegime ?? null,
     cfdiUse: row.profile?.cfdiUse ?? null,
     complianceStatus: row.profile?.complianceStatus ?? 'rapid',
+    identityVerifiedAt: row.profile?.identityVerifiedAt?.toISOString() ?? null,
     profileComplete: row.user.profileComplete,
   }
 }
@@ -249,6 +253,9 @@ export async function updateDonorProfile(userId: string, input: ProfileInput): P
   const zip = input.zip !== undefined
     ? sanitizeZipInput(input.zip || '') || null
     : current.zip
+  const colony = input.colony !== undefined
+    ? sanitizeColonyInput(input.colony || '').trim() || null
+    : current.colony
   const rfc = input.rfc !== undefined
     ? sanitizeRfcInput(input.rfc || '') || null
     : current.rfc
@@ -286,12 +293,13 @@ export async function updateDonorProfile(userId: string, input: ProfileInput): P
   const profileComplete = Boolean(name && phoneDigits)
 
   const fiscal = wantsReceipt
-    ? { street, city, state, zip, rfc, fiscalName, taxRegime, cfdiUse }
+    ? { street, city, state, zip, colony, rfc, fiscalName, taxRegime, cfdiUse }
     : {
         street: null,
         city: null,
         state: null,
         zip: null,
+        colony: null,
         rfc: null,
         fiscalName: null,
         taxRegime: null,

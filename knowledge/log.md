@@ -1,6 +1,10 @@
 # Directory Update Log
 
+## 2026-09-21
+* **Update**: Stack Portainer (`docker-compose.portainer.yml`, `Dockerfile`). Gitea es el git; Compose de la PC sigue solo con Postgres. Ver [/playbooks/portainer.md](/playbooks/portainer.md).
+
 ## 2026-09-14
+* **Update**: Modal UMA, INE anverso/reverso, C.P.→colonias (Zippopotam), RFC con fecha, constancia HTML en historial (no CFDI), nombre obligatorio al registrarse. Aviso `LEGAL.noticeVersion` 2026-09-14. Ver [/decisions/captura-progresiva.md](/decisions/captura-progresiva.md).
 * **Update**: Login consulta Auth Hub antes que donante local para que el personal no entre como donante. Cookie `donaciones-role` y rol del JWT para el menú. `assertNotOperator` también mira `users.role`. Ver [/decisions/donor-vs-operator-auth.md](/decisions/donor-vs-operator-auth.md).
 
 ## 2026-09-10

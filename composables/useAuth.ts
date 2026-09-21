@@ -229,5 +229,6 @@ export function useAuth() {
     fetchConsents,
     setConsent,
     deleteAccount,
+    requireToken,
   }
 }

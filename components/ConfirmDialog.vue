@@ -6,6 +6,7 @@ const props = defineProps<{
   description: string
   confirmLabel: string
   cancelLabel: string
+  hideCancel?: boolean
   busy?: boolean
   busyLabel?: string
 }>()
@@ -83,6 +84,7 @@ function onConfirmClick() {
         </p>
         <div class="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <button
+            v-if="!hideCancel"
             type="button"
             class="btn-secondary"
             :disabled="busy"

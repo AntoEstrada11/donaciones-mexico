@@ -30,7 +30,9 @@ export type DonationMethod = 'spei' | 'card' | 'paypal'
 export interface Donation {
   id: string
   churchId: string
+  churchName?: string | null
   campaignId: string
+  campaignName?: string | null
   amount: number
   currency: string
   status: 'paid' | 'pending' | 'failed' | 'cancelled' | 'refunded'
@@ -113,15 +115,25 @@ export interface DonorProfile {
   city: string | null
   state: string | null
   zip: string | null
+  colony: string | null
   rfc: string | null
   fiscalName: string | null
   taxRegime: string | null
   cfdiUse: string | null
   complianceStatus: DonorComplianceStatus
+  identityVerifiedAt: string | null
   profileComplete: boolean
 }
 
-export type ConsentType = 'privacy_notice' | 'sensitive_data' | 'marketing'
+export type IdentitySide = 'front' | 'back'
+
+export interface IdentityStatus {
+  front: boolean
+  back: boolean
+  complete: boolean
+}
+
+export type ConsentType = 'privacy_notice' | 'sensitive_data' | 'marketing' | 'identity_document'
 
 /** Evidencia de consentimiento tal como se expone al titular. */
 export interface ConsentRecord {
@@ -150,12 +162,15 @@ export interface DataExport {
     city: string | null
     state: string | null
     zip: string | null
+    colony: string | null
     rfc: string | null
     fiscalName: string | null
     taxRegime: string | null
     cfdiUse: string | null
     complianceStatus: DonorComplianceStatus
+    identityVerifiedAt: string | null
   }
+  identity: IdentityStatus
   donations: Donation[]
   consents: ConsentRecord[]
 }

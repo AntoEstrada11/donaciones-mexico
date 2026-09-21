@@ -32,7 +32,7 @@ timestamp: 2026-09-07T00:00:00Z
 | Donación recurrente | Fase 2: MP `/preapproval`, PayPal Subscriptions (y opcionalmente Stripe Billing). |
 | Adaptadores Stripe / Openpay | Fase 2; mismo puerto interno. Openpay útil para SPEI de comisión fija. |
 | Conciliación SPEI CLABE | El admin puede marcar `paid` a mano; sin cruce bancario automático. |
-| CFDI | RFC/domicilio bajo demanda; sin timbrado ni bloqueo por obligación fiscal de 5 años. |
+| CFDI | RFC/domicilio bajo demanda; constancia HTML interna; **sin timbrado PAC**. |
 
 # Pendiente jurídico / operativo (privacidad)
 

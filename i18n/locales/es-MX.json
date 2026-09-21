@@ -139,8 +139,10 @@
     "thanksLoading": "Confirmando el estado del pago…"
   },
   "uma": {
-    "pldDonor": "Por disposición fiscal y de prevención de lavado de dinero, su acumulado de 6 meses alcanzó 1,605 UMA. Por ahora no pedimos documentos; el expediente PLD se habilitará después. Un administrador ya fue notificado en el panel.",
-    "satDonor": "Su acumulado de 6 meses alcanzó el umbral de reporte ante el SAT (3,210 UMA). El administrador del sitio debe dar seguimiento. No se piden documentos en esta fase."
+    "modalTitle": "Límite de UMA alcanzado",
+    "modalCta": "Completar expediente en mi perfil",
+    "pldDonor": "En los últimos 6 meses su acumulado llegó a 1,605 UMA (prevención de lavado de dinero). Para que la Iglesia tenga el expediente a la mano, adjunte INE (frente y reverso) y sus datos fiscales en el perfil. Sin esos datos hay riesgo de incumplimiento.",
+    "satDonor": "En los últimos 6 meses su acumulado llegó a 3,210 UMA (umbral de reporte ante el SAT). Adjunte INE por ambos lados y complete RFC y domicilio para que la Iglesia conserve la documentación del donante."
   },
   "login": {
     "title": "Iniciar sesión",
@@ -165,7 +167,7 @@
   },
   "register": {
     "title": "Crear cuenta",
-    "subtitle": "Regístrese con su correo. Después podrá completar teléfono y datos en su perfil.",
+    "subtitle": "Regístrese con su nombre y correo. El nombre debe coincidir con su identificación.",
     "name": "Nombre completo",
     "email": "Correo electrónico",
     "phone": "Teléfono",
@@ -190,7 +192,17 @@
     "state": "Estado",
     "zip": "C.P.",
     "zipPlaceholder": "00000",
+    "zipUnknown": "No encontramos colonias para ese C.P. Escríbala a mano.",
+    "zipLookupError": "No se pudo consultar el C.P. Escriba colonia y estado a mano.",
+    "colony": "Colonia",
     "rfc": "RFC",
+    "identityTitle": "Identificación (INE)",
+    "identityHint": "Opcional al donar montos bajos. Si rebasa el umbral de UMA, la Iglesia necesita anverso y reverso para el expediente. JPG, PNG o WebP, máximo 3 MB cada lado.",
+    "identityConsent": "Autorizo el tratamiento de las imágenes de mi credencial solo para identificar al donante y cumplir obligaciones legales de la Iglesia.",
+    "identityConsentRequired": "Marque la autorización antes de subir las fotos.",
+    "identityFront": "Anverso",
+    "identityBack": "Reverso",
+    "identityError": "No se pudo guardar la foto.",
     "rfcPlaceholder": "XAXX010101000",
     "fiscalName": "Nombre o razón social (CFDI)",
     "taxRegime": "Régimen fiscal",
@@ -204,18 +216,21 @@
   },
   "history": {
     "title": "Historial de donaciones",
-    "subtitle": "Consulte sus donaciones recientes.",
+    "subtitle": "Consulte a qué iglesia y concepto donó. La constancia se descarga cuando el donativo está pagado y su perfil fiscal e INE están completos.",
     "empty": "Aún no tiene donaciones registradas.",
-    "cta": "Hacer una donación"
+    "cta": "Hacer una donación",
+    "receipt": "Descargar constancia",
+    "receiptBusy": "Preparando…",
+    "receiptError": "No se pudo descargar. Complete RFC, domicilio e INE en su perfil; el donativo debe estar pagado."
   },
   "validation": {
     "email": "Ingrese un correo electrónico válido.",
     "password": "La contraseña debe tener entre {min} y {max} caracteres.",
-    "name": "El nombre es requerido (máximo {max} caracteres).",
+    "name": "Indique su nombre completo, solo letras (máximo {max} caracteres).",
     "phone": "El teléfono debe tener entre {min} y {max} dígitos.",
     "phoneHint": "Incluya al menos {min} dígitos (formato México).",
     "zip": "El código postal debe tener 5 dígitos.",
-    "rfc": "El RFC debe tener 12 o 13 caracteres válidos."
+    "rfc": "El RFC debe ser de 12 o 13 caracteres, con fecha válida (persona moral o física)."
   },
   "admin": {
     "title": "Administración",
@@ -385,7 +400,7 @@
     "termsLink": "Términos de uso",
     "lastUpdate": "Última actualización: {date} (versión {version})",
     "shortTitle": "Cómo tratamos sus datos",
-    "shortBody": "{responsable} usa los datos que usted proporciona para registrar su donativo, emitir comprobantes y contactarle sobre su aporte. Como el donativo se relaciona con una iglesia, se trata información que revela creencias religiosas, considerada dato sensible. Si paga con tarjeta o PayPal, se le redirige al checkout del proveedor (MercadoPago o PayPal), que actúa como encargado de cobro; este sitio no almacena datos de tarjeta.",
+    "shortBody": "{responsable} usa los datos que usted proporciona para registrar su donativo, emitir comprobantes y contactarle. El código postal se consulta en un catálogo público solo con los 5 dígitos. Si rebasa umbrales UMA puede adjuntar fotos de su INE, que se guardan en su cuenta y no se publican. Como el donativo se relaciona con una iglesia, se trata información que revela creencias religiosas. Si paga con tarjeta o PayPal, se le redirige al checkout del proveedor; este sitio no almacena datos de tarjeta.",
     "shortLink": "Leer el aviso de privacidad completo",
     "consentRequired": "Debe aceptar el aviso de privacidad para continuar.",
     "consentLabel": "He leído el aviso de privacidad y consiento expresamente el tratamiento de mis datos personales, incluidos los sensibles que revelan creencias religiosas.",

@@ -8,7 +8,7 @@ timestamp: 2026-09-04T00:00:00Z
 
 # Trigger
 
-Desarrollar en la máquina local. **Esto no sustituye la base de Vercel.**
+Desarrollar en la máquina local. El sitio en servidor se publica con Portainer ([/playbooks/portainer.md](/playbooks/portainer.md)).
 
 # Requisitos
 

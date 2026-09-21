@@ -7,9 +7,9 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-donaciones}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-donaciones}
       POSTGRES_DB: ${POSTGRES_DB:-donaciones}
-    # Solo el host local; Vercel no puede usar este contenedor.
+    # Solo el host local, para `npm run dev` en la PC. Portainer usa docker-compose.portainer.yml (sin publicar 5432).
     ports:
-      - '127.0.0.1:5432:5432'
+      - '127.0.0.1:5433:5432'
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:

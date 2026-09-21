@@ -7,6 +7,9 @@
 * [DELETE /api/me](me-delete.md) - Baja de cuenta con contraseña (cancelación ARCO).
 * [GET /api/me/export](me-export.md) - Copia descargable de los datos del titular (acceso ARCO).
 * [GET y POST /api/me/consents](me-consents.md) - Estado y cambio de consentimientos.
+* [GET /api/zip/:cp](zip-get.md) - Colonias a partir del C.P. (Zippopotam, solo 5 dígitos).
+* [Identidad INE](me-identity.md) - Anverso/reverso del donante.
+* [GET /api/donations/:id/receipt](donations-receipt.md) - Constancia HTML (no CFDI).
 * [GET /api/campaigns](campaigns-get.md) - Campañas activas.
 * [GET /api/donations](donations-get.md) - Historial del donante (requiere sesión).
 * [POST /api/donations](donations-post.md) - Alta de donación (monto $1–$999,999.99).

@@ -35,6 +35,7 @@ LFPDPPP. Consecuencias operativas:
 | Contraseña (hash scrypt) | `users.password_hash` | Autenticación | Necesaria | Cuenta activa |
 | Rol | `users.role` | Control de acceso al panel | Necesaria | Cuenta activa |
 | Teléfono | `donor_profiles.phone` / `phone_digits` | Contacto y unicidad | Necesaria | Cuenta activa |
+| Colonia | `donor_profiles.colony` | Domicilio fiscal | Opcional (recibo) | 5 años tras el CFDI |
 | RFC | `donor_profiles.rfc` | Emitir CFDI | Opcional (solo con recibo) | 5 años tras el CFDI |
 | Domicilio (calle, ciudad, estado, C.P.) | `donor_profiles.*` | Emitir CFDI | Opcional (solo con recibo) | 5 años tras el CFDI |
 | Preferencia de recibo | `donor_profiles.wants_receipt` | Decidir si se piden datos fiscales | Necesaria | Cuenta activa |
@@ -42,6 +43,7 @@ LFPDPPP. Consecuencias operativas:
 | Consentimiento (tipo, versión, fecha) | `consents.*` | Probar que el consentimiento se otorgó | Obligación del responsable | 5 años |
 | Huella de IP | `consents.ip_hash` | Evidencia del consentimiento | Obligación del responsable | 5 años |
 | Navegador | `consents.user_agent` | Evidencia del consentimiento | Obligación del responsable | 5 años |
+| Imágenes INE (anverso/reverso) | `identity_documents` | Expediente PLD/SAT e identificación del donante | Opcional hasta umbral UMA; consentimiento `identity_document` | Mientras la cuenta esté activa |
 | Coordenadas del dispositivo | Solo en memoria y `sessionStorage` | Ordenar el directorio por cercanía | Opcional (permiso del navegador) | No se persiste en la base |
 
 # Almacenamiento en el navegador
@@ -58,7 +60,7 @@ No hay cookies de aplicación, analítica ni píxeles de terceros. Solo `session
 
 | Destino | Qué sale | Nota |
 |---------|----------|------|
-| `universal.org.mx` (directorio WP) | Solo latitud y longitud | Nunca correo, nombre, teléfono ni RFC |
+| Zippopotam | Solo código postal (5 dígitos) | Sugerir colonia/estado. Ver aviso §7 |
 | Imágenes de iglesias | Petición del navegador a URLs externas | Expone IP y referer del visitante |
 | MercadoPago | Monto, moneda, `external_reference` (id de donación); datos de tarjeta solo en el checkout alojado | Encargado de cobro. Ver [/integrations/mercadopago.md](/integrations/mercadopago.md) |
 | PayPal | Idem vía Orders v2 / checkout alojado | Encargado de cobro. Ver [/integrations/paypal.md](/integrations/paypal.md) |

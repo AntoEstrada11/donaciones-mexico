@@ -48,7 +48,8 @@ timestamp: 2026-09-07T00:00:00Z
 | `components/PrivacyNoticeShort.vue` | Aviso simplificado junto a cada formulario |
 | `components/LegalConsent.vue` | Casilla de consentimiento expreso, nunca premarcada |
 | `pages/admin/` | Panel operativo (stats, personalizar, donaciones, usuarios) |
-| `docker-compose.yml` | Servicio PostgreSQL con volumen persistente |
+| `docker-compose.yml` | Servicio PostgreSQL local (`npm run db:up`) |
+| `docker-compose.portainer.yml` | Postgres + Nuxt en Portainer |
 
 # Frontera de datos
 

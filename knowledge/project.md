@@ -19,7 +19,7 @@ El sitio cumple la LFPDPPP vigente (21/03/2025): aviso integral y simplificado, 
 | Frontend / SSR | Nuxt 3, Vue 3, Tailwind CSS |
 | i18n | `@nuxtjs/i18n` (`es-MX`, `strategy: no_prefix`) |
 | API | Nitro server routes en `server/api/` |
-| Base de datos | PostgreSQL 17 (Docker en el mismo host) |
+| Base de datos | PostgreSQL 17 (Docker local; mismo motor en Portainer) |
 | Acceso a datos | Drizzle ORM + driver `postgres` |
 | Auth | Token HMAC propio + scrypt; cuentas en la tabla `users` |
 | Privacidad | Aviso en `/privacidad`, tabla `consents`, ARCO en `/perfil`; config en `utils/legal.ts` |
@@ -29,7 +29,8 @@ El sitio cumple la LFPDPPP vigente (21/03/2025): aviso integral y simplificado, 
 # Entradas útiles
 
 - Código: raíz del repo (`pages/`, `server/`, `composables/`)
-- Arranque: [/playbooks/run-local.md](/playbooks/run-local.md)
+- Arranque local: [/playbooks/run-local.md](/playbooks/run-local.md)
+- Servidor: [/playbooks/portainer.md](/playbooks/portainer.md)
 - Esquema de datos: [/data/postgres-schema.md](/data/postgres-schema.md)
 - Privacidad y aviso: [/legal/aviso-privacidad.md](/legal/aviso-privacidad.md)
 - Inventario PII: [/data/personal-data-inventory.md](/data/personal-data-inventory.md)

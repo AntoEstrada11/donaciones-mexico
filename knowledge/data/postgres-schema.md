@@ -59,6 +59,7 @@ Separar el perfil de la cuenta acota el manejo de PII: la tabla de acceso no con
 | `id` | uuid PK | |
 | `user_id` | uuid FK nullable | → `users.id`, `ON DELETE SET NULL`; nulo si no había sesión |
 | `church_external_id` | varchar(64) | id de la API de WordPress; no hay tabla local de iglesias |
+| `church_name` | varchar(200) | nombre de la iglesia al donar |
 | `campaign_id` | uuid FK | → `campaigns.id` |
 | `amount` | numeric(12,2) | exacto; nunca punto flotante |
 | `currency` | varchar(3) | default `MXN` |
@@ -71,6 +72,16 @@ Separar el perfil de la cuenta acota el manejo de PII: la tabla de acceso no con
 | `created_at` / `updated_at` | timestamptz | |
 
 Índices: `donations_user_created_idx`, `donations_campaign_idx`, `donations_provider_ref_idx`.
+
+## `identity_documents` — INE
+
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `user_id` + `side` | unique | `front` / `back` |
+| `bytes` | bytea | no se expone en URL pública |
+| `mime` | varchar(32) | jpeg/png/webp |
+
+`ON DELETE CASCADE` con la cuenta.
 
 ## `payment_events` — idempotencia de webhooks
 
