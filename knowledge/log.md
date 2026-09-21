@@ -1,6 +1,7 @@
 # Directory Update Log
 
 ## 2026-09-21
+* **Update**: Eliminado `docker-compose.portainer.yml` (duplicado). El webhook usa solo `docker-compose.yml`. Ver [/playbooks/portainer.md](/playbooks/portainer.md).
 * **Update**: `docker-compose.yml` incluye el front (`web`) para el webhook Gitea→Portainer; `npm run db:up` sigue levantando solo Postgres. Ver [/playbooks/portainer.md](/playbooks/portainer.md).
 
 ## 2026-09-14

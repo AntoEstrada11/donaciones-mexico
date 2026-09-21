@@ -18,8 +18,7 @@ Dos contenedores: **`donaciones-db`** (Postgres) y **`donaciones-web`** (Nuxt en
 
 | Archivo | Uso |
 |---------|-----|
-| `docker-compose.yml` | **db + web** — path por defecto del webhook Gitea → Portainer |
-| `docker-compose.portainer.yml` | El mismo stack (si el stack ya apuntaba a este path) |
+| `docker-compose.yml` | **Único** Compose: `db` + `web`. Lo usa el webhook Gitea → Portainer. |
 | `Dockerfile` | Build Nuxt → Nitro |
 | `docker-entrypoint.sh` | Migra y arranca Nitro |
 
@@ -28,7 +27,7 @@ En la PC, `npm run db:up` **solo** levanta `db`, para no pelear el puerto 3000 c
 # En Portainer
 
 1. Stack desde Git, repo Gitea, rama `main`.
-2. **Compose path:** `docker-compose.yml` (o `docker-compose.portainer.yml`; ambos tienen `web`).
+2. **Compose path:** `docker-compose.yml`.
 3. Activar **build / recreate / pull and rebuild** del servicio `web`. Sin rebuild, el webhook puede dejar solo Postgres.
 4. Variables de entorno del stack: `POSTGRES_*`, `NUXT_AUTH_SECRET`, `NUXT_PUBLIC_SITE_URL`, Hub, pagos si aplican. Ver tabla abajo.
 5. Tras el primer deploy, semilla de campañas **una vez** en la consola de `donaciones-web`:
