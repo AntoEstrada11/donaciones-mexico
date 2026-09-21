@@ -1,19 +1,16 @@
-# Stack Gitea → Portainer.
-# OBLIGATORIO: desplegar como Compose (standalone / docker compose).
-# NO usar Swarm: Swarm ignora `build` y `restart`, y falla con
-# "invalid image reference for service web: no image specified".
+# Stack Gitea → Portainer (Docker Swarm).
+# Swarm no admite `build:`: la imagen de la app se construye en el host y se referencia aquí.
+# Ver knowledge/playbooks/portainer.md
 services:
   db:
     image: postgres:17-alpine
-    container_name: donaciones-db
-    restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-donaciones}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-donaciones}
       POSTGRES_DB: ${POSTGRES_DB:-donaciones}
-    # Solo loopback. En la PC: npm run db:up (solo este servicio). En Portainer no hace falta abrirlo.
+    # Sin 127.0.0.1: Swarm lo ignora y abre 0.0.0.0. En la PC, npm run db:up sigue en :5432.
     ports:
-      - '${POSTGRES_BIND:-127.0.0.1:5432}:5432'
+      - '${POSTGRES_PUBLISH:-5432}:5432'
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:
@@ -24,18 +21,17 @@ services:
       start_period: 10s
     networks:
       - donaciones
+    deploy:
+      restart_policy:
+        condition: on-failure
 
   web:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: donaciones-web
-    restart: unless-stopped
-    # Lista (no mapa con condition): Portainer/Swarm exige depends_on como array.
+    # Construir antes del deploy: docker build -t donaciones-web:latest .
+    image: ${DONACIONES_WEB_IMAGE:-donaciones-web:latest}
     depends_on:
       - db
     ports:
-      - '${WEB_BIND:-0.0.0.0:3000}:3000'
+      - '${WEB_PUBLISH:-3000}:3000'
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-donaciones}:${POSTGRES_PASSWORD:-donaciones}@db:5432/${POSTGRES_DB:-donaciones}
       NUXT_AUTH_SECRET: ${NUXT_AUTH_SECRET:-cambia-este-secreto-en-portainer}
@@ -61,6 +57,9 @@ services:
       - uploads:/app/.output/public/uploads
     networks:
       - donaciones
+    deploy:
+      restart_policy:
+        condition: on-failure
 
 volumes:
   db-data:
@@ -68,4 +67,4 @@ volumes:
 
 networks:
   donaciones:
-    driver: bridge
+    driver: overlay
