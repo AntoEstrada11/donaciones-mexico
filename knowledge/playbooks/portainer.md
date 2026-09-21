@@ -1,7 +1,7 @@
 ---
 type: Playbook
 title: Desplegar en Portainer desde Gitea
-description: Stack web + Postgres. El webhook de Gitea usa docker-compose.yml (db y Nuxt).
+description: Stack web + Postgres. Debe ser Compose standalone; Swarm no sirve con build.
 tags: [deploy, docker, portainer, gitea]
 timestamp: 2026-09-21T00:00:00Z
 ---
@@ -10,42 +10,59 @@ timestamp: 2026-09-21T00:00:00Z
 
 Publicar Donaciones México en el host donde corre Portainer.
 
-# Qué debe verse en el stack
+# Compose, no Swarm
 
-Dos contenedores: **`donaciones-db`** (Postgres) y **`donaciones-web`** (Nuxt en el puerto 3000). Si solo aparece la base, el compose viejo no traía `web` o Portainer no está reconstruyendo la imagen.
+Este repo usa `build:` (Dockerfile). **Solo funciona** si el stack en Portainer es **Compose** (docker compose en el agente Docker).
+
+Si Portainer lo trata como **Swarm**, verás avisos como:
+
+- `Ignoring unsupported options: build, restart`
+- `container_name … is not supported`
+- `invalid image reference for service web: no image specified`
+- a veces también `Unable to retrieve stack file` después del fallo
+
+**Qué hacer:** borrar o dejar de usar ese stack Swarm. Crear uno nuevo:
+
+1. Entorno = agente **Docker** (standalone), no el cluster Swarm.
+2. **Stacks → Add stack → Repository** (Git).
+3. Repo Gitea, rama `main`, Compose path `docker-compose.yml`.
+4. En opciones del stack, que sea despliegue **Compose** / docker compose (no “Swarm stack”).
+5. Variables de entorno (tabla abajo).
+6. Deploy con **build** de `web` (el primer build tarda).
+
+El webhook de Gitea debe apuntar a **ese** stack Compose. Si el webhook quedó ligado al stack Swarm, reconfigúralo al nuevo.
+
+# Qué debe verse
+
+Dos contenedores: **`donaciones-db`** y **`donaciones-web`** (puerto 3000).
 
 # Piezas en el repo
 
 | Archivo | Uso |
 |---------|-----|
-| `docker-compose.yml` | **Único** Compose: `db` + `web`. Lo usa el webhook Gitea → Portainer. |
+| `docker-compose.yml` | Único Compose: `db` + `web` |
 | `Dockerfile` | Build Nuxt → Nitro |
 | `docker-entrypoint.sh` | Migra y arranca Nitro |
 
-En la PC, `npm run db:up` **solo** levanta `db`, para no pelear el puerto 3000 con `npm run dev`.
+En la PC, `npm run db:up` **solo** levanta `db`.
 
-# En Portainer
+# Variables
 
-1. Stack desde Git, repo Gitea, rama `main`.
-2. **Compose path:** `docker-compose.yml`.
-3. Activar **build / recreate / pull and rebuild** del servicio `web`. Sin rebuild, el webhook puede dejar solo Postgres. Use stack **Compose** (no Swarm): Swarm no construye `build:` y exige `depends_on` como lista.
-4. Si Portainer dice `depends_on must be a list`, el compose ya usa `- db` (no `condition: service_healthy`).
-5. Variables de entorno del stack: `POSTGRES_*`, `NUXT_AUTH_SECRET`, `NUXT_PUBLIC_SITE_URL`, Hub, pagos si aplican. Ver tabla abajo.
-6. Tras el primer deploy, semilla de campañas **una vez** en la consola de `donaciones-web`:
+| Variable | Obligatorio | Nota |
+|----------|-------------|------|
+| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | sí | `DATABASE_URL` hacia `db` |
+| `NUXT_AUTH_SECRET` | sí | Distinto al de desarrollo |
+| `NUXT_PUBLIC_SITE_URL` | sí | URL pública HTTPS |
+| `NUXT_PUBLIC_AUTH_HUB_URL` | sí | Sin slash final |
+| `WEB_BIND` | no | default `0.0.0.0:3000` |
+
+Tras el primer deploy, semilla una vez en la consola de `donaciones-web`:
 
 ```bash
 node --experimental-strip-types server/database/seed.ts
 ```
 
-7. Carrusel: subir fotos en `/admin/personalizar/carrusel`.
-
-| Variable | Obligatorio | Nota |
-|----------|-------------|------|
-| `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | sí | `DATABASE_URL` hacia el servicio `db` |
-| `NUXT_AUTH_SECRET` | sí | Distinto al de desarrollo |
-| `NUXT_PUBLIC_SITE_URL` | sí | URL pública HTTPS |
-| `NUXT_PUBLIC_AUTH_HUB_URL` | sí | Sin slash final |
-| `WEB_BIND` | no | default `0.0.0.0:3000` |
+Carrusel: subir fotos en `/admin/personalizar/carrusel`.
 
 # Relacionado
 

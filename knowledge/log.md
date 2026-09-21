@@ -1,6 +1,7 @@
 # Directory Update Log
 
 ## 2026-09-21
+* **Update**: Portainer debe usar stack Compose (no Swarm): Swarm ignora `build` y deja a `web` sin imagen. Ver [/playbooks/portainer.md](/playbooks/portainer.md).
 * **Update**: `depends_on` de `web` como lista (`- db`) para Portainer. Ver [/playbooks/portainer.md](/playbooks/portainer.md).
 * **Update**: Eliminado `docker-compose.portainer.yml` (duplicado). El webhook usa solo `docker-compose.yml`. Ver [/playbooks/portainer.md](/playbooks/portainer.md).
 * **Update**: `docker-compose.yml` incluye el front (`web`) para el webhook Gitea→Portainer; `npm run db:up` sigue levantando solo Postgres. Ver [/playbooks/portainer.md](/playbooks/portainer.md).

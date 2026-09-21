@@ -1,3 +1,7 @@
+# Stack Gitea → Portainer.
+# OBLIGATORIO: desplegar como Compose (standalone / docker compose).
+# NO usar Swarm: Swarm ignora `build` y `restart`, y falla con
+# "invalid image reference for service web: no image specified".
 services:
   db:
     image: postgres:17-alpine

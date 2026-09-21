@@ -9,7 +9,7 @@ timestamp: 2026-09-21T00:00:00Z
 
 # Decisión
 
-El sitio en servidor se publica con **Portainer** leyendo **Gitea**. `docker-compose.yml` define **Postgres y Nuxt**. En la PC, `npm run db:up` arranca solo `db`.
+El sitio en servidor se publica con **Portainer** leyendo **Gitea**, como stack **Compose** (no Swarm). `docker-compose.yml` define Postgres y Nuxt con `build:`. Swarm ignora `build` y no puede levantar `web`. En la PC, `npm run db:up` arranca solo `db`.
 
 # Relacionado
 
