@@ -1,7 +1,7 @@
 # Playbooks
 
 * [Carga masiva de contactos de prueba](dev-bulk-contacts.md) - JSON ficticio contra `POST /api/dev/contacts` (solo `nuxt dev`).
-* [Desplegar en Portainer](portainer.md) - Swarm: imagen `donaciones-web` + Postgres.
+* [Desplegar en Portainer](portainer.md) - Docker Hub + Traefik en `AllanNet`, como Luau.
 * [Migraciones de base de datos](db-migrations.md) - Drizzle, esquema e importación del store legado.
 * [Carrusel tras instalación nueva](hero-slides-restore.md) - Copiar JPG no restaura el reel; hay que subirlos en `/admin/personalizar/carrusel`.
 * [Promover administrador](promote-admin.md) - Asignar role admin por correo.

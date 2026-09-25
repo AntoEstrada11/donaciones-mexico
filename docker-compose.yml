@@ -1,16 +1,17 @@
-# Stack Gitea → Portainer (Docker Swarm).
-# Swarm no admite `build:`: la imagen de la app se construye en el host y se referencia aquí.
-# Ver knowledge/playbooks/portainer.md
+# Mismo patrón que Luau en Portainer: imagen en Docker Hub + Traefik en AllanNet.
+# Build y push en la PC: docker build -t allanmontero/donaciones-mexico:latest . && docker push allanmontero/donaciones-mexico:latest
 services:
   db:
     image: postgres:17-alpine
+    container_name: donaciones-db
+    restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-donaciones}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-donaciones}
       POSTGRES_DB: ${POSTGRES_DB:-donaciones}
-    # Sin 127.0.0.1: Swarm lo ignora y abre 0.0.0.0. En la PC, npm run db:up sigue en :5432.
+    # Solo la PC (npm run dev). Swarm ignora 127.0.0.1 y puede abrir el puerto; en Portainer no definas POSTGRES_PUBLISH o ciérralo en el firewall.
     ports:
-      - '${POSTGRES_PUBLISH:-5432}:5432'
+      - '${POSTGRES_PUBLISH:-127.0.0.1:5432}:5432'
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:
@@ -20,22 +21,18 @@ services:
       retries: 10
       start_period: 10s
     networks:
-      - donaciones
-    deploy:
-      restart_policy:
-        condition: on-failure
+      - AllanNet
 
   web:
-    # Construir antes del deploy: docker build -t donaciones-web:latest .
-    image: ${DONACIONES_WEB_IMAGE:-donaciones-web:latest}
+    image: allanmontero/donaciones-mexico:latest
+    container_name: donaciones-web
+    restart: unless-stopped
     depends_on:
       - db
-    ports:
-      - '${WEB_PUBLISH:-3000}:3000'
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-donaciones}:${POSTGRES_PASSWORD:-donaciones}@db:5432/${POSTGRES_DB:-donaciones}
       NUXT_AUTH_SECRET: ${NUXT_AUTH_SECRET:-cambia-este-secreto-en-portainer}
-      NUXT_PUBLIC_SITE_URL: ${NUXT_PUBLIC_SITE_URL:-}
+      NUXT_PUBLIC_SITE_URL: ${NUXT_PUBLIC_SITE_URL:-https://donaciones.revelation.com.mx}
       NUXT_PUBLIC_AUTH_HUB_URL: ${NUXT_PUBLIC_AUTH_HUB_URL:-http://159.54.159.34:8000}
       NUXT_PUBLIC_APP_CODE: ${NUXT_PUBLIC_APP_CODE:-donaciones}
       NUXT_CHURCHES_API_URL: ${NUXT_CHURCHES_API_URL:-https://miembros.iurdsys.net/api/churches}
@@ -56,15 +53,20 @@ services:
       - uploads:/app/public/uploads
       - uploads:/app/.output/public/uploads
     networks:
-      - donaciones
+      - AllanNet
     deploy:
-      restart_policy:
-        condition: on-failure
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=AllanNet"
+        - "traefik.http.routers.donaciones.rule=Host(`donaciones.revelation.com.mx`)"
+        - "traefik.http.routers.donaciones.entrypoints=websecure"
+        - "traefik.http.routers.donaciones.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.donaciones.loadbalancer.server.port=3000"
 
 volumes:
   db-data:
   uploads:
 
 networks:
-  donaciones:
-    driver: overlay
+  AllanNet:
+    external: true

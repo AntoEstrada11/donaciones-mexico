@@ -1,8 +1,10 @@
 # Directory Update Log
 
+## 2026-09-25
+* **Update**: Front en Docker Hub `allanmontero/donaciones-mexico` y Traefik (`donaciones.revelation.com.mx`) sobre `AllanNet`. Ver [/playbooks/portainer.md](/playbooks/portainer.md).
+
 ## 2026-09-21
 * **Update**: Compose compatible con Swarm: `web` usa `image: donaciones-web:latest` (hay que `docker build` en el host). Ver [/playbooks/portainer.md](/playbooks/portainer.md).
-* **Update**: Portainer debe usar stack Compose (no Swarm): Swarm ignora `build` y deja a `web` sin imagen. Ver [/playbooks/portainer.md](/playbooks/portainer.md).
 * **Update**: Eliminado `docker-compose.portainer.yml` (duplicado). El webhook usa solo `docker-compose.yml`. Ver [/playbooks/portainer.md](/playbooks/portainer.md).
 * **Update**: `docker-compose.yml` incluye el front (`web`) para el webhook Gitea→Portainer; `npm run db:up` sigue levantando solo Postgres. Ver [/playbooks/portainer.md](/playbooks/portainer.md).
 
