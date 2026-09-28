@@ -9,7 +9,7 @@ timestamp: 2026-09-21T00:00:00Z
 
 # Decisión
 
-El sitio en servidor se publica en el **Portainer** de Allan (red `AllanNet`, Traefik). La imagen del front es de la cuenta propia: `aneg/donaciones-mexico` en Docker Hub. URL: `https://donaciones.revelation.com.mx`, puerto interno 3000.
+El sitio en servidor se publica en el **Portainer** de Allan (red `AllanNet`, Traefik). La imagen del front es de la cuenta propia: `aneg/donaciones-mexico` en Docker Hub. URL: `https://dona-test.iurdsys.net`, puerto interno 3000.
 
 Tras cada cambio de código, en la PC: `docker build -t aneg/donaciones-mexico:latest .` y `docker push`.
 

@@ -1,6 +1,7 @@
 # Directory Update Log
 
 ## 2026-09-28
+* **Update**: El host público del stack es `https://dona-test.iurdsys.net` (Traefik). Ver [/playbooks/portainer.md](/playbooks/portainer.md).
 * **Update**: El stack de Portainer ya no publica el puerto 5432 (lo usa InsForge). En la PC sigue en `docker-compose.override.yml`. Ver [/playbooks/portainer.md](/playbooks/portainer.md).
 
 ## 2026-09-25

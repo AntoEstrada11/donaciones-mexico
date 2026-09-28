@@ -29,7 +29,7 @@ services:
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-donaciones}:${POSTGRES_PASSWORD:-donaciones}@db:5432/${POSTGRES_DB:-donaciones}
       NUXT_AUTH_SECRET: ${NUXT_AUTH_SECRET:-cambia-este-secreto-en-portainer}
-      NUXT_PUBLIC_SITE_URL: ${NUXT_PUBLIC_SITE_URL:-https://donaciones.revelation.com.mx}
+      NUXT_PUBLIC_SITE_URL: ${NUXT_PUBLIC_SITE_URL:-https://dona-test.iurdsys.net}
       NUXT_PUBLIC_AUTH_HUB_URL: ${NUXT_PUBLIC_AUTH_HUB_URL:-http://159.54.159.34:8000}
       NUXT_PUBLIC_APP_CODE: ${NUXT_PUBLIC_APP_CODE:-donaciones}
       NUXT_CHURCHES_API_URL: ${NUXT_CHURCHES_API_URL:-https://miembros.iurdsys.net/api/churches}
@@ -55,7 +55,7 @@ services:
       labels:
         - "traefik.enable=true"
         - "traefik.docker.network=AllanNet"
-        - "traefik.http.routers.donaciones.rule=Host(`donaciones.revelation.com.mx`)"
+        - "traefik.http.routers.donaciones.rule=Host(`dona-test.iurdsys.net`)"
         - "traefik.http.routers.donaciones.entrypoints=websecure"
         - "traefik.http.routers.donaciones.tls.certresolver=letsencryptresolver"
         - "traefik.http.services.donaciones.loadbalancer.server.port=3000"
