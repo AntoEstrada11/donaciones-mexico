@@ -1,5 +1,8 @@
 # Directory Update Log
 
+## 2026-09-28
+* **Update**: El stack de Portainer ya no publica el puerto 5432 (lo usa InsForge). En la PC sigue en `docker-compose.override.yml`. Ver [/playbooks/portainer.md](/playbooks/portainer.md).
+
 ## 2026-09-25
 * **Update**: Front en Docker Hub propio `aneg/donaciones-mexico`; Portainer y Traefik siguen en el host de Allan. Ver [/playbooks/portainer.md](/playbooks/portainer.md).
 

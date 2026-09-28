@@ -27,7 +27,7 @@ docker push aneg/donaciones-mexico:latest
 2. `https://git.allanmontero.com/aneg/Donaciones-Mexico.git`, referencia `refs/heads/main`, path `docker-compose.yml`.
 3. Auth de Gitea (usuario + token).
 4. Variables: `POSTGRES_PASSWORD`, `NUXT_AUTH_SECRET`. `NUXT_PUBLIC_SITE_URL` por defecto es `https://donaciones.revelation.com.mx`.
-5. Deploy. La red `AllanNet` ya existe en el servidor.
+5. Deploy. La red `AllanNet` ya existe en el servidor. Postgres no publica el puerto 5432: en ese host ya lo usa otro stack. La web llega a la base por el nombre `db`.
 
 Cada cambio de código: otro `docker build`, `docker push` y redeploy en Portainer.
 

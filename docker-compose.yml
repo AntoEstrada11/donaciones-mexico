@@ -9,9 +9,6 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-donaciones}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-donaciones}
       POSTGRES_DB: ${POSTGRES_DB:-donaciones}
-    # Solo la PC (npm run dev). Swarm ignora 127.0.0.1 y puede abrir el puerto; en Portainer no definas POSTGRES_PUBLISH o ciérralo en el firewall.
-    ports:
-      - '${POSTGRES_PUBLISH:-127.0.0.1:5432}:5432'
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:

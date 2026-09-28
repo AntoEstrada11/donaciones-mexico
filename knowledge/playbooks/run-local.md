@@ -32,7 +32,7 @@ npm run db:setup
 
 | Script | Qué hace |
 |--------|----------|
-| `npm run db:up` | Arranca **solo** Postgres (`donaciones-db`) |
+| `npm run db:up` | Arranca **solo** Postgres en `127.0.0.1:5432` (`docker-compose.override.yml`) |
 | `npm run db:setup` | Arranca, migra y siembra |
 | `npm run db:down` | Apaga el contenedor (el volumen `db-data` se conserva) |
 
