@@ -1,7 +1,7 @@
 # Directory Update Log
 
 ## 2026-09-25
-* **Update**: Front en Docker Hub `allanmontero/donaciones-mexico` y Traefik (`donaciones.revelation.com.mx`) sobre `AllanNet`. Ver [/playbooks/portainer.md](/playbooks/portainer.md).
+* **Update**: Front en Docker Hub propio `aneg/donaciones-mexico`; Portainer y Traefik siguen en el host de Allan. Ver [/playbooks/portainer.md](/playbooks/portainer.md).
 
 ## 2026-09-21
 * **Update**: Compose compatible con Swarm: `web` usa `image: donaciones-web:latest` (hay que `docker build` en el host). Ver [/playbooks/portainer.md](/playbooks/portainer.md).

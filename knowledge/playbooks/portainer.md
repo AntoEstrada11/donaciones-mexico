@@ -12,13 +12,13 @@ Publicar Donaciones México en Portainer, como `luau`.
 
 # Imagen
 
-El front es `allanmontero/donaciones-mexico:latest` (Docker Hub). Traefik publica `https://donaciones.revelation.com.mx` hacia el puerto **3000**.
+El front es `aneg/donaciones-mexico:latest` (Docker Hub de la cuenta propia). Traefik en el Portainer de Allan publica `https://donaciones.revelation.com.mx` hacia el puerto **3000**.
 
-En la PC, con `docker login` de esa cuenta:
+En la PC, con `docker login` de la cuenta `aneg`:
 
 ```bash
-docker build -t allanmontero/donaciones-mexico:latest .
-docker push allanmontero/donaciones-mexico:latest
+docker build -t aneg/donaciones-mexico:latest .
+docker push aneg/donaciones-mexico:latest
 ```
 
 # Stack en Portainer

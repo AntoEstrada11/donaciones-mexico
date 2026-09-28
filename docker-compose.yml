@@ -1,5 +1,5 @@
 # Mismo patrón que Luau en Portainer: imagen en Docker Hub + Traefik en AllanNet.
-# Build y push en la PC: docker build -t allanmontero/donaciones-mexico:latest . && docker push allanmontero/donaciones-mexico:latest
+# Build y push en la PC (cuenta propia): docker build -t aneg/donaciones-mexico:latest . && docker push aneg/donaciones-mexico:latest
 services:
   db:
     image: postgres:17-alpine
@@ -24,7 +24,7 @@ services:
       - AllanNet
 
   web:
-    image: allanmontero/donaciones-mexico:latest
+    image: aneg/donaciones-mexico:latest
     container_name: donaciones-web
     restart: unless-stopped
     depends_on:
