@@ -10,6 +10,12 @@ timestamp: 2026-09-07T00:00:00Z
 
 Código de cobro v1 en `server/payments/` y panel `/admin/personalizar/cobros`. Ver [/integrations/](/integrations/).
 
+# Dónde van las llaves
+
+Nunca el número de tarjeta ni el CVV. Eso se escribe en la página de Mercado Pago o PayPal al pagar.
+
+En el stack de Portainer, **Environment variables** (y en local, el archivo `.env`). Nombres en `.env.example`. Tras cambiarlas, redesplegar el stack o reiniciar `npm run dev`. Luego en `/admin/personalizar/cobros`: modo **test** y activar tarjeta o PayPal.
+
 # Variables
 
 Copiar nombres desde `.env.example` (nunca valores reales a `knowledge/`).

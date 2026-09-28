@@ -19,7 +19,7 @@ npm run dev
 
 En Windows, `DATABASE_URL` debe usar `127.0.0.1` (ya viene así en `.env.example`). Abra [http://localhost:3000](http://localhost:3000).
 
-Postgres vive en Docker (`donaciones-db`). Vercel **no** usa este contenedor: allá hace falta otra `DATABASE_URL` (Neon u otro host). Ver [`knowledge/playbooks/run-local.md`](knowledge/playbooks/run-local.md) y [`knowledge/playbooks/vercel.md`](knowledge/playbooks/vercel.md).
+Postgres vive en Docker (`donaciones-db`). El sitio público se publica en Portainer. Ver [`knowledge/playbooks/run-local.md`](knowledge/playbooks/run-local.md) y [`knowledge/playbooks/portainer.md`](knowledge/playbooks/portainer.md).
 
 ## Scripts de base de datos
 

@@ -1,6 +1,7 @@
 # Directory Update Log
 
 ## 2026-09-28
+* **Update**: Retirado el playbook de Vercel/Neon. El host es Portainer. Ver [/playbooks/portainer.md](/playbooks/portainer.md).
 * **Update**: El host público del stack es `https://dona-test.iurdsys.net` (Traefik). Ver [/playbooks/portainer.md](/playbooks/portainer.md).
 * **Update**: El stack de Portainer ya no publica el puerto 5432 (lo usa InsForge). En la PC sigue en `docker-compose.override.yml`. Ver [/playbooks/portainer.md](/playbooks/portainer.md).
 
@@ -35,7 +36,7 @@
 ## 2026-09-04
 * **Update**: Una sola pantalla Iniciar sesión: donante o personal del hub; el panel no exige cambiar la URL. Ver [/decisions/donor-vs-operator-auth.md](/decisions/donor-vs-operator-auth.md).
 * **Update**: Presets de monto rellenan el campo y quedan marcados. Superadmin del Auth Hub entra a `/admin` aunque no tenga membresía `donaciones`. Ver [/playbooks/auth-hub.md](/playbooks/auth-hub.md).
-* **Update**: Vercel usa Neon (`donaciones-mexico-db`) para registro y donaciones; Docker sigue solo en local. Ver [/playbooks/vercel.md](/playbooks/vercel.md).
+* **Update**: Histórico. El despliegue en Vercel/Neon se retiró. El sitio se publica en Portainer. Ver [/playbooks/portainer.md](/playbooks/portainer.md).
 * **Update**: `npm run db:setup` arranca Postgres 17 en Docker, migra y siembra. Ver [/playbooks/run-local.md](/playbooks/run-local.md).
 * **Update**: Donantes: `/registro` y `/login` locales. Operadores: `/admin/login` vía Auth Hub. Ver [/decisions/donor-vs-operator-auth.md](/decisions/donor-vs-operator-auth.md).
 
