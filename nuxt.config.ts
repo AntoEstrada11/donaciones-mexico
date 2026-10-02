@@ -11,19 +11,6 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
-  // Dev: túneles (ngrok/cloudflare) envían Host distinto a localhost.
-  // Sin esto, webhooks y retornos públicos responden 403 "host is not allowed".
-  vite: {
-    server: {
-      allowedHosts: [
-        '.ngrok-free.dev',
-        '.ngrok-free.app',
-        '.ngrok.io',
-        '.trycloudflare.com',
-      ],
-    },
-  },
-
   app: {
     head: {
       title: 'Donaciones — Iglesia Universal México',
@@ -74,7 +61,7 @@ export default defineNuxtConfig({
     paypalClientSecretLive: process.env.NUXT_PAYPAL_CLIENT_SECRET_LIVE || '',
     paypalWebhookIdTest: process.env.NUXT_PAYPAL_WEBHOOK_ID_TEST || '',
     paypalWebhookIdLive: process.env.NUXT_PAYPAL_WEBHOOK_ID_LIVE || '',
-    /** Solo servidor: base HTTPS para webhooks (ngrok en local). */
+    /** Solo servidor: base HTTPS pública de webhooks. Si falta, se usa NUXT_PUBLIC_SITE_URL. */
     paymentWebhookBaseUrl: process.env.NUXT_PAYMENT_WEBHOOK_BASE_URL || '',
     public: {
       defaultLatitude: 19.392531016453,

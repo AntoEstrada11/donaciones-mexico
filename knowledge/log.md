@@ -1,6 +1,10 @@
 # Directory Update Log
 
+## 2026-10-02
+* **Update**: PayPal de prueba se considera configurado con Client ID y Secret. El webhook ID sigue haciendo falta para avisos firmados. Se retiró el túnel ngrok del entorno de desarrollo. Ver [/playbooks/payments-setup.md](/playbooks/payments-setup.md).
+
 ## 2026-09-28
+* **Update**: Mercado Pago en modo test cuenta como configurado con el access token. El secreto del webhook sigue haciendo falta para aceptar avisos firmados. Ver [/playbooks/payments-setup.md](/playbooks/payments-setup.md).
 * **Update**: Retirado el playbook de Vercel/Neon. El host es Portainer. Ver [/playbooks/portainer.md](/playbooks/portainer.md).
 * **Update**: El host público del stack es `https://dona-test.iurdsys.net` (Traefik). Ver [/playbooks/portainer.md](/playbooks/portainer.md).
 * **Update**: El stack de Portainer ya no publica el puerto 5432 (lo usa InsForge). En la PC sigue en `docker-compose.override.yml`. Ver [/playbooks/portainer.md](/playbooks/portainer.md).

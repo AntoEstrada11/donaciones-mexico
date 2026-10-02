@@ -271,7 +271,7 @@
       "credMissing": "Faltantes",
       "credMp": "MercadoPago",
       "credPaypal": "PayPal",
-      "hintEnv": "Configure NUXT_MP_* y NUXT_PAYPAL_* en el entorno. Este panel no muestra ni guarda secretos.",
+      "hintEnv": "Puede activar modo test y los métodos ahora. El donante verá tarjeta o PayPal cuando esas llaves de prueba estén en .env (local) o en el stack (Portainer). El número de tarjeta no se escribe aquí.",
       "save": "Guardar preferencias",
       "saving": "Guardando…",
       "saved": "Preferencias de cobro actualizadas.",

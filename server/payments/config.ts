@@ -28,7 +28,7 @@ export function getSiteUrl(): string {
 
 /**
  * Base pública HTTPS que los proveedores pueden llamar (webhooks).
- * En local suele ser ngrok; si no hay, se reutiliza NUXT_PUBLIC_SITE_URL.
+ * En el sitio publicado es la URL HTTPS (dona-test). Si no hay, se reutiliza NUXT_PUBLIC_SITE_URL.
  */
 export function getWebhookBaseUrl(): string {
   const dedicated = String(cfg().paymentWebhookBaseUrl || '').trim().replace(/\/$/, '')
@@ -44,7 +44,7 @@ export function getMercadoPagoCredentials(mode: PaymentMode): MercadoPagoCredent
   const webhookSecret = mode === 'live'
     ? String(c.mpWebhookSecretLive || '')
     : String(c.mpWebhookSecretTest || '')
-  if (!accessToken.trim() || !webhookSecret.trim()) return null
+  if (!accessToken.trim()) return null
   return { accessToken: accessToken.trim(), webhookSecret: webhookSecret.trim() }
 }
 
@@ -59,7 +59,7 @@ export function getPayPalCredentials(mode: PaymentMode): PayPalCredentials | nul
   const webhookId = mode === 'live'
     ? String(c.paypalWebhookIdLive || '')
     : String(c.paypalWebhookIdTest || '')
-  if (!clientId.trim() || !clientSecret.trim() || !webhookId.trim()) return null
+  if (!clientId.trim() || !clientSecret.trim()) return null
   return {
     clientId: clientId.trim(),
     clientSecret: clientSecret.trim(),

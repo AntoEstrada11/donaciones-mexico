@@ -155,7 +155,6 @@ async function persist() {
             v-model="form.cardEnabled"
             type="checkbox"
             class="rounded text-brand"
-            :disabled="!credentials.mercadopago"
           >
           {{ t('admin.payments.enableCard') }}
         </label>
@@ -164,7 +163,6 @@ async function persist() {
             v-model="form.paypalEnabled"
             type="checkbox"
             class="rounded text-brand"
-            :disabled="!credentials.paypal"
           >
           {{ t('admin.payments.enablePaypal') }}
         </label>

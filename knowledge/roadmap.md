@@ -23,7 +23,7 @@ timestamp: 2026-09-07T00:00:00Z
 | Ítem | Nota |
 |------|------|
 | Credenciales test/live en host | [/playbooks/payments-setup.md](/playbooks/payments-setup.md); panel Cobros. |
-| Túnel local (ngrok) | `NUXT_PAYMENT_WEBHOOK_BASE_URL` + `vite.allowedHosts`; puerto del túnel = puerto de Nuxt. |
+| Webhooks en el sitio publicado | `https://dona-test.iurdsys.net` + llaves `*_TEST` en el stack. |
 
 # Pendiente de producto
 
