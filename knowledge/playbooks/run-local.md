@@ -17,8 +17,8 @@ Node.js 18+ (en Windows 22 los scripts ya llevan `--experimental-strip-types`), 
 # Steps
 
 1. `npm install`
-2. Copiar `.env.example` → `.env` si no existe. En Windows `DATABASE_URL` debe usar `127.0.0.1`, no `localhost`.
-3. Base + esquema + campañas:
+2. Copiar `.env.example` → `.env` si no existe. En Windows `DATABASE_URL` y `NUXT_MINIO_ENDPOINT` deben usar `127.0.0.1`, no `localhost`.
+3. Base + MinIO + esquema + campañas:
 
 ```bash
 npm run db:setup
@@ -26,15 +26,15 @@ npm run db:setup
 
 4. `npm run dev`
 5. [http://localhost:3000](http://localhost:3000) — **Iniciar sesión** cubre donante y operación.
-6. Donantes de prueba: [/playbooks/dev-bulk-contacts.md](/playbooks/dev-bulk-contacts.md).
+6. Volumen de prueba: `npm run db:seed-demo` ([/playbooks/seed-demo.md](/playbooks/seed-demo.md)). Contactos sueltos: [/playbooks/dev-bulk-contacts.md](/playbooks/dev-bulk-contacts.md).
 
 # Scripts
 
 | Script | Qué hace |
 |--------|----------|
-| `npm run db:up` | Arranca **solo** Postgres en `127.0.0.1:5432` (`docker-compose.override.yml`) |
+| `npm run db:up` | Arranca Postgres y MinIO en `127.0.0.1` (`docker-compose.override.yml`) |
 | `npm run db:setup` | Arranca, migra y siembra |
-| `npm run db:down` | Apaga el contenedor (el volumen `db-data` se conserva) |
+| `npm run db:down` | Apaga los contenedores (los volúmenes se conservan) |
 
 # Inspeccionar
 

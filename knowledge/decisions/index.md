@@ -12,6 +12,7 @@
 * [Iglesias directo desde Odoo](churches-odoo-direct.md) - Sustituye el proxy vía WordPress.
 * [Pasarela provider-agnóstica](pasarela-provider-agnostica.md) - Puerto interno + adaptadores; MP + PayPal en v1.
 * [Checkout alojado y secretos en env](checkout-hospedado-pci.md) - Redirect SAQ-A; llaves fuera del panel.
+* [MinIO para documentos privados](minio-private-objects.md) - Bucket privado INE/CFDI; proxy Nitro; ARCO.
 * [Iglesias vía WordPress](churches-external-api.md) - Superada el 2026-08-19.
 
 ## Superadas

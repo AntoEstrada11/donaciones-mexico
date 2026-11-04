@@ -11,6 +11,8 @@ const authReady = ref(false)
 const loadError = ref('')
 const receiptBusy = ref<string | null>(null)
 const receiptHint = ref('')
+const invoiceBusy = ref<string | null>(null)
+const invoiceHint = ref('')
 
 onMounted(async () => {
   try {
@@ -82,6 +84,25 @@ async function downloadReceipt(id: string) {
     receiptBusy.value = null
   }
 }
+
+async function requestInvoice(id: string) {
+  invoiceBusy.value = id
+  invoiceHint.value = ''
+  try {
+    await $fetch(`/api/donations/${id}/invoice`, {
+      method: 'POST',
+      headers: optionalAuthHeaders(),
+    })
+    invoiceHint.value = t('history.invoiceOk')
+  }
+  catch (e: unknown) {
+    const msg = (e as { data?: { statusMessage?: string } })?.data?.statusMessage
+    invoiceHint.value = msg || t('history.invoiceError')
+  }
+  finally {
+    invoiceBusy.value = null
+  }
+}
 </script>
 
 <template>
@@ -105,6 +126,9 @@ async function downloadReceipt(id: string) {
       </p>
       <p v-if="receiptHint" class="mb-4 text-sm text-amber-800">
         {{ receiptHint }}
+      </p>
+      <p v-if="invoiceHint" class="mb-4 text-sm text-amber-800">
+        {{ invoiceHint }}
       </p>
 
       <div v-if="donations.length === 0" class="card py-12 text-center">
@@ -151,6 +175,15 @@ async function downloadReceipt(id: string) {
               @click="downloadReceipt(donation.id)"
             >
               {{ receiptBusy === donation.id ? t('history.receiptBusy') : t('history.receipt') }}
+            </button>
+            <button
+              v-if="donation.status === 'paid'"
+              type="button"
+              class="btn-secondary text-sm"
+              :disabled="invoiceBusy === donation.id"
+              @click="requestInvoice(donation.id)"
+            >
+              {{ invoiceBusy === donation.id ? t('history.invoiceBusy') : t('history.invoice') }}
             </button>
           </div>
         </article>

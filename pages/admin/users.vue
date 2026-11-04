@@ -1,25 +1,65 @@
 <script setup lang="ts">
-import type { AdminUserRow, DonorStatus } from '~/types'
+import type { AdminUserRow, AdminUsersPage, DonorStatus } from '~/types'
 
-definePageMeta({ middleware: 'admin' })
+definePageMeta({ layout: 'admin', middleware: 'admin' })
 
 const { t } = useI18n()
 const { adminHeaders, user } = useAuth()
+const route = useRoute()
+const { openDonor } = useAdminDonorDrawer()
 
 const users = ref<AdminUserRow[]>([])
+const total = ref(0)
+const page = ref(1)
+const pageSize = ref(25)
 const loading = ref(true)
 const error = ref('')
 const success = ref('')
 const resetLink = ref('')
 const resetLinkFor = ref('')
 
+const filterQ = ref(typeof route.query.q === 'string' ? route.query.q : '')
+const filterStatus = ref<'all' | DonorStatus>('all')
+const filterChurch = ref('all')
+const churchOptions = ref<Array<{ id: string, name: string }>>([])
+
+const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)))
+
+watch(() => route.query.q, (q) => {
+  filterQ.value = typeof q === 'string' ? q : ''
+  page.value = 1
+  load()
+})
+async function loadChurches() {
+  try {
+    churchOptions.value = await $fetch('/api/admin/users/church-options', {
+      headers: adminHeaders(),
+    })
+  }
+  catch {
+    churchOptions.value = []
+  }
+}
+
 async function load() {
   loading.value = true
   error.value = ''
   try {
-    users.value = await $fetch<AdminUserRow[]>('/api/admin/users', {
+    const result = await $fetch<AdminUsersPage>('/api/admin/users', {
       headers: adminHeaders(),
+      query: {
+        scope: 'donors',
+        q: filterQ.value || undefined,
+        status: filterStatus.value,
+        churchId: filterChurch.value,
+        page: page.value,
+        pageSize: pageSize.value,
+      },
     })
+    users.value = result.items
+    total.value = result.total
+    page.value = result.page
+    pageSize.value = result.pageSize
   }
   catch (e: unknown) {
     const msg = (e as { data?: { statusMessage?: string } })?.data?.statusMessage
@@ -30,7 +70,15 @@ async function load() {
   }
 }
 
-onMounted(load)
+function applyFilters() {
+  page.value = 1
+  load()
+}
+
+onMounted(async () => {
+  await loadChurches()
+  await load()
+})
 
 async function setStatus(row: AdminUserRow, status: DonorStatus) {
   if (row.status === status) return
@@ -99,6 +147,18 @@ function formatDate(iso: string | null) {
 function statusLabel(status: DonorStatus) {
   return status === 'active' ? t('admin.users.statusActive') : t('admin.users.statusDeactivated')
 }
+
+function prevPage() {
+  if (page.value <= 1) return
+  page.value -= 1
+  load()
+}
+
+function nextPage() {
+  if (page.value >= totalPages.value) return
+  page.value += 1
+  load()
+}
 </script>
 
 <template>
@@ -111,9 +171,6 @@ function statusLabel(status: DonorStatus) {
         {{ t('admin.users.subtitle') }}
       </p>
     </header>
-
-    <AdminNav />
-
     <p v-if="error" class="mb-4 text-sm text-red-600">
       {{ error }}
     </p>
@@ -141,6 +198,43 @@ function statusLabel(status: DonorStatus) {
       </div>
     </div>
 
+    <div class="mb-4 flex flex-wrap items-end gap-3 rounded-lg border border-gray-200 bg-white p-4">
+      <label class="text-sm text-ink">
+        {{ t('admin.users.filterSearch') }}
+        <input
+          v-model="filterQ"
+          type="search"
+          class="mt-1 block w-56 rounded border border-gray-300 px-2 py-1"
+          :placeholder="t('admin.users.filterSearchPh')"
+          @keyup.enter="applyFilters"
+        >
+      </label>
+      <label class="text-sm text-ink">
+        {{ t('admin.users.accountStatus') }}
+        <select v-model="filterStatus" class="mt-1 block rounded border border-gray-300 px-2 py-1">
+          <option value="all">{{ t('admin.users.filterAll') }}</option>
+          <option value="active">{{ t('admin.users.statusActive') }}</option>
+          <option value="deactivated">{{ t('admin.users.statusDeactivated') }}</option>
+        </select>
+      </label>
+      <label class="text-sm text-ink">
+        {{ t('admin.users.church') }}
+        <select v-model="filterChurch" class="mt-1 block max-w-xs rounded border border-gray-300 px-2 py-1">
+          <option value="all">{{ t('admin.users.filterAll') }}</option>
+          <option v-for="c in churchOptions" :key="c.id" :value="c.id">
+            {{ c.name }}
+          </option>
+        </select>
+      </label>
+      <button type="button" class="btn-secondary px-3 py-1.5 text-sm" @click="applyFilters">
+        {{ t('admin.users.applyFilters') }}
+      </button>
+    </div>
+
+    <p class="mb-3 text-sm text-gray-500">
+      {{ t('admin.users.resultCount', { total, page, pages: totalPages }) }}
+    </p>
+
     <div v-if="loading" class="py-12 text-center text-gray-500">
       {{ t('common.loading') }}
     </div>
@@ -150,11 +244,9 @@ function statusLabel(status: DonorStatus) {
           <tr>
             <th class="px-4 py-3">{{ t('admin.users.name') }}</th>
             <th class="px-4 py-3">{{ t('admin.users.email') }}</th>
+            <th class="px-4 py-3">{{ t('admin.users.church') }}</th>
             <th class="px-4 py-3">{{ t('admin.users.created') }}</th>
-            <th class="px-4 py-3">{{ t('admin.users.role') }}</th>
             <th class="px-4 py-3">{{ t('admin.users.accountStatus') }}</th>
-            <th class="px-4 py-3">{{ t('admin.users.statusChangedAt') }}</th>
-            <th class="px-4 py-3">{{ t('admin.users.statusChangedBy') }}</th>
             <th class="px-4 py-3">{{ t('admin.users.actions') }}</th>
           </tr>
         </thead>
@@ -165,11 +257,20 @@ function statusLabel(status: DonorStatus) {
             class="border-b border-gray-100 last:border-0"
           >
             <td class="px-4 py-3 font-medium text-ink">
-              {{ row.name }}
+              <button
+                type="button"
+                class="text-left hover:text-brand hover:underline"
+                @click="openDonor(row.id)"
+              >
+                {{ row.name }}
+              </button>
               <span v-if="row.id === user?.id" class="text-xs text-gray-400">({{ t('admin.users.you') }})</span>
             </td>
             <td class="px-4 py-3 text-gray-600">
               {{ row.email }}
+            </td>
+            <td class="px-4 py-3 text-gray-600">
+              {{ row.homeChurchName || row.homeChurchId || '—' }}
             </td>
             <td class="whitespace-nowrap px-4 py-3 text-gray-500">
               {{ formatDate(row.createdAt) }}
@@ -177,33 +278,20 @@ function statusLabel(status: DonorStatus) {
             <td class="px-4 py-3">
               <span
                 class="rounded-full px-2 py-0.5 text-xs font-medium"
-                :class="row.role === 'admin' ? 'bg-brand/10 text-brand' : 'bg-gray-100 text-gray-600'"
-              >
-                {{ row.role === 'admin' ? t('admin.users.roleAdmin') : t('admin.users.roleDonor') }}
-              </span>
-            </td>
-            <td class="px-4 py-3">
-              <span
-                v-if="row.role === 'donor'"
-                class="rounded-full px-2 py-0.5 text-xs font-medium"
                 :class="row.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
               >
                 {{ statusLabel(row.status) }}
               </span>
-              <span v-else class="text-xs text-gray-400">—</span>
-            </td>
-            <td class="whitespace-nowrap px-4 py-3 text-gray-500">
-              {{ row.role === 'donor' ? formatDate(row.statusChangedAt) : '—' }}
-            </td>
-            <td class="px-4 py-3 text-gray-600">
-              {{
-                row.role === 'donor'
-                  ? (row.statusChangedByName || t('admin.users.statusSystem'))
-                  : '—'
-              }}
             </td>
             <td class="px-4 py-3">
-              <div v-if="row.role === 'donor'" class="flex flex-col gap-1">
+              <div class="flex flex-col gap-1">
+                <button
+                  type="button"
+                  class="text-left text-sm font-medium text-brand hover:underline"
+                  @click="openDonor(row.id)"
+                >
+                  {{ t('admin.users.viewProfile') }}
+                </button>
                 <button
                   v-if="row.status === 'active'"
                   type="button"
@@ -228,11 +316,32 @@ function statusLabel(status: DonorStatus) {
                   {{ t('admin.users.sendReset') }}
                 </button>
               </div>
-              <span v-else class="text-xs text-gray-400">{{ t('admin.users.adminNoActions') }}</span>
             </td>
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+      <button
+        type="button"
+        class="btn-secondary px-3 py-1.5 text-sm"
+        :disabled="page <= 1 || loading"
+        @click="prevPage"
+      >
+        {{ t('admin.users.prev') }}
+      </button>
+      <p class="text-sm text-gray-600">
+        {{ page }} / {{ totalPages }}
+      </p>
+      <button
+        type="button"
+        class="btn-secondary px-3 py-1.5 text-sm"
+        :disabled="page >= totalPages || loading"
+        @click="nextPage"
+      >
+        {{ t('admin.users.next') }}
+      </button>
     </div>
   </div>
 </template>

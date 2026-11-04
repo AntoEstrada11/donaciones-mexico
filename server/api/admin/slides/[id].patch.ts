@@ -1,7 +1,7 @@
 import { FIELD_LIMITS } from '../../../../utils/fieldLimits'
 
 export default defineEventHandler(async (event) => {
-  requireAdmin(event)
+  requireContentEditor(event)
   const id = getRouterParam(event, 'id')
   if (!id) {
     throw createError({ statusCode: 400, statusMessage: 'Id requerido' })

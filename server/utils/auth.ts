@@ -1,12 +1,13 @@
 import { createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto'
 import type { H3Event } from 'h3'
+import type { UserRole } from '~/types'
 
 export interface SessionPayload {
   /** Id (uuid) del usuario en la tabla `users`. */
   sub: string
   email: string
   name: string
-  role: 'donor' | 'admin'
+  role: UserRole
   exp: number
 }
 
@@ -37,9 +38,19 @@ function fromB64url(input: string) {
   return Buffer.from(input, 'base64url').toString('utf8')
 }
 
+export function normalizeUserRole(role: unknown): UserRole {
+  if (role === 'admin' || role === 'editor' || role === 'donor') return role
+  return 'donor'
+}
+
+export function isStaffRole(role: UserRole | string | null | undefined): boolean {
+  return role === 'admin' || role === 'editor'
+}
+
 export function signToken(payload: Omit<SessionPayload, 'exp'>, ttlSeconds = 60 * 60 * 24 * 7) {
   const body: SessionPayload = {
     ...payload,
+    role: normalizeUserRole(payload.role),
     exp: Math.floor(Date.now() / 1000) + ttlSeconds,
   }
   const data = b64url(JSON.stringify(body))
@@ -61,7 +72,7 @@ export function verifyToken(token: string): SessionPayload | null {
     if (!payload.exp || payload.exp < Math.floor(Date.now() / 1000)) return null
     return {
       ...payload,
-      role: payload.role === 'admin' ? 'admin' : 'donor',
+      role: normalizeUserRole(payload.role),
     }
   }
   catch {
@@ -105,7 +116,7 @@ export function optionalSession(event: H3Event): SessionPayload | null {
 /** El personal opera el panel; no dona con esa cuenta. */
 export async function assertNotOperator(session: SessionPayload | null) {
   if (!session) return
-  if (session.role === 'admin') {
+  if (isStaffRole(session.role)) {
     throw createError({
       statusCode: 403,
       statusMessage: 'El personal no registra donaciones con esta cuenta.',
@@ -113,7 +124,7 @@ export async function assertNotOperator(session: SessionPayload | null) {
   }
   const { findUserById } = await import('./users')
   const row = await findUserById(session.sub)
-  if (row?.role === 'admin') {
+  if (row && isStaffRole(row.role)) {
     throw createError({
       statusCode: 403,
       statusMessage: 'El personal no registra donaciones con esta cuenta.',
@@ -121,10 +132,28 @@ export async function assertNotOperator(session: SessionPayload | null) {
   }
 }
 
+/** Admin global: todo el panel. */
 export function requireAdmin(event: H3Event): SessionPayload {
   const session = requireSession(event)
   if (session.role !== 'admin') {
     throw createError({ statusCode: 403, statusMessage: 'Se requiere rol de administrador' })
   }
   return session
+}
+
+/** Personal del panel (admin o editor). */
+export function requireStaff(event: H3Event): SessionPayload {
+  const session = requireSession(event)
+  if (!isStaffRole(session.role)) {
+    throw createError({ statusCode: 403, statusMessage: 'Se requiere acceso al panel' })
+  }
+  return session
+}
+
+/**
+ * Contenido público editable: carrusel y pie.
+ * Admin global o editor. Cobros y operación siguen en requireAdmin.
+ */
+export function requireContentEditor(event: H3Event): SessionPayload {
+  return requireStaff(event)
 }

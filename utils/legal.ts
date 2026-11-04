@@ -14,8 +14,8 @@ export const LEGAL = {
    * Se estampa en cada consentimiento guardado. Si cambia el texto del aviso,
    * sube esta versión para saber qué redacción aceptó cada persona.
    */
-  noticeVersion: '2026-09-14',
-  noticeDate: '14 de septiembre de 2026',
+  noticeVersion: '2026-11-03',
+  noticeDate: '3 de noviembre de 2026',
   /** Autoridad vigente tras la desaparición del INAI. */
   autoridad: 'Secretaría Anticorrupción y Buen Gobierno',
 } as const
@@ -34,4 +34,5 @@ export const RETENTION = {
   datosFiscales: '5 años a partir de la emisión del comprobante (Art. 30 del Código Fiscal de la Federación)',
   identificacion: 'Mientras la cuenta esté activa y el expediente PLD/SAT lo requiera; se borra al cancelar la cuenta',
   consentimientos: '5 años como evidencia de que el consentimiento fue otorgado',
+  solicitudesCumplimiento: 'Mientras la cuenta esté activa; se borran al cancelar la cuenta (cascade)',
 } as const

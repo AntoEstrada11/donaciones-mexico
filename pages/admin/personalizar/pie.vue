@@ -2,7 +2,7 @@
 import type { SiteSettings } from '~/types'
 import { FIELD_LIMITS } from '~/utils/fieldLimits'
 
-definePageMeta({ middleware: 'admin' })
+definePageMeta({ layout: 'admin', middleware: 'admin' })
 
 const { t } = useI18n()
 const { adminHeaders } = useAuth()
@@ -94,8 +94,6 @@ async function persist() {
         {{ t('admin.personalize.subtitle') }}
       </p>
     </header>
-
-    <AdminNav />
     <AdminPersonalizeNav />
 
     <h2 class="mb-4 font-semibold text-ink">

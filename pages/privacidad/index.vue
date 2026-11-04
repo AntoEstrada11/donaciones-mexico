@@ -54,10 +54,12 @@ useHead({
           <li><strong>Identificación y contacto:</strong> nombre, correo electrónico y teléfono.</li>
           <li><strong>Datos de acceso:</strong> la contraseña que usted define, que guardamos cifrada en un solo sentido y que nadie en la Iglesia puede leer.</li>
           <li><strong>Datos fiscales (opcionales):</strong> nombre o razón social, RFC, código postal fiscal, colonia (cuando el catálogo la sugiere), régimen fiscal, uso de CFDI y, si los proporciona, calle, ciudad y estado. Solo se los pedimos si usted marca que requiere factura. El RFC se valida por formato y fecha; no se envía al SAT.</li>
-          <li><strong>Identificación oficial (opcional hasta umbral UMA):</strong> fotografías del anverso y reverso de su INE, si usted las adjunta para el expediente de la Iglesia. No se publican ni se envían a servicios de reconocimiento facial.</li>
+          <li><strong>Identificación oficial (opcional hasta umbral UMA):</strong> fotografías del anverso y reverso de su INE, tomadas en el momento con la cámara de su dispositivo (el sitio no admite subir un archivo desde la galería). Solo se captura la imagen al pulsar el botón; no se graba video continuo. Se guardan cifradas en un almacén de objetos privado en la misma infraestructura del sitio; no tienen URL pública, no se publican ni se envían a servicios de reconocimiento facial. Solo usted puede descargarlas desde su cuenta (derecho de acceso) y se eliminan al cancelar la cuenta.</li>
           <li><strong>Datos del donativo:</strong> iglesia elegida, tipo de donación, monto, método de pago (SPEI, PayPal o Mercado Pago), identificador del cobro en la pasarela y fecha.</li>
           <li><strong>Ubicación aproximada (opcional):</strong> las coordenadas de su dispositivo, únicamente si usted autoriza el permiso de ubicación para ordenar el directorio de iglesias por cercanía. No se guardan en su cuenta.</li>
           <li><strong>Datos técnicos:</strong> versión del aviso que aceptó, fecha del consentimiento, navegador y una huella cifrada de su dirección IP, como evidencia de que el consentimiento fue otorgado.</li>
+          <li><strong>Correo transaccional:</strong> le enviamos mensajes necesarios del servicio (confirmar su correo, restablecer contraseña y, cuando el personal lo solicite desde el panel, completar identificación o datos fiscales para el seguimiento de donaciones). No son publicidad; el marketing opcional sigue requiriendo su casilla aparte.</li>
+          <li><strong>Solicitudes de cumplimiento:</strong> registro de tipo de solicitud (INE, datos fiscales o verificación de correo), fecha de envío y estado (pendiente o resuelta). No guardamos el cuerpo del correo.</li>
         </ul>
       </section>
 
@@ -176,6 +178,7 @@ useHead({
           <li><strong>Datos fiscales y comprobantes:</strong> {{ RETENTION.datosFiscales.toLowerCase() }}.</li>
           <li><strong>Imágenes de identificación:</strong> {{ RETENTION.identificacion.toLowerCase() }}.</li>
           <li><strong>Registro de consentimientos:</strong> {{ RETENTION.consentimientos.toLowerCase() }}.</li>
+          <li><strong>Solicitudes de cumplimiento:</strong> {{ RETENTION.solicitudesCumplimiento.toLowerCase() }}.</li>
         </ul>
         <p class="mt-3">
           Cuando la ley nos obliga a conservar un dato (por ejemplo, el respaldo contable de un
@@ -226,9 +229,11 @@ useHead({
             autoridad competente.
           </li>
           <li>
-            <strong>Proveedores de servicio:</strong> el alojamiento del sitio y de la base de datos.
-            Están obligados por contrato a mantener la confidencialidad de sus datos, incluso después
-            de terminada la relación.
+            <strong>Proveedores de servicio:</strong> el alojamiento del sitio, de la base de datos y
+            del almacén de objetos privado (imágenes de identificación y, en su momento, comprobantes
+            fiscales en PDF). Ese almacén no es accesible desde Internet: solo la aplicación del
+            sitio, con credenciales de servidor, puede leer o borrar los archivos. Los proveedores
+            están obligados a mantener la confidencialidad, incluso después de terminada la relación.
           </li>
         </ul>
       </section>
@@ -255,9 +260,10 @@ useHead({
           Aplicamos medidas administrativas, técnicas y físicas razonables: las contraseñas se
           almacenan cifradas en un solo sentido, el acceso a la base de datos está restringido a
           personal autorizado, los datos de contacto y fiscales se guardan separados de las
-          credenciales de acceso, y las funciones de administración exigen un rol específico.
-          Ninguna medida de seguridad es infalible, por lo que le pedimos usar una contraseña única y
-          no compartirla.
+          credenciales de acceso, las fotografías de identificación viven en un bucket privado con
+          cifrado en reposo y solo se entregan tras autenticación del titular (sin enlace público),
+          y las funciones de administración exigen un rol específico. Ninguna medida de seguridad es
+          infalible, por lo que le pedimos usar una contraseña única y no compartirla.
         </p>
       </section>
 

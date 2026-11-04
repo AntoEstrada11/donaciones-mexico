@@ -3,3 +3,11 @@ services:
   db:
     ports:
       - '127.0.0.1:5432:5432'
+
+  # API MinIO solo en loopback (nunca 0.0.0.0). Consola solo local para operaciones.
+  minio:
+    ports:
+      - '127.0.0.1:9000:9000'
+      - '127.0.0.1:9001:9001'
+    environment:
+      MINIO_BROWSER: 'on'

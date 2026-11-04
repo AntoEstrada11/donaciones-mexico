@@ -41,6 +41,8 @@ export interface ProfileInput {
   fiscalName?: string | null
   taxRegime?: string | null
   cfdiUse?: string | null
+  homeChurchId?: string | null
+  homeChurchName?: string | null
 }
 
 function toAppUser(row: typeof users.$inferSelect): AppUser {
@@ -52,6 +54,7 @@ function toAppUser(row: typeof users.$inferSelect): AppUser {
     role: row.role,
     status: row.status,
     profileComplete: row.profileComplete,
+    emailVerifiedAt: row.emailVerifiedAt?.toISOString() ?? null,
     createdAt: row.createdAt.toISOString(),
   }
 }
@@ -190,6 +193,8 @@ export async function getDonorProfile(userId: string): Promise<DonorProfile | nu
     cfdiUse: row.profile?.cfdiUse ?? null,
     complianceStatus: row.profile?.complianceStatus ?? 'rapid',
     identityVerifiedAt: row.profile?.identityVerifiedAt?.toISOString() ?? null,
+    homeChurchId: row.profile?.homeChurchExternalId ?? null,
+    homeChurchName: row.profile?.homeChurchName ?? null,
     profileComplete: row.user.profileComplete,
   }
 }
@@ -268,6 +273,12 @@ export async function updateDonorProfile(userId: string, input: ProfileInput): P
   const cfdiUse = input.cfdiUse !== undefined
     ? String(input.cfdiUse || '').trim() || null
     : current.cfdiUse
+  const homeChurchId = input.homeChurchId !== undefined
+    ? (String(input.homeChurchId || '').trim().slice(0, 64) || null)
+    : current.homeChurchId
+  const homeChurchName = input.homeChurchName !== undefined
+    ? (String(input.homeChurchName || '').trim().slice(0, 200) || null)
+    : current.homeChurchName
 
   if (wantsReceipt) {
     if (!fiscalName || !isValidName(fiscalName)) {
@@ -311,6 +322,8 @@ export async function updateDonorProfile(userId: string, input: ProfileInput): P
     phoneDigits,
     wantsReceipt,
     ...fiscal,
+    homeChurchExternalId: homeChurchId,
+    homeChurchName: homeChurchId ? (homeChurchName || homeChurchId) : null,
     updatedAt: new Date(),
   }
 
@@ -363,6 +376,10 @@ export async function deleteUserAccount(userId: string): Promise<void> {
       statusMessage: 'No se puede eliminar la única cuenta de administrador',
     })
   }
+
+  // ARCO cancelación: borrar objetos privados (INE / futuros CFDI) antes del CASCADE.
+  const { purgePrivateObjectsForUser } = await import('./objectStorage')
+  await purgePrivateObjectsForUser(userId)
 
   await db.delete(users).where(eq(users.id, userId))
 }

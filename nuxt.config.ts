@@ -11,6 +11,17 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
+  // Dev: teléfono / túnel HTTPS (cámara exige contexto seguro fuera de localhost).
+  devServer: {
+    host: '0.0.0.0',
+    port: 3000,
+  },
+  vite: {
+    server: {
+      allowedHosts: ['.ngrok-free.app', '.ngrok-free.dev', '.ngrok.io', '.ngrok.app'],
+    },
+  },
+
   app: {
     head: {
       title: 'Donaciones — Iglesia Universal México',
@@ -63,6 +74,25 @@ export default defineNuxtConfig({
     paypalWebhookIdLive: process.env.NUXT_PAYPAL_WEBHOOK_ID_LIVE || '',
     /** Solo servidor: base HTTPS pública de webhooks. Si falta, se usa NUXT_PUBLIC_SITE_URL. */
     paymentWebhookBaseUrl: process.env.NUXT_PAYMENT_WEBHOOK_BASE_URL || '',
+    /** MinIO / S3: bucket privado (INE, futuros CFDI). Nunca en runtimeConfig.public. */
+    minioEndpoint: process.env.NUXT_MINIO_ENDPOINT || '',
+    minioAccessKey: process.env.NUXT_MINIO_ACCESS_KEY || '',
+    minioSecretKey: process.env.NUXT_MINIO_SECRET_KEY || '',
+    minioBucketPrivate: process.env.NUXT_MINIO_BUCKET_PRIVATE || 'donaciones-private',
+    minioRegion: process.env.NUXT_MINIO_REGION || 'us-east-1',
+    /** Secreto AES-GCM de objetos; si vacío se usa authSecret. */
+    minioObjectSecret: process.env.NUXT_MINIO_OBJECT_SECRET || '',
+    smtpHost: process.env.NUXT_SMTP_HOST || '',
+    smtpPort: Number(process.env.NUXT_SMTP_PORT || 587),
+    smtpUser: process.env.NUXT_SMTP_USER || '',
+    smtpPass: process.env.NUXT_SMTP_PASS || '',
+    smtpFrom: process.env.NUXT_SMTP_FROM || '',
+    smtpSecure: process.env.NUXT_SMTP_SECURE === 'true',
+    /** En local, APIs pueden devolver el enlace si no hay SMTP. */
+    mailDevReturnLink: process.env.NUXT_MAIL_DEV_RETURN_LINK === 'true',
+    /** PAC de timbrado CFDI (vacío = no configurado). */
+    cfdiPacApiUrl: process.env.NUXT_CFDI_PAC_API_URL || '',
+    cfdiPacApiKey: process.env.NUXT_CFDI_PAC_API_KEY || '',
     public: {
       defaultLatitude: 19.392531016453,
       defaultLongitude: -99.18114903857942,

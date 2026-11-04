@@ -43,6 +43,7 @@ export default defineEventHandler(async (event) => {
       .update(donorProfiles)
       .set({ identityVerifiedAt: new Date(), updatedAt: new Date() })
       .where(eq(donorProfiles.userId, session.sub))
+    await resolveOpenDonorRequests(session.sub, 'identity')
   }
 
   await recordConsent({

@@ -52,10 +52,16 @@ export async function loginOnAuthHub(email: string, password: string): Promise<H
 
   let lastStatus = 0
   for (const code of appCodes) {
-    const response = await hubFetch('/api/v1/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ email, password, app_code: code }),
-    })
+    let response: Response
+    try {
+      response = await hubFetch('/api/v1/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password, app_code: code }),
+      })
+    }
+    catch {
+      throw createError({ statusCode: 502, statusMessage: 'No se pudo validar el acceso en Auth Hub' })
+    }
     lastStatus = response.status
 
     if (response.ok) {

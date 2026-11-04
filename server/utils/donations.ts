@@ -22,20 +22,7 @@ function toDonation(row: typeof donations.$inferSelect, extra?: { campaignName?:
 }
 
 export async function listCampaigns(): Promise<Campaign[]> {
-  const db = useDatabase()
-  const rows = await db
-    .select()
-    .from(campaigns)
-    .where(eq(campaigns.active, true))
-    .orderBy(campaigns.sortOrder)
-
-  return rows.map(row => ({
-    id: row.id,
-    name: row.name,
-    slug: row.slug,
-    description: row.description,
-    type: row.type,
-  }))
+  return await listPublicCampaigns()
 }
 
 export async function findCampaignById(id: string) {

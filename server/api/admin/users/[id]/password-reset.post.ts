@@ -8,10 +8,13 @@ export default defineEventHandler(async (event) => {
   const origin = getRequestURL(event).origin
   const result = await createPasswordResetLink(id, session.sub, origin)
 
-  // Sin servicio de correo aún: el admin copia el enlace y lo reenvía al donante.
   return {
-    message: 'Enlace de restablecimiento generado. Válido 24 horas.',
+    message: result.emailed
+      ? 'Enviamos el enlace de restablecimiento al correo del donante. Válido 24 horas.'
+      : 'No hay SMTP configurado: copie el enlace y envíelo al donante. Válido 24 horas.',
+    emailed: result.emailed,
     resetUrl: result.resetUrl,
     expiresAt: result.expiresAt,
   }
 })
+

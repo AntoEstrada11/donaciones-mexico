@@ -26,6 +26,7 @@ services:
     restart: unless-stopped
     depends_on:
       - db
+      - minio
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-donaciones}:${POSTGRES_PASSWORD:-donaciones}@db:5432/${POSTGRES_DB:-donaciones}
       NUXT_AUTH_SECRET: ${NUXT_AUTH_SECRET:-cambia-este-secreto-en-portainer}
@@ -46,6 +47,14 @@ services:
       NUXT_PAYPAL_CLIENT_SECRET_LIVE: ${NUXT_PAYPAL_CLIENT_SECRET_LIVE:-}
       NUXT_PAYPAL_WEBHOOK_ID_TEST: ${NUXT_PAYPAL_WEBHOOK_ID_TEST:-}
       NUXT_PAYPAL_WEBHOOK_ID_LIVE: ${NUXT_PAYPAL_WEBHOOK_ID_LIVE:-}
+      # MinIO solo en red interna; no publicar 9000/9001 en Traefik.
+      # Access/secret deben coincidir con MINIO_ROOT_USER / MINIO_ROOT_PASSWORD.
+      NUXT_MINIO_ENDPOINT: ${NUXT_MINIO_ENDPOINT:-http://minio:9000}
+      NUXT_MINIO_ACCESS_KEY: ${NUXT_MINIO_ACCESS_KEY:-minioadmin}
+      NUXT_MINIO_SECRET_KEY: ${NUXT_MINIO_SECRET_KEY:-cambia-minio-en-portainer}
+      NUXT_MINIO_BUCKET_PRIVATE: ${NUXT_MINIO_BUCKET_PRIVATE:-donaciones-private}
+      NUXT_MINIO_REGION: ${NUXT_MINIO_REGION:-us-east-1}
+      NUXT_MINIO_OBJECT_SECRET: ${NUXT_MINIO_OBJECT_SECRET:-}
     volumes:
       - uploads:/app/public/uploads
       - uploads:/app/.output/public/uploads
@@ -60,9 +69,28 @@ services:
         - "traefik.http.routers.donaciones.tls.certresolver=letsencryptresolver"
         - "traefik.http.services.donaciones.loadbalancer.server.port=3000"
 
+  # Object storage privado (INE / futuros CFDI). Sin puertos publicados en Portainer.
+  # Imagen cleanstart: minio/minio ya no está en Docker Hub público.
+  minio:
+    image: cleanstart/minio:latest
+    container_name: donaciones-minio
+    restart: unless-stopped
+    user: '0'
+    command: ['server', '/data', '--console-address', ':9001']
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-cambia-minio-en-portainer}
+      # Consola web apagada en servidor; en local el override puede reactivarla.
+      MINIO_BROWSER: 'off'
+    volumes:
+      - minio-data:/data
+    networks:
+      - AllanNet
+
 volumes:
   db-data:
   uploads:
+  minio-data:
 
 networks:
   AllanNet:

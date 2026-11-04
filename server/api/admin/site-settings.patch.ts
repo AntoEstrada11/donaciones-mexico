@@ -1,5 +1,5 @@
 export default defineEventHandler(async (event) => {
-  requireAdmin(event)
+  requireContentEditor(event)
 
   const body = await readBody(event)
 

@@ -8,19 +8,23 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "db:up": "docker network create AllanNet & docker compose up -d --wait db",
+    "db:up": "docker network create AllanNet & docker compose up -d --wait db minio",
     "db:down": "docker compose down",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node --experimental-strip-types --env-file=.env server/database/migrate.ts",
     "db:seed": "node --experimental-strip-types --env-file=.env server/database/seed.ts",
+    "db:seed-demo": "node --experimental-strip-types --env-file=.env server/database/seed-demo.ts",
     "db:setup": "npm run db:up && npm run db:migrate && npm run db:seed",
     "db:import-users": "node --experimental-strip-types --env-file=.env server/database/import-users.ts",
     "db:promote-admin": "node --experimental-strip-types --env-file=.env server/database/promote-admin.ts",
+    "db:promote-editor": "node --experimental-strip-types --env-file=.env server/database/promote-editor.ts",
     "db:set-password": "node --experimental-strip-types --env-file=.env server/database/set-password.ts",
     "db:sync-churches": "node --experimental-strip-types --env-file=.env server/database/sync-churches-fallback.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1148.0",
     "drizzle-orm": "^0.45.2",
+    "nodemailer": "^10.2.1",
     "nuxt": "^3.16.0",
     "postgres": "^3.4.7",
     "vue": "^3.5.13",
@@ -30,6 +34,7 @@
     "@nuxtjs/i18n": "^9.3.1",
     "@nuxtjs/tailwindcss": "^6.13.1",
     "@types/node": "^26.5.0",
+    "@types/nodemailer": "^8.0.2",
     "drizzle-kit": "^0.31.6",
     "typescript": "^5.8.2"
   }

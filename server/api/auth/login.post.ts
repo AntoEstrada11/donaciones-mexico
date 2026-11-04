@@ -45,7 +45,7 @@ export default defineEventHandler(async (event) => {
     throwIfDatabaseError(error)
   }
 
-  if (user?.role === 'admin') {
+  if (user?.role === 'admin' || user?.role === 'editor') {
     if (!verifyPassword(password, user.passwordHash)) {
       throw createError({
         statusCode: 401,
@@ -57,13 +57,14 @@ export default defineEventHandler(async (event) => {
         sub: user.id,
         email: user.email,
         name: user.name,
-        role: 'admin',
+        role: user.role,
       }),
       id: user.id,
       name: user.name,
       email: user.email,
-      role: 'admin',
+      role: user.role,
       profileComplete: user.profileComplete,
+      emailVerified: true,
     }
     return response
   }
@@ -95,6 +96,7 @@ export default defineEventHandler(async (event) => {
       email: user.email,
       role: 'donor',
       profileComplete: user.profileComplete,
+      emailVerified: Boolean(user.emailVerifiedAt),
     }
     return response
   }

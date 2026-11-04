@@ -26,14 +26,14 @@ docker push aneg/donaciones-mexico:latest
 1. Stacks → Add stack → Repository.
 2. `https://git.allanmontero.com/aneg/Donaciones-Mexico.git`, referencia `refs/heads/main`, path `docker-compose.yml`.
 3. Auth de Gitea (usuario + token).
-4. Variables: `POSTGRES_PASSWORD`, `NUXT_AUTH_SECRET`. `NUXT_PUBLIC_SITE_URL` por defecto es `https://dona-test.iurdsys.net`.
-5. Deploy. La red `AllanNet` ya existe en el servidor. Postgres no publica el puerto 5432: en ese host ya lo usa otro stack. La web llega a la base por el nombre `db`.
+4. Variables: `POSTGRES_PASSWORD`, `NUXT_AUTH_SECRET`, `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD`, y las mismas claves en `NUXT_MINIO_ACCESS_KEY` / `NUXT_MINIO_SECRET_KEY`. `NUXT_PUBLIC_SITE_URL` por defecto es `https://dona-test.iurdsys.net`. `NUXT_MINIO_ENDPOINT` por defecto `http://minio:9000`.
+5. Deploy. La red `AllanNet` ya existe en el servidor. Postgres y MinIO **no** publican puertos: la web los alcanza por nombre (`db`, `minio`). No añadir Traefik a MinIO.
 
 Cada cambio de código: otro `docker build`, `docker push` y redeploy en Portainer.
 
 # Local
 
-`npm run db:up` crea la red `AllanNet` si falta y levanta solo Postgres. El sitio en la PC sigue siendo `npm run dev`.
+`npm run db:up` crea la red `AllanNet` si falta y levanta Postgres + MinIO (`127.0.0.1`). El sitio en la PC sigue siendo `npm run dev`. Ver [/playbooks/minio-private-storage.md](/playbooks/minio-private-storage.md).
 
 # Relacionado
 

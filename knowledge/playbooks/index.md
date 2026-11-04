@@ -1,7 +1,11 @@
 # Playbooks
 
+* [Semilla demo](seed-demo.md) - Usuarios y ~1000 donaciones ficticias (`npm run db:seed-demo`).
 * [Carga masiva de contactos de prueba](dev-bulk-contacts.md) - JSON ficticio contra `POST /api/dev/contacts` (solo `nuxt dev`).
 * [Desplegar en Portainer](portainer.md) - Docker Hub + Traefik en `AllanNet`, como Luau.
+* [MinIO privado](minio-private-storage.md) - Bucket para INE/CFDI, variables y checklist de seguridad.
+* [Correo transaccional](transactional-email.md) - SMTP, verificar cuenta y restablecer contraseña.
+* [Timbrar CFDI](cfdi-timbrado.md) - Requisitos PAC/CSD y estado del endpoint de factura.
 * [Migraciones de base de datos](db-migrations.md) - Drizzle, esquema e importación del store legado.
 * [Carrusel tras instalación nueva](hero-slides-restore.md) - Copiar JPG no restaura el reel; hay que subirlos en `/admin/personalizar/carrusel`.
 * [Promover administrador](promote-admin.md) - Asignar role admin por correo.

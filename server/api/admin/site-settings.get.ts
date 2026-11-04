@@ -1,4 +1,4 @@
 export default defineEventHandler(async (event) => {
-  requireAdmin(event)
+  requireContentEditor(event)
   return await getSiteSettings()
 })

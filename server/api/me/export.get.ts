@@ -12,9 +12,10 @@ export default defineEventHandler(async (event): Promise<DataExport> => {
     throw createError({ statusCode: 404, statusMessage: 'Usuario no encontrado' })
   }
 
-  const [donations, consents] = await Promise.all([
+  const [donations, consents, requests] = await Promise.all([
     listDonationsByUser(session.sub),
     listConsentsByUser(session.sub),
+    listDonorRequests(session.sub),
   ])
 
   setHeader(event, 'content-disposition', 'attachment; filename="mis-datos.json"')
@@ -35,17 +36,22 @@ export default defineEventHandler(async (event): Promise<DataExport> => {
       street: profile.street,
       city: profile.city,
       state: profile.state,
-        zip: profile.zip,
-        colony: profile.colony,
-        rfc: profile.rfc,
-        fiscalName: profile.fiscalName,
-        taxRegime: profile.taxRegime,
-        cfdiUse: profile.cfdiUse,
-        complianceStatus: profile.complianceStatus,
-        identityVerifiedAt: profile.identityVerifiedAt,
+      zip: profile.zip,
+      colony: profile.colony,
+      rfc: profile.rfc,
+      fiscalName: profile.fiscalName,
+      taxRegime: profile.taxRegime,
+      cfdiUse: profile.cfdiUse,
+      complianceStatus: profile.complianceStatus,
+      identityVerifiedAt: profile.identityVerifiedAt,
+      homeChurchId: profile.homeChurchId,
+      homeChurchName: profile.homeChurchName,
     },
     identity: await getIdentityStatus(session.sub),
+    identityFiles: await listIdentityFilesForExport(session.sub),
     donations,
     consents,
+    requests,
   }
 })
+

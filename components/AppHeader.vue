@@ -2,9 +2,32 @@
 const { t } = useI18n()
 const route = useRoute()
 const { selectedChurch } = useDonation()
-const { isLoggedIn, isAdmin, user, logout } = useAuth()
+const { isLoggedIn, isAdmin, isStaff, user, logout, resendVerification } = useAuth()
 
 const mobileOpen = ref(false)
+const verifyHint = ref('')
+const verifyBusy = ref(false)
+
+const showVerifyBanner = computed(() =>
+  isLoggedIn.value && !isStaff.value && user.value && user.value.emailVerified === false,
+)
+
+async function onResendVerify() {
+  verifyBusy.value = true
+  verifyHint.value = ''
+  try {
+    const result = await resendVerification()
+    verifyHint.value = result.verifyUrl
+      ? `${result.message} ${result.verifyUrl}`
+      : result.message
+  }
+  catch {
+    verifyHint.value = t('verifyEmail.resendError')
+  }
+  finally {
+    verifyBusy.value = false
+  }
+}
 
 interface NavLink {
   id: string
@@ -20,8 +43,13 @@ const navLinks = computed<NavLink[]>(() => {
   ]
 
   if (isLoggedIn.value) {
-    if (isAdmin.value) {
-      links.push({ id: 'admin', to: '/admin', label: t('nav.admin'), match: '/admin' })
+    if (isStaff.value) {
+      links.push({
+        id: 'admin',
+        to: isAdmin.value ? '/admin' : '/admin/personalizar/carrusel',
+        label: t('nav.admin'),
+        match: '/admin',
+      })
     }
     else {
       links.push(
@@ -142,4 +170,22 @@ function handleLogout() {
       </button>
     </nav>
   </header>
+
+  <div
+    v-if="showVerifyBanner"
+    class="border-b border-amber-200 bg-amber-50 px-4 py-2 text-center text-sm text-amber-950"
+  >
+    <span>{{ t('verifyEmail.banner') }}</span>
+    <button
+      type="button"
+      class="ml-2 font-semibold text-brand underline"
+      :disabled="verifyBusy"
+      @click="onResendVerify"
+    >
+      {{ verifyBusy ? t('verifyEmail.resending') : t('verifyEmail.resend') }}
+    </button>
+    <p v-if="verifyHint" class="mt-1 break-all text-xs text-amber-900/80">
+      {{ verifyHint }}
+    </p>
+  </div>
 </template>

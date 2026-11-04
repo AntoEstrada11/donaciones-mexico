@@ -1,4 +1,8 @@
-export type UserRole = 'donor' | 'admin'
+/** `admin` = panel completo; `editor` = solo Personalizar (carrusel/pie). */
+export type UserRole = 'donor' | 'admin' | 'editor'
+
+/** Alcance del listado en `/api/admin/users`. */
+export type AdminUserScope = 'donors' | 'staff' | 'staff_candidates'
 export type DonorStatus = 'active' | 'deactivated'
 export type DonorComplianceStatus = 'rapid' | 'cfdi' | 'pld_pending' | 'sat_report'
 
@@ -23,6 +27,26 @@ export interface Campaign {
   slug: string
   description: string
   type: string
+}
+
+/** Campaña / tipo de donación en panel admin (incluye vigencia). */
+export interface AdminCampaign extends Campaign {
+  sortOrder: number
+  active: boolean
+  startsAt: string | null
+  endsAt: string | null
+}
+
+export type DonorRequestType = 'identity' | 'fiscal' | 'email_verify'
+export type DonorRequestStatus = 'open' | 'resolved' | 'cancelled'
+
+export interface DonorRequest {
+  id: string
+  type: DonorRequestType
+  status: DonorRequestStatus
+  sentAt: string | null
+  resolvedAt: string | null
+  createdAt: string
 }
 
 export type DonationMethod = 'spei' | 'card' | 'paypal'
@@ -90,6 +114,9 @@ export interface AuthResponse {
   email: string
   role: UserRole
   profileComplete: boolean
+  emailVerified: boolean
+  /** Solo en desarrollo / sin SMTP: enlace de verificación. */
+  verifyUrl?: string
 }
 
 /** Cuenta de acceso del donante, tal como vive en la tabla `users`. */
@@ -101,6 +128,35 @@ export interface AppUser {
   role: UserRole
   status: DonorStatus
   profileComplete: boolean
+  emailVerifiedAt: string | null
+  createdAt: string
+}
+
+export type RecurringFrequency = 'weekly' | 'biweekly' | 'monthly'
+export type RecurringStatus = 'active' | 'paused' | 'cancelled' | 'pending_setup'
+
+export interface RecurringDonation {
+  id: string
+  churchId: string
+  churchName: string | null
+  campaignId: string
+  amount: number
+  currency: string
+  frequency: RecurringFrequency
+  method: DonationMethod
+  status: RecurringStatus
+  nextChargeAt: string | null
+  createdAt: string
+}
+
+export type CfdiInvoiceStatus = 'pending_stamp' | 'stamped' | 'failed' | 'cancelled'
+
+export interface CfdiInvoice {
+  id: string
+  donationId: string
+  status: CfdiInvoiceStatus
+  uuid: string | null
+  errorCode: string | null
   createdAt: string
 }
 
@@ -122,6 +178,8 @@ export interface DonorProfile {
   cfdiUse: string | null
   complianceStatus: DonorComplianceStatus
   identityVerifiedAt: string | null
+  homeChurchId: string | null
+  homeChurchName: string | null
   profileComplete: boolean
 }
 
@@ -169,10 +227,16 @@ export interface DataExport {
     cfdiUse: string | null
     complianceStatus: DonorComplianceStatus
     identityVerifiedAt: string | null
+    homeChurchId: string | null
+    homeChurchName: string | null
   }
   identity: IdentityStatus
+  /** Imágenes INE en base64 (derecho de acceso); no se listan en otras APIs. */
+  identityFiles: Array<{ side: IdentitySide, mime: string, base64: string }>
   donations: Donation[]
   consents: ConsentRecord[]
+  /** Solicitudes de cumplimiento enviadas por operadores (sin cuerpo de correo). */
+  requests: DonorRequest[]
 }
 
 export interface HeroSlide {
@@ -191,6 +255,7 @@ export interface AdminStats {
   activeSlides: number
   pldPending: number
   satReport: number
+  speiPending: number
 }
 
 export interface AdminUserRow {
@@ -200,17 +265,84 @@ export interface AdminUserRow {
   role: UserRole
   status: DonorStatus
   profileComplete: boolean
+  emailVerified: boolean
   createdAt: string
   statusChangedAt: string | null
   statusChangedByName: string | null
+  homeChurchId: string | null
+  homeChurchName: string | null
+}
+
+export interface AdminUsersPage {
+  items: AdminUserRow[]
+  total: number
+  page: number
+  pageSize: number
 }
 
 export interface AdminDonationRow extends Donation {
+  userId: string | null
   userEmail: string | null
   userName: string | null
   campaignName: string | null
   campaignType: string | null
   churchName: string | null
+}
+
+/** Ficha operativa 360° del donante (solo panel admin). */
+export interface AdminDonorDetail {
+  id: string
+  email: string
+  name: string
+  role: UserRole
+  status: DonorStatus
+  profileComplete: boolean
+  emailVerified: boolean
+  createdAt: string
+  profile: {
+    phone: string | null
+    wantsReceipt: boolean
+    street: string | null
+    city: string | null
+    state: string | null
+    zip: string | null
+    colony: string | null
+    rfc: string | null
+    fiscalName: string | null
+    taxRegime: string | null
+    cfdiUse: string | null
+    complianceStatus: DonorComplianceStatus
+    identityVerifiedAt: string | null
+    homeChurchId: string | null
+    homeChurchName: string | null
+  } | null
+  identity: IdentityStatus
+  uma: UmaSnapshot
+  donations: AdminDonationRow[]
+  recurring: RecurringDonation[]
+  requests: DonorRequest[]
+  totals: {
+    paidCount: number
+    paidAmount: number
+    pendingCount: number
+    pendingAmount: number
+  }
+}
+
+/** Alerta de umbral PLD / aviso SAT para seguimiento admin. */
+export interface AdminComplianceAlert {
+  userId: string
+  name: string
+  email: string
+  status: DonorStatus
+  complianceStatus: Extract<DonorComplianceStatus, 'pld_pending' | 'sat_report'>
+  paidInWindow: number
+  pldThreshold: number
+  satThreshold: number
+  identityComplete: boolean
+  wantsReceipt: boolean
+  rfc: string | null
+  lastDonationAt: string | null
 }
 
 export interface ChurchApiItem {

@@ -19,6 +19,7 @@
 * [GET /api/site-settings](site-settings-get.md) - Contacto y SPEI del pie (públicos).
 * [GET /api/churches](churches-get.md) - Directorio (proxy Odoo + fallback de muestra).
 * [POST /api/dev/contacts](dev-contacts.md) - Alta masiva de donantes ficticios (`nuxt dev` solamente).
+* [Admin API](admin.md) - Stats, donaciones, ficha 360°, cola SPEI, alertas UMA/PLD, usuarios y personalizar.
 * [Iglesias (externa Odoo)](churches-external.md) - API en miembros.iurdsys.net consultada por Nitro.
 
 Límites compartidos: [/data/field-limits.md](/data/field-limits.md).

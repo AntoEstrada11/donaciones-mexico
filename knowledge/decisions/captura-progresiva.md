@@ -11,7 +11,7 @@ timestamp: 2026-09-08T00:00:00Z
 
 Nivel 1: cuenta con nombre y correo (el flujo de donar sigue exigiendo sesión).
 Nivel 2: casilla de factura en donar y perfil; texto CFDI 4.0 (razón social, RFC, C.P., régimen, uso). Sin PDF.
-Nivel 3 documental: INE anverso y reverso en `identity_documents` (bytes en Postgres, no URL pública). Modal al rebasar UMA. Constancia HTML de donativo pagado; **sin PAC / sin CFDI SAT**.
+Nivel 3 documental: INE anverso y reverso — metadatos en `identity_documents`, binario en MinIO privado (no URL pública). Modal al rebasar UMA. Constancia HTML de donativo pagado; **sin PAC / sin CFDI SAT** (prefijo `cfdi/` reservado).
 
 No se envía nada a contactos Odoo ni al módulo de ingresos.
 

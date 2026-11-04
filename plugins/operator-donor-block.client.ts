@@ -1,9 +1,9 @@
 export default defineNuxtPlugin(() => {
   const router = useRouter()
-  const { isAdmin } = useAuth()
+  const { isStaff } = useAuth()
 
   router.beforeEach((to) => {
-    if (!isAdmin.value) return
+    if (!isStaff.value) return
     const path = to.path
     if (
       path.startsWith('/donaciones')

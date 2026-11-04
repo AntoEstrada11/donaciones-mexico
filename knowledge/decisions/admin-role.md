@@ -1,7 +1,7 @@
 ---
 type: Decision
 title: Rol admin en la misma cuenta
-description: Administradores son usuarios con role=admin; bootstrap por script de promoción.
+description: Administradores son usuarios con role=admin; personal institucional @mx.universal.org.
 tags: [decision, auth, admin]
 status: accepted
 timestamp: 2026-08-07T00:00:00Z
@@ -13,19 +13,26 @@ Hacía falta un panel para operar el sitio (carrusel del hero, donaciones, usuar
 
 # Decisión
 
-Columna `role` en `users` (`donor` | `admin`, default `donor`). El token HMAC y `AuthResponse` incluyen `role`. Las rutas `/api/admin/**` usan `requireAdmin`.
+Columna `role` en `users` (`donor` | `admin` | `editor`, default `donor`). El token HMAC y `AuthResponse` incluyen `role`.
 
-El primer admin se crea con `npm run db:promote-admin -- <email>` (o `ADMIN_EMAIL` en `.env`). **Ya no** se promueve desde el panel: el rol admin pasará a un servicio externo; mientras tanto solo vía script o base de datos.
+- **`admin`**: panel completo (`requireAdmin`).
+- **`editor`**: solo Personalizar carrusel/pie (`requireContentEditor` / middleware staff). No cobros ni operación de donantes.
+- **`donor`**: sitio público.
 
-Desde el panel se gestiona el **estado operativo** de donantes (`active` / `deactivated`) con historial en `user_status_events`, y enlaces de restablecimiento de contraseña.
+**Separación en UI:** `/admin/users` lista solo donantes. `/admin/operadores` lista admin/editor y candidatos a promover.
+
+**Dominio institucional:** solo correos `@mx.universal.org` pueden recibir `admin` o `editor` (API y scripts; `--allow-any` solo emergencia local). El *superadmin* del Auth Hub no es un rol de esta BD: puede entrar por login de operación, pero para operar en esta app conviene promover su cuenta local.
+
+Bootstrap CLI: `npm run db:promote-admin -- correo@mx.universal.org`. Desde el panel: Operadores → candidatos → Hacer admin / editor.
+
+No se puede quitar el único `admin`. Tras cambiar rol hay que volver a iniciar sesión.
 
 # Consecuencias
 
 - **+** Un solo flujo de login; el enlace Admin aparece solo si `role === admin`.
-- **+** Auditable en BD; no depende de una lista permanente en env.
-- **−** Tras promover a alguien hay que volver a iniciar sesión para refrescar el token.
+- **+** Donantes y personal no se mezclan en el listado.
 - **−** Quien tenga el correo del admin puede operar el panel; la contraseña debe ser fuerte.
 
 # Relacionado
 
-[/playbooks/promote-admin.md](/playbooks/promote-admin.md) · [/apis/](/apis/)
+[/playbooks/promote-admin.md](/playbooks/promote-admin.md) · [/apis/admin.md](/apis/admin.md)

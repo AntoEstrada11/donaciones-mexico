@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ConsentType, DonorProfile, IdentityStatus } from '~/types'
+import type { ConsentType, DonorProfile, DonorRequest, IdentityStatus } from '~/types'
 import { CFDI_USES, TAX_REGIMES, isValidCfdiUse, isValidTaxRegime } from '~/utils/cfdiCatalog'
 
 definePageMeta({ middleware: 'donor' })
@@ -43,9 +43,12 @@ const marketingMessage = ref('')
 const marketingError = ref('')
 
 const identity = ref<IdentityStatus>({ front: false, back: false, complete: false })
+const openRequests = ref<DonorRequest[]>([])
 const identityConsent = ref(false)
 const identityError = ref('')
 const identityBusy = ref<'front' | 'back' | null>(null)
+const cameraOpen = ref(false)
+const cameraSide = ref<'front' | 'back'>('front')
 const colonies = ref<string[]>([])
 const zipHint = ref('')
 const exportError = ref('')
@@ -70,12 +73,24 @@ function applyProfile(me: DonorProfile) {
   form.cfdiUse = me.cfdiUse || 'D04'
 }
 
+function requestLabel(type: DonorRequest['type']) {
+  if (type === 'identity') return t('profile.requestIdentity')
+  if (type === 'fiscal') return t('profile.requestFiscal')
+  return t('profile.requestEmail')
+}
+
+function requestHref(type: DonorRequest['type']) {
+  if (type === 'identity') return '#bloque-identidad'
+  if (type === 'fiscal') return '#bloque-fiscal'
+  return '/verificar-correo'
+}
+
 onMounted(async () => {
   try {
     applyProfile(await fetchProfile())
-    identity.value = await $fetch<IdentityStatus>('/api/me/identity', {
-      headers: { Authorization: `Bearer ${requireToken()}` },
-    })
+    const headers = { Authorization: `Bearer ${requireToken()}` }
+    identity.value = await $fetch<IdentityStatus>('/api/me/identity', { headers })
+    openRequests.value = await $fetch<DonorRequest[]>('/api/me/requests', { headers })
 
     const consents = await fetchConsents()
     marketing.value = consents.marketing === true
@@ -129,15 +144,18 @@ function onRfcInput(event: Event) {
   form.rfc = sanitizeRfcInput((event.target as HTMLInputElement).value)
 }
 
-async function onIdentityFile(side: 'front' | 'back', event: Event) {
-  const input = event.target as HTMLInputElement
-  const file = input.files?.[0]
-  input.value = ''
-  if (!file) return
+function openIdentityCamera(side: 'front' | 'back') {
   if (!identityConsent.value) {
     identityError.value = t('profile.identityConsentRequired')
     return
   }
+  identityError.value = ''
+  cameraSide.value = side
+  cameraOpen.value = true
+}
+
+async function onIdentityCaptured(file: File) {
+  const side = cameraSide.value
   identityBusy.value = side
   identityError.value = ''
   try {
@@ -150,6 +168,7 @@ async function onIdentityFile(side: 'front' | 'back', event: Event) {
       headers: { Authorization: `Bearer ${requireToken()}` },
       body,
     })
+    cameraOpen.value = false
   }
   catch (e: unknown) {
     const msg = (e as { data?: { statusMessage?: string } })?.data?.statusMessage
@@ -296,6 +315,23 @@ async function onDelete() {
 
     <template v-else>
       <div
+        v-if="openRequests.length"
+        class="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-950"
+        role="status"
+      >
+        <p class="font-semibold">
+          {{ t('profile.requestBannerTitle') }}
+        </p>
+        <ul class="mt-2 space-y-1">
+          <li v-for="req in openRequests" :key="req.id">
+            <a :href="requestHref(req.type)" class="font-medium text-brand hover:underline">
+              {{ requestLabel(req.type) }}
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div
         v-if="success || route.query.guardado"
         class="mb-8 rounded-lg border border-green-200 bg-green-50 px-4 py-4 text-sm text-green-900"
         role="status"
@@ -370,7 +406,7 @@ async function onDelete() {
         </div>
 
         <!-- Minimización: los datos fiscales solo se piden si hacen falta. -->
-        <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
+        <div id="bloque-fiscal" class="scroll-mt-24 rounded-lg border border-gray-200 bg-gray-50 p-4">
           <label class="flex cursor-pointer items-start gap-3 text-sm font-medium text-ink">
             <input
               v-model="form.wantsReceipt"
@@ -538,7 +574,7 @@ async function onDelete() {
           </div>
         </div>
 
-        <div class="rounded-lg border border-gray-200 p-4">
+        <div id="bloque-identidad" class="rounded-lg border border-gray-200 p-4 scroll-mt-24">
           <h2 class="mb-1 text-sm font-semibold text-ink">
             {{ t('profile.identityTitle') }}
           </h2>
@@ -550,32 +586,44 @@ async function onDelete() {
             <span>{{ t('profile.identityConsent') }}</span>
           </label>
           <div class="grid gap-3 sm:grid-cols-2">
-            <label class="block text-sm">
-              {{ t('profile.identityFront') }}
-              <span v-if="identity.front" class="ml-1 text-green-700">✓</span>
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                class="mt-1 block w-full text-xs"
-                :disabled="identityBusy === 'front'"
-                @change="onIdentityFile('front', $event)"
+            <div class="rounded-lg border border-gray-100 bg-gray-50/80 p-3">
+              <p class="text-sm font-medium text-ink">
+                {{ t('profile.identityFront') }}
+                <span v-if="identity.front" class="ml-1 text-green-700">✓</span>
+              </p>
+              <button
+                type="button"
+                class="btn-primary mt-2 w-full text-sm"
+                :disabled="!!identityBusy"
+                @click="openIdentityCamera('front')"
               >
-            </label>
-            <label class="block text-sm">
-              {{ t('profile.identityBack') }}
-              <span v-if="identity.back" class="ml-1 text-green-700">✓</span>
-              <input
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                class="mt-1 block w-full text-xs"
-                :disabled="identityBusy === 'back'"
-                @change="onIdentityFile('back', $event)"
+                {{ identityBusy === 'front' ? t('profile.identityCameraUploading') : t('profile.identityTakeFront') }}
+              </button>
+            </div>
+            <div class="rounded-lg border border-gray-100 bg-gray-50/80 p-3">
+              <p class="text-sm font-medium text-ink">
+                {{ t('profile.identityBack') }}
+                <span v-if="identity.back" class="ml-1 text-green-700">✓</span>
+              </p>
+              <button
+                type="button"
+                class="btn-primary mt-2 w-full text-sm"
+                :disabled="!!identityBusy"
+                @click="openIdentityCamera('back')"
               >
-            </label>
+                {{ identityBusy === 'back' ? t('profile.identityCameraUploading') : t('profile.identityTakeBack') }}
+              </button>
+            </div>
           </div>
           <p v-if="identityError" class="mt-2 text-sm text-red-600">
             {{ identityError }}
           </p>
+          <IdentityCameraCapture
+            v-model:open="cameraOpen"
+            :side="cameraSide"
+            :busy="identityBusy === cameraSide"
+            @captured="onIdentityCaptured"
+          />
         </div>
 
         <p v-if="error" id="perfil-error" class="text-sm text-red-600">

@@ -30,8 +30,13 @@ LFPDPPP. Consecuencias operativas:
 
 | Dato | Dónde vive | Finalidad | Base | Conservación |
 |------|------------|-----------|------|--------------|
-| Correo | `users.email` | Identificador de cuenta, contacto | Necesaria | Cuenta activa |
+| Correo | `users.email` | Identificador de cuenta, contacto, verificación, reset y solicitudes de cumplimiento | Necesaria | Cuenta activa |
+| Tokens verificación / reset (hash) | `email_verification_tokens`, `password_reset_tokens` | Confirmar correo y restablecer acceso | Necesaria | Hasta uso o vencimiento |
+| Solicitud de cumplimiento | `donor_requests` (tipo, estado, fechas, admin que envió; sin cuerpo de correo) | Pedir INE, datos fiscales o verificación desde el panel | Necesaria del servicio | Mientras la cuenta exista (cascade al borrar) |
+| Plan recurrente | `recurring_donations` | Donación periódica (iglesia, monto, frecuencia) | Necesaria si se activa | Mientras el plan exista / cuenta activa |
+| Solicitud CFDI | `cfdi_invoices` | Pedido de timbrado (sin XML hasta PAC) | Opcional (recibo) | 5 años si se timbra |
 | Nombre | `users.name` | Trato personal, comprobantes | Necesaria | Cuenta activa |
+| Iglesia de pertenencia | `donor_profiles.home_church_external_id` / `home_church_name` | Seguimiento operativo / pastoral | Opcional | Cuenta activa |
 | Contraseña (hash scrypt) | `users.password_hash` | Autenticación | Necesaria | Cuenta activa |
 | Rol | `users.role` | Control de acceso al panel | Necesaria | Cuenta activa |
 | Teléfono | `donor_profiles.phone` / `phone_digits` | Contacto y unicidad | Necesaria | Cuenta activa |
@@ -43,7 +48,8 @@ LFPDPPP. Consecuencias operativas:
 | Consentimiento (tipo, versión, fecha) | `consents.*` | Probar que el consentimiento se otorgó | Obligación del responsable | 5 años |
 | Huella de IP | `consents.ip_hash` | Evidencia del consentimiento | Obligación del responsable | 5 años |
 | Navegador | `consents.user_agent` | Evidencia del consentimiento | Obligación del responsable | 5 años |
-| Imágenes INE (anverso/reverso) | `identity_documents` | Expediente PLD/SAT e identificación del donante | Opcional hasta umbral UMA; consentimiento `identity_document` | Mientras la cuenta esté activa |
+| Imágenes INE (anverso/reverso) | Metadatos en `identity_documents` (`object_key`); binario en MinIO bucket privado `identity/{userId}/`; captura solo con cámara en vivo (no galería) | Expediente PLD/SAT e identificación del donante | Opcional hasta umbral UMA; consentimiento `identity_document` | Mientras la cuenta esté activa; purge en MinIO al cancelar |
+| PDF CFDI (futuro) | Prefijo MinIO `cfdi/{userId}/` (aún no emitidos) | Comprobante fiscal | Cuando exista timbrado | 5 años (CFF); bloqueo si aplica |
 | Coordenadas del dispositivo | Solo en memoria y `sessionStorage` | Ordenar el directorio por cercanía | Opcional (permiso del navegador) | No se persiste en la base |
 
 # Almacenamiento en el navegador
@@ -64,13 +70,13 @@ No hay cookies de aplicación, analítica ni píxeles de terceros. Solo `session
 | Imágenes de iglesias | Petición del navegador a URLs externas | Expone IP y referer del visitante |
 | MercadoPago | Monto, moneda, `external_reference` (id de donación); datos de tarjeta solo en el checkout alojado | Encargado de cobro. Ver [/integrations/mercadopago.md](/integrations/mercadopago.md) |
 | PayPal | Idem vía Orders v2 / checkout alojado | Encargado de cobro. Ver [/integrations/paypal.md](/integrations/paypal.md) |
+| MinIO (misma infra) | Binarios INE (y futuros PDF); no sale a Internet | Encargado de alojamiento de objetos. Ver [/decisions/minio-private-objects.md](/decisions/minio-private-objects.md) |
 
-Al cambiar encargados o finalidades se sube `LEGAL.noticeVersion`. No hay correo transaccional implementado.
+Al cambiar encargados o finalidades se sube `LEGAL.noticeVersion`. Correo transaccional: verificación, reset y solicitudes de cumplimiento (INE/fiscal).
 
 # Nunca se expone en API
 
-`password_hash`, `phone_digits`, `ip_hash`. Las respuestas admin tampoco incluyen teléfono,
-domicilio ni RFC.
+`password_hash`, `phone_digits`, `ip_hash`. El panel admin sí ve teléfono/RFC/domicilio en la ficha 360° (operación); no se registran en logs.
 
 # Relacionados
 

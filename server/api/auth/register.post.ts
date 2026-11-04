@@ -75,6 +75,9 @@ export default defineEventHandler(async (event) => {
     marketing: body?.marketing === true,
   })
 
+  const origin = getRequestURL(event).origin
+  const verification = await issueEmailVerification(user.id, origin)
+
   const token = signToken({
     sub: user.id,
     email: user.email,
@@ -89,7 +92,10 @@ export default defineEventHandler(async (event) => {
     email: user.email,
     role: user.role,
     profileComplete: user.profileComplete,
+    emailVerified: false,
+    verifyUrl: verification.verifyUrl,
   }
 
   return response
 })
+

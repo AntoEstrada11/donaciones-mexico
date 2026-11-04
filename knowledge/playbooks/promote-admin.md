@@ -1,7 +1,7 @@
 ---
 type: Playbook
 title: Promover administrador
-description: Asignar rol admin a un usuario existente por correo.
+description: Asignar rol admin a un correo institucional @mx.universal.org.
 tags: [admin, auth, db]
 timestamp: 2026-08-07T00:00:00Z
 ---
@@ -12,25 +12,27 @@ Necesitas el primer admin, o recuperar acceso al panel sin pasar por la UI.
 
 # Steps
 
-1. Asegúrate de que el usuario ya existe (registro o migración previa).
+1. Asegúrate de que el usuario ya existe (registro) con correo `@mx.universal.org`.
 2. Con la base levantada:
 
 ```bash
-npm run db:promote-admin -- correo@ejemplo.com
+npm run db:promote-admin -- correo@mx.universal.org
 ```
 
 3. Alternativa: define `ADMIN_EMAIL` en `.env` y ejecuta `npm run db:promote-admin` sin argumentos.
-4. Cierra sesión en el navegador e inicia sesión de nuevo con ese correo (el token debe incluir `role: admin`).
-5. Debe aparecer el enlace **Admin** en la barra y abrir `/admin`.
+4. Desde el panel (si ya hay un admin): `/admin/operadores` → candidatos → **Hacer admin**.
+5. Cierra sesión e inicia de nuevo (el token debe incluir `role: admin`).
+
+Emergencia local (correo no institucional): `npm run db:promote-admin -- correo@ejemplo.com --allow-any`.
 
 # Verificación
 
 ```sql
-SELECT email, role FROM users WHERE email = 'correo@ejemplo.com';
+SELECT email, role FROM users WHERE email = 'correo@mx.universal.org';
 ```
 
 # Notas
 
-No se puede degradar al único admin desde la API. Ver [/decisions/admin-role.md](/decisions/admin-role.md).
+No se puede degradar al único admin. Ver [/decisions/admin-role.md](/decisions/admin-role.md).
 
-Para cambiar la contraseña (no hay pantalla en `/perfil`): [/playbooks/set-password.md](/playbooks/set-password.md).
+Contraseña: [/playbooks/set-password.md](/playbooks/set-password.md).

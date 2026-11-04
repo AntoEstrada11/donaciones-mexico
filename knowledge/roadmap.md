@@ -9,7 +9,7 @@ timestamp: 2026-09-07T00:00:00Z
 # Hecho
 
 - Sitio público: home, iglesias, donación, historial, login, registro, perfil.
-- Panel `/admin` (stats, **Personalizar** con Carrusel y Pie, donaciones, usuarios).
+- Panel `/admin` (stats, cola SPEI, alertas UMA/PLD, ficha 360° + solicitudes al donante, campañas temporales, donaciones con filtros, usuarios, **Personalizar**).
 - Persistencia PostgreSQL (donantes, campañas, donaciones, slides, consentimientos, `site_settings`).
 - Tutorial SPEI en `/spei` (datos bancarios desde `site_settings`, pasos, copia al portapapeles).
 - **Cumplimiento LFPDPPP:** aviso integral (`/privacidad`), términos (`/terminos`), aviso simplificado en formularios, tabla `consents`, ARCO en `/perfil`, datos fiscales bajo demanda (`wants_receipt`), geolocalización opt-in en iglesias, rate limiting en auth/donaciones. Ver [/legal/](/legal/).
@@ -29,10 +29,10 @@ timestamp: 2026-09-07T00:00:00Z
 
 | Ítem | Bloqueo |
 |------|---------|
-| Donación recurrente | Fase 2: MP `/preapproval`, PayPal Subscriptions (y opcionalmente Stripe Billing). |
+| Donación recurrente (cobro automático tarjeta/PayPal) | UI + tabla listos; SPEI crea cargos pending. Falta Preapproval/Subscriptions con cuenta empresarial. |
 | Adaptadores Stripe / Openpay | Fase 2; mismo puerto interno. Openpay útil para SPEI de comisión fija. |
 | Conciliación SPEI CLABE | El admin puede marcar `paid` a mano; sin cruce bancario automático. |
-| CFDI | RFC/domicilio bajo demanda; constancia HTML interna; **sin timbrado PAC**. |
+| CFDI timbrado | Solicitud `cfdi_invoices` + constancia HTML; falta PAC/CSD (`NUXT_CFDI_PAC_*`). Ver [/playbooks/cfdi-timbrado.md](/playbooks/cfdi-timbrado.md). |
 
 # Pendiente jurídico / operativo (privacidad)
 

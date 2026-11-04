@@ -8,13 +8,13 @@ timestamp: 2026-09-07T00:00:00Z
 
 # Antes de empezar
 
-Código de cobro v1 en `server/payments/` y panel `/admin/personalizar/cobros`. Ver [/integrations/](/integrations/).
+Código de cobro v1 en `server/payments/` y panel `/admin/operadores/cobros`. Ver [/integrations/](/integrations/).
 
 # Dónde van las llaves
 
 Nunca el número de tarjeta ni el CVV. Eso se escribe en la página de Mercado Pago o PayPal al pagar.
 
-En el stack de Portainer, **Environment variables** (y en local, el archivo `.env`). Nombres en `.env.example`. Tras cambiarlas, redesplegar el stack o reiniciar `npm run dev`. Luego en `/admin/personalizar/cobros`: modo **test** y activar tarjeta o PayPal.
+En el stack de Portainer, **Environment variables** (y en local, el archivo `.env`). Nombres en `.env.example`. Tras cambiarlas, redesplegar el stack o reiniciar `npm run dev`. Luego en `/admin/operadores/cobros`: modo **test** y activar tarjeta o PayPal.
 
 # Variables
 
@@ -38,7 +38,7 @@ Copiar nombres desde `.env.example` (nunca valores reales a `knowledge/`).
 1. App Checkout Pro en el panel MX.
 2. Access Token de prueba → `NUXT_MP_ACCESS_TOKEN_TEST` (no el usuario `TESTUSER…`).
 3. Webhook + secreto → `NUXT_MP_WEBHOOK_SECRET_TEST`.
-4. Admin `/admin/personalizar/cobros`: modo test, habilitar tarjeta.
+4. Admin `/admin/operadores/cobros`: modo test, habilitar tarjeta.
 
 # PayPal
 
