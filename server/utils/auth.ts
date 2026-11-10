@@ -132,28 +132,45 @@ export async function assertNotOperator(session: SessionPayload | null) {
   }
 }
 
-/** Admin global: todo el panel. */
-export function requireAdmin(event: H3Event): SessionPayload {
-  const session = requireSession(event)
-  if (session.role !== 'admin') {
-    throw createError({ statusCode: 403, statusMessage: 'Se requiere rol de administrador' })
+/**
+ * Revalida el rol en BD (el JWT puede quedar desfasado tras promote/demote).
+ * La fila en `users` es la fuente de verdad.
+ */
+async function requireLiveRole(
+  session: SessionPayload,
+  allowed: (role: UserRole) => boolean,
+  statusMessage: string,
+): Promise<SessionPayload> {
+  const { findUserById } = await import('./users')
+  const row = await findUserById(session.sub)
+  const liveRole = normalizeUserRole(row?.role)
+  if (!row || !allowed(liveRole)) {
+    throw createError({ statusCode: 403, statusMessage })
   }
-  return session
+  return {
+    ...session,
+    role: liveRole,
+    email: row.email,
+    name: row.name,
+  }
+}
+
+/** Admin global: todo el panel. */
+export async function requireAdmin(event: H3Event): Promise<SessionPayload> {
+  const session = requireSession(event)
+  return requireLiveRole(session, role => role === 'admin', 'Se requiere rol de administrador')
 }
 
 /** Personal del panel (admin o editor). */
-export function requireStaff(event: H3Event): SessionPayload {
+export async function requireStaff(event: H3Event): Promise<SessionPayload> {
   const session = requireSession(event)
-  if (!isStaffRole(session.role)) {
-    throw createError({ statusCode: 403, statusMessage: 'Se requiere acceso al panel' })
-  }
-  return session
+  return requireLiveRole(session, isStaffRole, 'Se requiere acceso al panel')
 }
 
 /**
- * Contenido público editable: carrusel y pie.
- * Admin global o editor. Cobros y operación siguen en requireAdmin.
+ * Contenido público editable: carrusel y pie de contacto.
+ * Admin global o editor. Cobros, SPEI bancario y operación siguen en requireAdmin.
  */
-export function requireContentEditor(event: H3Event): SessionPayload {
+export async function requireContentEditor(event: H3Event): Promise<SessionPayload> {
   return requireStaff(event)
 }

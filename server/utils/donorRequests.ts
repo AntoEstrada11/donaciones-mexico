@@ -1,7 +1,7 @@
 import { and, desc, eq } from 'drizzle-orm'
 import { donorRequests } from '../database/schema'
 import type { DonorRequest, DonorRequestType } from '~/types'
-import { isMailConfigured, mailDevReturnLink, sendMail, siteOriginFallback } from './mail'
+import { mailDevReturnLink, sendMail, siteOriginFallback } from './mail'
 import { getIdentityStatus } from './identity'
 import { issueEmailVerification, isEmailVerified } from './emailVerification'
 import { findUserById } from './users'
@@ -212,9 +212,9 @@ export async function createAndSendDonorRequest(input: {
     html: copy.html,
   })
 
-  if (!sent && !isMailConfigured() && mailDevReturnLink()) {
-    return { request: mapRow(row), sent: false, actionUrl }
+  return {
+    request: mapRow(row),
+    sent,
+    actionUrl: (!sent && mailDevReturnLink()) ? actionUrl : undefined,
   }
-
-  return { request: mapRow(row), sent, actionUrl: sent ? undefined : actionUrl }
 }

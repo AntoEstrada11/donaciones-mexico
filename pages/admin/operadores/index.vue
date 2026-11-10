@@ -74,12 +74,12 @@ async function sendPasswordReset(row: AdminUserRow) {
   success.value = ''
   resetLink.value = ''
   try {
-    const result = await $fetch<{ message: string, resetUrl: string }>(
+    const result = await $fetch<{ message: string, resetUrl?: string }>(
       `/api/admin/users/${row.id}/password-reset`,
       { method: 'POST', headers: adminHeaders() },
     )
     resetLinkFor.value = row.email
-    resetLink.value = result.resetUrl
+    resetLink.value = result.resetUrl || ''
     success.value = result.message
   }
   catch (e: unknown) {

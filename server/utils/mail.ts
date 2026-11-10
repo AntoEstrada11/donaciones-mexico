@@ -28,10 +28,13 @@ export function isMailConfigured(): boolean {
   return Boolean(m.host && m.from && (m.user ? m.pass : true))
 }
 
-/** En local, si no hay SMTP, las APIs pueden devolver el enlace (sin loguear PII). */
+/**
+ * Solo en desarrollo/local y con flag explícito.
+ * En producción nunca se devuelve el enlace en JSON (aunque el flag esté mal puesto).
+ */
 export function mailDevReturnLink(): boolean {
+  if (process.env.NODE_ENV === 'production') return false
   return Boolean(useRuntimeConfig().mailDevReturnLink)
-    || process.env.NODE_ENV !== 'production'
 }
 
 export async function sendMail(message: MailMessage): Promise<{ sent: boolean }> {

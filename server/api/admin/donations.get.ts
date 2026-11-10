@@ -1,7 +1,7 @@
 import { parseDonationMethod, parseDonationStatus } from '../../utils/admin'
 
 export default defineEventHandler(async (event) => {
-  requireAdmin(event)
+  await requireAdmin(event)
 
   const query = getQuery(event)
   const dateFromRaw = typeof query.dateFrom === 'string' ? query.dateFrom : ''

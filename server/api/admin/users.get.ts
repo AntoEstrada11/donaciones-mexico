@@ -3,7 +3,7 @@ import type { AdminUserScope, DonorStatus, UserRole } from '~/types'
 const SCOPES = new Set<AdminUserScope>(['donors', 'staff', 'staff_candidates'])
 
 export default defineEventHandler(async (event) => {
-  requireAdmin(event)
+  await requireAdmin(event)
   const query = getQuery(event)
 
   const scopeRaw = String(query.scope || '')

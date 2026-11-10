@@ -16,7 +16,7 @@ Hacía falta un panel para operar el sitio (carrusel del hero, donaciones, usuar
 Columna `role` en `users` (`donor` | `admin` | `editor`, default `donor`). El token HMAC y `AuthResponse` incluyen `role`.
 
 - **`admin`**: panel completo (`requireAdmin`).
-- **`editor`**: solo Personalizar carrusel/pie (`requireContentEditor` / middleware staff). No cobros ni operación de donantes.
+- **`editor`**: solo Personalizar carrusel y pie de **contacto** (`requireContentEditor`). No puede cambiar datos SPEI (CLABE), cobros ni operación de donantes. `requireAdmin` / `requireStaff` revalidan el rol en BD (el JWT no basta tras un demote).
 - **`donor`**: sitio público.
 
 **Separación en UI:** `/admin/users` lista solo donantes. `/admin/operadores` lista admin/editor y candidatos a promover.

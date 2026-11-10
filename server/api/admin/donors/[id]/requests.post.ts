@@ -1,7 +1,7 @@
 import { createAndSendDonorRequest, isDonorRequestType } from '../../../../utils/donorRequests'
 
 export default defineEventHandler(async (event) => {
-  const admin = requireAdmin(event)
+  const admin = await requireAdmin(event)
   const id = getRouterParam(event, 'id')
   if (!id) {
     throw createError({ statusCode: 400, statusMessage: 'Id requerido' })

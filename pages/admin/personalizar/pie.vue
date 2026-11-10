@@ -5,7 +5,7 @@ import { FIELD_LIMITS } from '~/utils/fieldLimits'
 definePageMeta({ layout: 'admin', middleware: 'admin' })
 
 const { t } = useI18n()
-const { adminHeaders } = useAuth()
+const { adminHeaders, isAdmin } = useAuth()
 
 const loading = ref(true)
 const saving = ref(false)
@@ -58,10 +58,20 @@ async function persist() {
   error.value = ''
   success.value = ''
   try {
+    const body: Partial<SiteSettings> = {
+      contactPhone: form.contactPhone,
+      contactEmail: form.contactEmail,
+    }
+    if (isAdmin.value) {
+      body.speiBank = form.speiBank
+      body.speiBeneficiary = form.speiBeneficiary
+      body.speiClabe = form.speiClabe
+      body.speiConcept = form.speiConcept
+    }
     const updated = await $fetch<SiteSettings>('/api/admin/site-settings', {
       method: 'PATCH',
       headers: adminHeaders(),
-      body: { ...form },
+      body,
     })
     form.contactPhone = updated.contactPhone
     form.contactEmail = updated.contactEmail
@@ -144,10 +154,13 @@ async function persist() {
         </div>
       </section>
 
-      <section class="space-y-4">
+      <section v-if="isAdmin" class="space-y-4">
         <h3 class="font-semibold text-brand">
           {{ t('admin.footer.speiSection') }}
         </h3>
+        <p class="text-xs text-gray-500">
+          {{ t('admin.footer.speiAdminOnly') }}
+        </p>
         <div>
           <label for="spei-bank" class="mb-1 block text-sm font-medium text-ink">
             {{ t('admin.footer.bank') }}
@@ -205,6 +218,9 @@ async function persist() {
           >
         </div>
       </section>
+      <p v-else class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-950">
+        {{ t('admin.footer.speiEditorBlocked') }}
+      </p>
 
       <p v-if="error" class="text-sm text-red-600">
         {{ error }}

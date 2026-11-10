@@ -1,5 +1,8 @@
 # Directory Update Log
 
+## 2026-11-10
+* **Update**: Hardening auth: SPEI/CLABE solo `admin`; `requireAdmin`/`requireStaff` revalidan rol en BD; `resetUrl`/`verifyUrl`/`actionUrl` no salen en producción (`mailDevReturnLink` gated). Ver [/decisions/admin-role.md](/decisions/admin-role.md).
+
 ## 2026-11-04
 * **Update**: Ficha del donante en drawer (`AdminDonorDrawer`) desde alertas/donantes/SPEI/donaciones: enviar solicitudes sin perder la lista. Ficha completa sigue en `/admin/donantes/:id`.
 * **Update**: Cobros (alta/baja de métodos) movidos de Personalizar a `/admin/operadores/cobros`; Personalizar queda carrusel/pie. Ver [/apis/admin.md](/apis/admin.md).

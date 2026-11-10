@@ -448,6 +448,8 @@
       "subtitle": "Teléfono, correo y datos bancarios SPEI que ve el público.",
       "contactSection": "Contacto",
       "speiSection": "SPEI",
+      "speiAdminOnly": "Solo administradores pueden cambiar CLABE, banco o beneficiario.",
+      "speiEditorBlocked": "Los datos SPEI (CLABE) solo los cambia un administrador. Usted puede editar teléfono y correo de contacto.",
       "phone": "Teléfono",
       "email": "Correo",
       "bank": "Banco",

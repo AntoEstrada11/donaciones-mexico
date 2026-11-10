@@ -10,7 +10,7 @@ const MIME_TO_EXT: Record<string, string> = {
 }
 
 export default defineEventHandler(async (event) => {
-  requireContentEditor(event)
+  await requireContentEditor(event)
 
   const form = await readMultipartFormData(event)
   if (!form?.length) {
