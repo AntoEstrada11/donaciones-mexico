@@ -31,7 +31,7 @@ Respuesta al exceder cupo: `429` con header `Retry-After` (segundos).
 | `/api/auth/register` | 5 | 15 min | todos |
 | `/api/donations` | 20 | 5 min | todos |
 | `/api/me` | 60 | 5 min | POST, PATCH, DELETE (GET excluido) |
-| `/api/churches` | 60 | 5 min | GET |
+| `/api/zip` | 60 | 5 min | GET |
 | `/api/payments/checkout` | 20 | 5 min | POST |
 | `/api/payments/paypal/capture` | 20 | 5 min | POST |
 | `/api/payments/mercadopago/sync` | 20 | 5 min | POST |

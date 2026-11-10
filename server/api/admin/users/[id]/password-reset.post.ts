@@ -1,5 +1,7 @@
+import { mailDevReturnLink } from '../../../../utils/mail'
+
 export default defineEventHandler(async (event) => {
-  const session = requireAdmin(event)
+  const session = await requireAdmin(event)
   const id = getRouterParam(event, 'id')
   if (!id) {
     throw createError({ statusCode: 400, statusMessage: 'Id requerido' })
@@ -7,11 +9,16 @@ export default defineEventHandler(async (event) => {
 
   const origin = getRequestURL(event).origin
   const result = await createPasswordResetLink(id, session.sub, origin)
+  const returnLink = !result.emailed && mailDevReturnLink()
 
-  // Sin servicio de correo aún: el admin copia el enlace y lo reenvía al donante.
   return {
-    message: 'Enlace de restablecimiento generado. Válido 24 horas.',
-    resetUrl: result.resetUrl,
+    message: result.emailed
+      ? 'Enviamos el enlace de restablecimiento al correo del donante. Válido 24 horas.'
+      : (returnLink
+          ? 'No hay SMTP configurado: copie el enlace y envíelo al donante. Válido 24 horas.'
+          : 'Se generó el restablecimiento. Configure SMTP para enviarlo al correo del donante.'),
+    emailed: result.emailed,
+    resetUrl: returnLink ? result.resetUrl : undefined,
     expiresAt: result.expiresAt,
   }
 })

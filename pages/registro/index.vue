@@ -4,6 +4,7 @@ const { register, isLoggedIn } = useAuth()
 const route = useRoute()
 
 const email = ref('')
+const name = ref('')
 const password = ref('')
 const consent = ref(false)
 const marketing = ref(false)
@@ -16,6 +17,10 @@ onMounted(() => {
   }
 })
 
+function onNameInput(event: Event) {
+  name.value = sanitizeNameInput((event.target as HTMLInputElement).value)
+}
+
 function onEmailInput(event: Event) {
   email.value = sanitizeEmailInput((event.target as HTMLInputElement).value)
 }
@@ -27,6 +32,11 @@ function onPasswordInput(event: Event) {
 async function onSubmit() {
   if (!email.value.trim() || !password.value.trim()) {
     error.value = t('register.required')
+    return
+  }
+
+  if (!isValidName(name.value)) {
+    error.value = t('validation.name', { max: FIELD_LIMITS.name.max })
     return
   }
 
@@ -55,6 +65,7 @@ async function onSubmit() {
     await register({
       email: email.value.trim(),
       password: password.value,
+      name: name.value.trim(),
       consent: consent.value,
       marketing: marketing.value,
     })
@@ -86,6 +97,21 @@ async function onSubmit() {
       </p>
 
       <form class="space-y-4" @submit.prevent="onSubmit">
+        <div>
+          <label for="name" class="mb-1 block text-sm font-medium text-ink">
+            {{ t('register.name') }}
+          </label>
+          <input
+            id="name"
+            :value="name"
+            type="text"
+            autocomplete="name"
+            required
+            :maxlength="FIELD_LIMITS.name.max"
+            class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+            @input="onNameInput"
+          >
+        </div>
         <div>
           <label for="email" class="mb-1 block text-sm font-medium text-ink">
             {{ t('register.email') }}

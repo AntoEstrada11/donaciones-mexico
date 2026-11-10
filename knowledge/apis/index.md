@@ -7,6 +7,9 @@
 * [DELETE /api/me](me-delete.md) - Baja de cuenta con contraseña (cancelación ARCO).
 * [GET /api/me/export](me-export.md) - Copia descargable de los datos del titular (acceso ARCO).
 * [GET y POST /api/me/consents](me-consents.md) - Estado y cambio de consentimientos.
+* [GET /api/zip/:cp](zip-get.md) - Colonias a partir del C.P. (Zippopotam, solo 5 dígitos).
+* [Identidad INE](me-identity.md) - Anverso/reverso del donante.
+* [GET /api/donations/:id/receipt](donations-receipt.md) - Constancia HTML (no CFDI).
 * [GET /api/campaigns](campaigns-get.md) - Campañas activas.
 * [GET /api/donations](donations-get.md) - Historial del donante (requiere sesión).
 * [POST /api/donations](donations-post.md) - Alta de donación (monto $1–$999,999.99).
@@ -16,6 +19,7 @@
 * [GET /api/site-settings](site-settings-get.md) - Contacto y SPEI del pie (públicos).
 * [GET /api/churches](churches-get.md) - Directorio (proxy Odoo + fallback de muestra).
 * [POST /api/dev/contacts](dev-contacts.md) - Alta masiva de donantes ficticios (`nuxt dev` solamente).
+* [Admin API](admin.md) - Stats, donaciones, ficha 360°, cola SPEI, alertas UMA/PLD, usuarios y personalizar.
 * [Iglesias (externa Odoo)](churches-external.md) - API en miembros.iurdsys.net consultada por Nitro.
 
 Límites compartidos: [/data/field-limits.md](/data/field-limits.md).

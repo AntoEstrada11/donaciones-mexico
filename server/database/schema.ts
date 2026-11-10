@@ -1,5 +1,6 @@
 import {
   boolean,
+  customType,
   index,
   integer,
   numeric,
@@ -12,14 +13,26 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core'
 
+const bytea = customType<{ data: Buffer, driverData: Buffer }>({
+  dataType() {
+    return 'bytea'
+  },
+})
+
 export const donationStatusEnum = pgEnum('donation_status', ['paid', 'pending', 'failed', 'cancelled', 'refunded'])
 export const donationMethodEnum = pgEnum('donation_method', ['spei', 'card', 'paypal'])
 export const paymentProviderEnum = pgEnum('payment_provider', ['mercadopago', 'paypal', 'spei_manual'])
 export const paymentModeEnum = pgEnum('payment_mode', ['test', 'live'])
-export const userRoleEnum = pgEnum('user_role', ['donor', 'admin'])
+export const userRoleEnum = pgEnum('user_role', ['donor', 'admin', 'editor'])
 export const donorStatusEnum = pgEnum('donor_status', ['active', 'deactivated'])
-export const consentTypeEnum = pgEnum('consent_type', ['privacy_notice', 'sensitive_data', 'marketing'])
+export const consentTypeEnum = pgEnum('consent_type', ['privacy_notice', 'sensitive_data', 'marketing', 'identity_document'])
 export const donorComplianceEnum = pgEnum('donor_compliance_status', ['rapid', 'cfdi', 'pld_pending', 'sat_report'])
+export const identitySideEnum = pgEnum('identity_side', ['front', 'back'])
+export const recurringFrequencyEnum = pgEnum('recurring_frequency', ['weekly', 'biweekly', 'monthly'])
+export const recurringStatusEnum = pgEnum('recurring_status', ['active', 'paused', 'cancelled', 'pending_setup'])
+export const cfdiInvoiceStatusEnum = pgEnum('cfdi_invoice_status', ['pending_stamp', 'stamped', 'failed', 'cancelled'])
+export const donorRequestTypeEnum = pgEnum('donor_request_type', ['identity', 'fiscal', 'email_verify'])
+export const donorRequestStatusEnum = pgEnum('donor_request_status', ['open', 'resolved', 'cancelled'])
 
 /** Cuenta de acceso del donante. El correo es único pero puede cambiar, por eso la PK es sintética. */
 export const users = pgTable('users', {
@@ -31,6 +44,8 @@ export const users = pgTable('users', {
   /** Solo aplica a donantes; los admin se consideran siempre operativos. */
   status: donorStatusEnum('status').notNull().default('active'),
   profileComplete: boolean('profile_complete').notNull().default(false),
+  /** Nulo hasta que el titular confirme el enlace enviado al correo. */
+  emailVerifiedAt: timestamp('email_verified_at', { withTimezone: true }),
   /** Id del usuario en Auth Hub; nulo si la cuenta nació solo en este sitio. */
   hubUserId: varchar('hub_user_id', { length: 64 }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -52,7 +67,7 @@ export const userStatusEvents = pgTable('user_status_events', {
   index('user_status_events_user_created_idx').on(table.userId, table.createdAt),
 ])
 
-/** Tokens de un solo uso para restablecer contraseña (generados por un admin). */
+/** Tokens de un solo uso para restablecer contraseña (admin o «olvidé mi contraseña»). */
 export const passwordResetTokens = pgTable('password_reset_tokens', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
@@ -64,6 +79,19 @@ export const passwordResetTokens = pgTable('password_reset_tokens', {
 }, table => [
   index('password_reset_tokens_user_idx').on(table.userId),
   uniqueIndex('password_reset_tokens_hash_key').on(table.tokenHash),
+])
+
+/** Confirmación de correo al crear cuenta. */
+export const emailVerificationTokens = pgTable('email_verification_tokens', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  tokenHash: varchar('token_hash', { length: 64 }).notNull(),
+  expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+  usedAt: timestamp('used_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, table => [
+  index('email_verification_tokens_user_idx').on(table.userId),
+  uniqueIndex('email_verification_tokens_hash_key').on(table.tokenHash),
 ])
 
 /** Datos personales y fiscales. Separados de la cuenta para acotar el manejo de PII. */
@@ -78,16 +106,40 @@ export const donorProfiles = pgTable('donor_profiles', {
   city: varchar('city', { length: 120 }),
   state: varchar('state', { length: 120 }),
   zip: varchar('zip', { length: 10 }),
+  colony: varchar('colony', { length: 120 }),
   rfc: varchar('rfc', { length: 13 }),
   /** Nombre o razón social como en la constancia (CFDI 4.0). */
   fiscalName: varchar('fiscal_name', { length: 160 }),
   taxRegime: varchar('tax_regime', { length: 8 }),
   cfdiUse: varchar('cfdi_use', { length: 8 }),
-  /** rapid | cfdi | umbral PLD | aviso SAT. Sin expediente documental aún. */
+  /** rapid | cfdi | umbral PLD | aviso SAT. */
   complianceStatus: donorComplianceEnum('compliance_status').notNull().default('rapid'),
+  identityVerifiedAt: timestamp('identity_verified_at', { withTimezone: true }),
+  /** Iglesia a la que pertenece el donante (id externo del directorio). */
+  homeChurchExternalId: varchar('home_church_external_id', { length: 64 }),
+  homeChurchName: varchar('home_church_name', { length: 200 }),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 }, table => [
   uniqueIndex('donor_profiles_phone_digits_key').on(table.phoneDigits),
+  index('donor_profiles_home_church_idx').on(table.homeChurchExternalId),
+])
+
+/**
+ * Credencial INE (anverso/reverso). El binario vive en MinIO (bucket privado);
+ * aquí solo la clave del objeto. `bytes` queda nullable solo para filas legadas.
+ */
+export const identityDocuments = pgTable('identity_documents', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  side: identitySideEnum('side').notNull(),
+  mime: varchar('mime', { length: 32 }).notNull(),
+  /** Clave en el bucket privado MinIO (`identity/{userId}/…`). */
+  objectKey: varchar('object_key', { length: 512 }),
+  /** Legado: BYTEA previo a MinIO. No escribir en altas nuevas. */
+  bytes: bytea('bytes'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+}, table => [
+  uniqueIndex('identity_documents_user_side_key').on(table.userId, table.side),
 ])
 
 export const campaigns = pgTable('campaigns', {
@@ -98,8 +150,31 @@ export const campaigns = pgTable('campaigns', {
   type: varchar('type', { length: 80 }).notNull(),
   sortOrder: integer('sort_order').notNull().default(0),
   active: boolean('active').notNull().default(true),
+  /** Ventana opcional: nulo = sin inicio/fin (siempre que `active`). */
+  startsAt: timestamp('starts_at', { withTimezone: true }),
+  endsAt: timestamp('ends_at', { withTimezone: true }),
 }, table => [
   uniqueIndex('campaigns_slug_key').on(table.slug),
+  index('campaigns_active_window_idx').on(table.active, table.startsAt, table.endsAt),
+])
+
+/**
+ * Solicitudes que un admin envía al donante (INE, fiscal, verificar correo).
+ * No guarda el cuerpo del correo; solo tipo/estado y quién lo disparó.
+ */
+export const donorRequests = pgTable('donor_requests', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  type: donorRequestTypeEnum('type').notNull(),
+  status: donorRequestStatusEnum('status').notNull().default('open'),
+  createdByUserId: uuid('created_by_user_id').references(() => users.id, { onDelete: 'set null' }),
+  sentAt: timestamp('sent_at', { withTimezone: true }),
+  resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, table => [
+  index('donor_requests_user_status_idx').on(table.userId, table.status),
+  index('donor_requests_user_type_idx').on(table.userId, table.type, table.status),
 ])
 
 export const donations = pgTable('donations', {
@@ -108,6 +183,8 @@ export const donations = pgTable('donations', {
   userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
   /** Identificador de la iglesia en la API de WordPress; no hay tabla local de iglesias. */
   churchExternalId: varchar('church_external_id', { length: 64 }).notNull(),
+  /** Nombre al momento de donar; el directorio puede cambiar. */
+  churchName: varchar('church_name', { length: 200 }),
   campaignId: uuid('campaign_id').notNull().references(() => campaigns.id),
   amount: numeric('amount', { precision: 12, scale: 2 }).notNull(),
   currency: varchar('currency', { length: 3 }).notNull().default('MXN'),
@@ -147,7 +224,7 @@ export const paymentEvents = pgTable('payment_events', {
 
 /**
  * Preferencias operativas de cobro (sin secretos).
- * Una sola fila (id = 1); el admin la edita en /admin/personalizar/cobros.
+ * Una sola fila (id = 1); el admin la edita en /admin/operadores/cobros.
  */
 export const paymentSettings = pgTable('payment_settings', {
   id: integer('id').primaryKey().default(1),
@@ -208,3 +285,47 @@ export const siteSettings = pgTable('site_settings', {
   speiConcept: varchar('spei_concept', { length: 80 }).notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 })
+
+/**
+ * Donación recurrente. Cobro automático con pasarela queda pendiente de Preapproval;
+ * con SPEI se generan cargos pending en cada ciclo (disparo manual/admin o cron futuro).
+ */
+export const recurringDonations = pgTable('recurring_donations', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  churchExternalId: varchar('church_external_id', { length: 64 }).notNull(),
+  churchName: varchar('church_name', { length: 200 }),
+  campaignId: uuid('campaign_id').notNull().references(() => campaigns.id),
+  amount: numeric('amount', { precision: 12, scale: 2 }).notNull(),
+  currency: varchar('currency', { length: 3 }).notNull().default('MXN'),
+  frequency: recurringFrequencyEnum('frequency').notNull().default('monthly'),
+  method: donationMethodEnum('method').notNull().default('spei'),
+  status: recurringStatusEnum('status').notNull().default('pending_setup'),
+  nextChargeAt: timestamp('next_charge_at', { withTimezone: true }),
+  lastDonationId: uuid('last_donation_id').references(() => donations.id, { onDelete: 'set null' }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, table => [
+  index('recurring_donations_user_idx').on(table.userId),
+  index('recurring_donations_next_idx').on(table.status, table.nextChargeAt),
+])
+
+/**
+ * Solicitud de CFDI timbrado por donación. Sin PAC configurado queda en pending_stamp/failed.
+ * XML/PDF irán a MinIO (prefijo cfdi/) cuando exista proveedor.
+ */
+export const cfdiInvoices = pgTable('cfdi_invoices', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  donationId: uuid('donation_id').notNull().references(() => donations.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').references(() => users.id, { onDelete: 'set null' }),
+  status: cfdiInvoiceStatusEnum('status').notNull().default('pending_stamp'),
+  uuid: varchar('uuid', { length: 36 }),
+  errorCode: varchar('error_code', { length: 80 }),
+  objectKeyXml: varchar('object_key_xml', { length: 512 }),
+  objectKeyPdf: varchar('object_key_pdf', { length: 512 }),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+}, table => [
+  uniqueIndex('cfdi_invoices_donation_key').on(table.donationId),
+  index('cfdi_invoices_user_idx').on(table.userId),
+])

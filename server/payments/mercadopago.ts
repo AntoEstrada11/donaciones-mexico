@@ -123,7 +123,7 @@ export const mercadopagoAdapter: PaymentAdapter = {
 
   async verifyWebhook(rawBody: string, headers: WebhookHeaders, mode): Promise<boolean> {
     const creds = getMercadoPagoCredentials(mode)
-    if (!creds) return false
+    if (!creds?.webhookSecret) return false
 
     const xSignature = headers.get('x-signature') || headers.get('X-Signature')
     const xRequestId = headers.get('x-request-id') || headers.get('X-Request-Id') || ''

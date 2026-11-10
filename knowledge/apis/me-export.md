@@ -23,7 +23,8 @@ timestamp: 2026-08-19T00:00:00Z
 | `exportedAt` | Fecha ISO de generación |
 | `noticeVersion` | Versión del aviso vigente |
 | `account` | `id`, `email`, `name`, `role`, `createdAt` |
-| `profile` | `phone`, `wantsReceipt`, `street`, `city`, `state`, `zip`, `rfc` |
+| `profile` | `phone`, `wantsReceipt`, domicilio, `colony`, `rfc`, CFDI, `identityVerifiedAt` |
+| `identity` | `{ front, back, complete }` (sin bytes) |
 | `donations` | Historial completo del titular |
 | `consents` | Cada consentimiento con tipo, estado, versión del aviso y fecha |
 

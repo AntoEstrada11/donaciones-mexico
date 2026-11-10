@@ -44,11 +44,19 @@ export async function tryOperatorAuth(email: string, password: string): Promise<
       email: user.email,
       role: 'admin',
       profileComplete: user.profileComplete,
+      emailVerified: true,
     }
   }
   catch (error) {
     const status = errorStatus(error)
-    if (status === 401 || status === 403) return null
+    // Credenciales no de operador, o hub caído / red: seguir con login local.
+    if (status === 401 || status === 403 || status === 502 || status === 503) {
+      return null
+    }
+    if (status === undefined) {
+      throwIfDatabaseError(error)
+      return null
+    }
     throw error
   }
 }

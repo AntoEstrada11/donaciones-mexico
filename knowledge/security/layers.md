@@ -17,6 +17,7 @@ timestamp: 2026-08-18T00:00:00Z
 | Público | Coordenadas por defecto del directorio | `runtimeConfig.public.defaultLatitude` / `defaultLongitude` |
 | Iglesias (servidor) | Odoo IURD; URL pública, key solo servidor | `NUXT_CHURCHES_API_URL`, `NUXT_CHURCHES_API_KEY`, `NUXT_CHURCHES_API_ALLOWED_HOST` |
 | Pasarelas | Secretos solo en env; modo test/live vía `payment_settings` | `NUXT_MP_ACCESS_TOKEN_*`, `NUXT_MP_WEBHOOK_SECRET_*`, `NUXT_PAYPAL_CLIENT_ID_*`, `NUXT_PAYPAL_CLIENT_SECRET_*`, `NUXT_PAYPAL_WEBHOOK_ID_*`, `NUXT_PUBLIC_SITE_URL` |
+| Objetos privados (INE/CFDI) | MinIO en red interna; AES-256-GCM en app; proxy Nitro autenticado | `NUXT_MINIO_*`, `NUXT_MINIO_OBJECT_SECRET`, `MINIO_ROOT_*` |
 | Límite de tasa | En memoria por IP y ruta (`server/middleware/rateLimit.ts`) | — |
 
 Detalle de cupos, ventanas y limitaciones multi-instancia: [/security/rate-limiting.md](/security/rate-limiting.md). Decisiones de cobro: [/decisions/checkout-hospedado-pci.md](/decisions/checkout-hospedado-pci.md).

@@ -23,6 +23,7 @@ export default defineEventHandler(async (event) => {
   await recordConsent({ event, userId: user.id, type: 'privacy_notice', granted: false })
   await recordConsent({ event, userId: user.id, type: 'sensitive_data', granted: false })
   await recordConsent({ event, userId: user.id, type: 'marketing', granted: false })
+  await recordConsent({ event, userId: user.id, type: 'identity_document', granted: false })
 
   await deleteUserAccount(user.id)
 

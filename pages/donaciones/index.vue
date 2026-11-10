@@ -157,6 +157,11 @@ const umaWarning = computed(() => {
   return ''
 })
 
+const umaModal = ref(false)
+watch(umaWarning, (msg) => {
+  if (msg) umaModal.value = true
+})
+
 function selectPreset(value: number) {
   amount.value = value
   customAmount.value = String(value)
@@ -238,6 +243,9 @@ async function submitDonation() {
       profile.value = {
         ...(profile.value as DonorProfile),
         complianceStatus: created.uma.status,
+      }
+      if (created.uma.status === 'pld_pending' || created.uma.status === 'sat_report') {
+        umaModal.value = true
       }
     }
 
@@ -659,5 +667,14 @@ function startNewDonation() {
       </aside>
       </div>
     </template>
+    <ConfirmDialog
+      v-model:open="umaModal"
+      :title="t('uma.modalTitle')"
+      :description="umaWarning || t('uma.pldDonor')"
+      :confirm-label="t('uma.modalCta')"
+      :cancel-label="t('common.back')"
+      hide-cancel
+      @confirm="navigateTo('/perfil')"
+    />
   </div>
 </template>

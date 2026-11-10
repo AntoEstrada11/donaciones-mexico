@@ -1,6 +1,49 @@
 # Directory Update Log
 
+## 2026-11-10
+* **Update**: Hardening auth: SPEI/CLABE solo `admin`; `requireAdmin`/`requireStaff` revalidan rol en BD; `resetUrl`/`verifyUrl`/`actionUrl` no salen en producción (`mailDevReturnLink` gated). Ver [/decisions/admin-role.md](/decisions/admin-role.md).
+
+## 2026-11-04
+* **Update**: Ficha del donante en drawer (`AdminDonorDrawer`) desde alertas/donantes/SPEI/donaciones: enviar solicitudes sin perder la lista. Ficha completa sigue en `/admin/donantes/:id`.
+* **Update**: Cobros (alta/baja de métodos) movidos de Personalizar a `/admin/operadores/cobros`; Personalizar queda carrusel/pie. Ver [/apis/admin.md](/apis/admin.md).
+* **Update**: Layout `admin` con sidebar/topbar y dashboard de métricas (datos reales, marca navy/oro). Ver `layouts/admin.vue`.
+* **Update**: Panel: `/admin/users` solo donantes; `/admin/operadores` para admin/editor. Solo `@mx.universal.org` puede promoverse a admin/editor. Ver [/decisions/admin-role.md](/decisions/admin-role.md).
+* **Update**: Semilla local `npm run db:seed-demo` (~120 donantes `demo.donante.*@example.test` + ~1000 donaciones; `--force` recrea). Ver [/playbooks/seed-demo.md](/playbooks/seed-demo.md).
+
+## 2026-11-03
+* **Update**: Rol `editor` (solo Personalizar carrusel/pie), filtros/paginación en `/admin/users`, iglesia del donante (`home_church_*`). Ver [/decisions/admin-role.md](/decisions/admin-role.md).
+* **Update**: Solicitudes admin→donante desde la ficha (`donor_requests` + correo SMTP; banner en `/perfil`). Campañas temporales con vigencia (`starts_at`/`ends_at`, `/admin/campanas`). Aviso `LEGAL.noticeVersion` 2026-11-03. Ver [/apis/admin.md](/apis/admin.md).
+* **Update**: Dashboard admin de seguimiento: ficha 360° del donante (`GET /api/admin/donors/:id`, `/admin/donantes/:id`), cola SPEI (`/admin/spei`), alertas UMA/PLD (`GET /api/admin/compliance-alerts`, `/admin/alertas`), filtros de donaciones (método/fechas/monto). Ver [/apis/admin.md](/apis/admin.md).
+
+## 2026-10-23
+* **Update**: Correo transaccional (SMTP): verificación de cuenta, olvidé contraseña y reset admin; gate de donación sin correo confirmado. Donación recurrente (schema + UI SPEI; tarjeta/PayPal pending_setup). Solicitud CFDI + playbook PAC. Aviso `LEGAL.noticeVersion` 2026-10-23. Ver [/playbooks/transactional-email.md](/playbooks/transactional-email.md), [/playbooks/cfdi-timbrado.md](/playbooks/cfdi-timbrado.md).
+* **Update**: `devServer.host` y `vite.server.allowedHosts` para probar cámara del teléfono vía túnel HTTPS (ngrok). No despliega a Portainer.
+
+## 2026-10-09
+* **Update**: Captura de INE solo con cámara en vivo (`getUserMedia` + canvas); se eliminó la subida desde galería. Aviso `LEGAL.noticeVersion` 2026-10-09. Ver [/apis/me-identity.md](/apis/me-identity.md).
+
+## 2026-10-08
+* **Update**: MinIO en el stack para INE (y prefijo `cfdi/` futuro): bucket privado, cifrado AES-GCM en app, sin puerto público; Nitro proxy autenticado; purge ARCO; aviso `LEGAL.noticeVersion` 2026-10-08. Ver [/decisions/minio-private-objects.md](/decisions/minio-private-objects.md) y [/playbooks/minio-private-storage.md](/playbooks/minio-private-storage.md).
+
+## 2026-10-02
+* **Update**: PayPal de prueba se considera configurado con Client ID y Secret. El webhook ID sigue haciendo falta para avisos firmados. Se retiró el túnel ngrok del entorno de desarrollo. Ver [/playbooks/payments-setup.md](/playbooks/payments-setup.md).
+
+## 2026-09-28
+* **Update**: Mercado Pago en modo test cuenta como configurado con el access token. El secreto del webhook sigue haciendo falta para aceptar avisos firmados. Ver [/playbooks/payments-setup.md](/playbooks/payments-setup.md).
+* **Update**: Retirado el playbook de Vercel/Neon. El host es Portainer. Ver [/playbooks/portainer.md](/playbooks/portainer.md).
+* **Update**: El host público del stack es `https://dona-test.iurdsys.net` (Traefik). Ver [/playbooks/portainer.md](/playbooks/portainer.md).
+* **Update**: El stack de Portainer ya no publica el puerto 5432 (lo usa InsForge). En la PC sigue en `docker-compose.override.yml`. Ver [/playbooks/portainer.md](/playbooks/portainer.md).
+
+## 2026-09-25
+* **Update**: Front en Docker Hub propio `aneg/donaciones-mexico`; Portainer y Traefik siguen en el host de Allan. Ver [/playbooks/portainer.md](/playbooks/portainer.md).
+
+## 2026-09-21
+* **Update**: Compose compatible con Swarm: `web` usa `image: donaciones-web:latest` (hay que `docker build` en el host). Ver [/playbooks/portainer.md](/playbooks/portainer.md).
+* **Update**: Eliminado `docker-compose.portainer.yml` (duplicado). El webhook usa solo `docker-compose.yml`. Ver [/playbooks/portainer.md](/playbooks/portainer.md).
+* **Update**: `docker-compose.yml` incluye el front (`web`) para el webhook Gitea→Portainer; `npm run db:up` sigue levantando solo Postgres. Ver [/playbooks/portainer.md](/playbooks/portainer.md).
+
 ## 2026-09-14
+* **Update**: Modal UMA, INE anverso/reverso, C.P.→colonias (Zippopotam), RFC con fecha, constancia HTML en historial (no CFDI), nombre obligatorio al registrarse. Aviso `LEGAL.noticeVersion` 2026-09-14. Ver [/decisions/captura-progresiva.md](/decisions/captura-progresiva.md).
 * **Update**: Login consulta Auth Hub antes que donante local para que el personal no entre como donante. Cookie `donaciones-role` y rol del JWT para el menú. `assertNotOperator` también mira `users.role`. Ver [/decisions/donor-vs-operator-auth.md](/decisions/donor-vs-operator-auth.md).
 
 ## 2026-09-10
@@ -22,7 +65,7 @@
 ## 2026-09-04
 * **Update**: Una sola pantalla Iniciar sesión: donante o personal del hub; el panel no exige cambiar la URL. Ver [/decisions/donor-vs-operator-auth.md](/decisions/donor-vs-operator-auth.md).
 * **Update**: Presets de monto rellenan el campo y quedan marcados. Superadmin del Auth Hub entra a `/admin` aunque no tenga membresía `donaciones`. Ver [/playbooks/auth-hub.md](/playbooks/auth-hub.md).
-* **Update**: Vercel usa Neon (`donaciones-mexico-db`) para registro y donaciones; Docker sigue solo en local. Ver [/playbooks/vercel.md](/playbooks/vercel.md).
+* **Update**: Histórico. El despliegue en Vercel/Neon se retiró. El sitio se publica en Portainer. Ver [/playbooks/portainer.md](/playbooks/portainer.md).
 * **Update**: `npm run db:setup` arranca Postgres 17 en Docker, migra y siembra. Ver [/playbooks/run-local.md](/playbooks/run-local.md).
 * **Update**: Donantes: `/registro` y `/login` locales. Operadores: `/admin/login` vía Auth Hub. Ver [/decisions/donor-vs-operator-auth.md](/decisions/donor-vs-operator-auth.md).
 

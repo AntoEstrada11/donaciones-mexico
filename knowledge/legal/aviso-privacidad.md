@@ -26,8 +26,8 @@ responsable debe leer de ahí, no duplicar valores a mano.
 | `domicilio` | Requisito Art. 21 | **Pendiente jurídico** |
 | `correoArco` | Solicitudes ARCO y contacto privacidad | **Confirmar buzón dedicado** |
 | `telefono` | Contacto | Confirmado |
-| `noticeVersion` | Estampado en cada fila de `consents` | `2026-09-09` |
-| `noticeDate` | Fecha legible en el aviso | `9 de septiembre de 2026` |
+| `noticeVersion` | Estampado en cada fila de `consents` | `2026-10-23` |
+| `noticeDate` | Fecha legible en el aviso | `23 de octubre de 2026` |
 | `autoridad` | Procedimiento de protección de derechos | Confirmado |
 
 # Páginas

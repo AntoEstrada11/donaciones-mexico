@@ -106,16 +106,19 @@ const steps = computed(() => [
     <!-- Recurring + SPEI -->
     <section class="mx-auto max-w-6xl px-4 py-14 md:px-6">
       <div class="grid gap-6 md:grid-cols-2">
-        <article class="card border-dashed">
+        <article class="card border-brand/20 bg-white">
           <h3 class="mb-2 font-semibold text-ink">
             {{ t('home.recurringTitle') }}
           </h3>
           <p class="mb-4 text-sm text-gray-600">
             {{ t('home.recurringDesc') }}
           </p>
-          <span class="inline-block rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-500">
-            {{ t('home.recurringSoon') }}
-          </span>
+          <NuxtLink to="/iglesias" class="btn-primary">
+            {{ t('home.recurringCta') }}
+          </NuxtLink>
+          <p class="mt-2 text-xs text-gray-500">
+            {{ t('home.recurringNote') }}
+          </p>
         </article>
 
         <article class="card bg-brand-light border-brand/20">

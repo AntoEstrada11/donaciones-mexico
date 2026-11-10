@@ -18,7 +18,7 @@ La carga de probar que el titular consintió es del responsable. Esta tabla es e
 | `id` | uuid PK | |
 | `user_id` | uuid FK → `users.id`, `ON DELETE SET NULL` | Nulo si la cuenta se dio de baja o si donó sin sesión |
 | `donation_id` | uuid FK → `donations.id`, `ON DELETE SET NULL` | Ata el consentimiento a la donación de un usuario anónimo |
-| `type` | enum `consent_type` | `privacy_notice`, `sensitive_data`, `marketing` |
+| `type` | enum `consent_type` | `privacy_notice`, `sensitive_data`, `marketing`, `identity_document` |
 | `granted` | boolean | `false` es una revocación, no un borrado |
 | `notice_version` | varchar(32) | Copia de `LEGAL.noticeVersion` al momento de aceptar |
 | `ip_hash` | varchar(64) | HMAC-SHA256 de la IP con `NUXT_AUTH_SECRET`, truncado |

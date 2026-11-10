@@ -2,11 +2,10 @@
 const { t } = useI18n()
 const route = useRoute()
 
-const links = computed(() => [
+const links = [
   { to: '/admin/personalizar/carrusel', label: t('admin.nav.carousel') },
   { to: '/admin/personalizar/pie', label: t('admin.nav.footer') },
-  { to: '/admin/personalizar/cobros', label: t('admin.nav.payments') },
-])
+]
 
 function isActive(to: string) {
   return route.path === to || route.path.startsWith(`${to}/`)

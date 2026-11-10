@@ -1,5 +1,5 @@
 <script setup lang="ts">
-definePageMeta({ middleware: 'admin' })
+definePageMeta({ layout: 'admin', middleware: 'admin' })
 
 await navigateTo('/admin/personalizar/carrusel', { replace: true })
 </script>
