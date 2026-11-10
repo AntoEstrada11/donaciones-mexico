@@ -1,3 +1,5 @@
+# Mismo patrón que Luau en Portainer: imagen en Docker Hub + Traefik en AllanNet.
+# Build y push en la PC (cuenta propia): docker build -t aneg/donaciones-mexico:latest . && docker push aneg/donaciones-mexico:latest
 services:
   db:
     image: postgres:17-alpine
@@ -7,9 +9,6 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-donaciones}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-donaciones}
       POSTGRES_DB: ${POSTGRES_DB:-donaciones}
-    # Solo el host local; Vercel no puede usar este contenedor.
-    ports:
-      - '127.0.0.1:5432:5432'
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:
@@ -18,6 +17,81 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+    networks:
+      - AllanNet
+
+  web:
+    image: aneg/donaciones-mexico:latest
+    container_name: donaciones-web
+    restart: unless-stopped
+    depends_on:
+      - db
+      - minio
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-donaciones}:${POSTGRES_PASSWORD:-donaciones}@db:5432/${POSTGRES_DB:-donaciones}
+      NUXT_AUTH_SECRET: ${NUXT_AUTH_SECRET:-cambia-este-secreto-en-portainer}
+      NUXT_PUBLIC_SITE_URL: ${NUXT_PUBLIC_SITE_URL:-https://dona-test.iurdsys.net}
+      NUXT_PUBLIC_AUTH_HUB_URL: ${NUXT_PUBLIC_AUTH_HUB_URL:-http://159.54.159.34:8000}
+      NUXT_PUBLIC_APP_CODE: ${NUXT_PUBLIC_APP_CODE:-donaciones}
+      NUXT_CHURCHES_API_URL: ${NUXT_CHURCHES_API_URL:-https://miembros.iurdsys.net/api/churches}
+      NUXT_CHURCHES_API_KEY: ${NUXT_CHURCHES_API_KEY:-}
+      NUXT_CHURCHES_API_ALLOWED_HOST: ${NUXT_CHURCHES_API_ALLOWED_HOST:-miembros.iurdsys.net}
+      NUXT_PAYMENT_WEBHOOK_BASE_URL: ${NUXT_PAYMENT_WEBHOOK_BASE_URL:-}
+      NUXT_MP_ACCESS_TOKEN_TEST: ${NUXT_MP_ACCESS_TOKEN_TEST:-}
+      NUXT_MP_ACCESS_TOKEN_LIVE: ${NUXT_MP_ACCESS_TOKEN_LIVE:-}
+      NUXT_MP_WEBHOOK_SECRET_TEST: ${NUXT_MP_WEBHOOK_SECRET_TEST:-}
+      NUXT_MP_WEBHOOK_SECRET_LIVE: ${NUXT_MP_WEBHOOK_SECRET_LIVE:-}
+      NUXT_PAYPAL_CLIENT_ID_TEST: ${NUXT_PAYPAL_CLIENT_ID_TEST:-}
+      NUXT_PAYPAL_CLIENT_ID_LIVE: ${NUXT_PAYPAL_CLIENT_ID_LIVE:-}
+      NUXT_PAYPAL_CLIENT_SECRET_TEST: ${NUXT_PAYPAL_CLIENT_SECRET_TEST:-}
+      NUXT_PAYPAL_CLIENT_SECRET_LIVE: ${NUXT_PAYPAL_CLIENT_SECRET_LIVE:-}
+      NUXT_PAYPAL_WEBHOOK_ID_TEST: ${NUXT_PAYPAL_WEBHOOK_ID_TEST:-}
+      NUXT_PAYPAL_WEBHOOK_ID_LIVE: ${NUXT_PAYPAL_WEBHOOK_ID_LIVE:-}
+      # MinIO solo en red interna; no publicar 9000/9001 en Traefik.
+      # Access/secret deben coincidir con MINIO_ROOT_USER / MINIO_ROOT_PASSWORD.
+      NUXT_MINIO_ENDPOINT: ${NUXT_MINIO_ENDPOINT:-http://minio:9000}
+      NUXT_MINIO_ACCESS_KEY: ${NUXT_MINIO_ACCESS_KEY:-minioadmin}
+      NUXT_MINIO_SECRET_KEY: ${NUXT_MINIO_SECRET_KEY:-cambia-minio-en-portainer}
+      NUXT_MINIO_BUCKET_PRIVATE: ${NUXT_MINIO_BUCKET_PRIVATE:-donaciones-private}
+      NUXT_MINIO_REGION: ${NUXT_MINIO_REGION:-us-east-1}
+      NUXT_MINIO_OBJECT_SECRET: ${NUXT_MINIO_OBJECT_SECRET:-}
+    volumes:
+      - uploads:/app/public/uploads
+      - uploads:/app/.output/public/uploads
+    networks:
+      - AllanNet
+    deploy:
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=AllanNet"
+        - "traefik.http.routers.donaciones.rule=Host(`dona-test.iurdsys.net`)"
+        - "traefik.http.routers.donaciones.entrypoints=websecure"
+        - "traefik.http.routers.donaciones.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.donaciones.loadbalancer.server.port=3000"
+
+  # Object storage privado (INE / futuros CFDI). Sin puertos publicados en Portainer.
+  # Imagen cleanstart: minio/minio ya no está en Docker Hub público.
+  minio:
+    image: cleanstart/minio:latest
+    container_name: donaciones-minio
+    restart: unless-stopped
+    user: '0'
+    command: ['server', '/data', '--console-address', ':9001']
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-cambia-minio-en-portainer}
+      # Consola web apagada en servidor; en local el override puede reactivarla.
+      MINIO_BROWSER: 'off'
+    volumes:
+      - minio-data:/data
+    networks:
+      - AllanNet
 
 volumes:
   db-data:
+  uploads:
+  minio-data:
+
+networks:
+  AllanNet:
+    external: true

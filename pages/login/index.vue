@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const { t } = useI18n()
-const { login, isLoggedIn, isAdmin } = useAuth()
+const { login, isLoggedIn, isStaff, isAdmin } = useAuth()
 const route = useRoute()
 
 function safeInternalPath(value: unknown) {
@@ -9,11 +9,11 @@ function safeInternalPath(value: unknown) {
   return value
 }
 
-function destination(role: 'admin' | 'donor') {
+function destination(role: 'admin' | 'editor' | 'donor') {
   const requested = safeInternalPath(route.query.redirect)
-  if (role === 'admin') {
+  if (role === 'admin' || role === 'editor') {
     if (requested && (requested === '/admin' || requested.startsWith('/admin/'))) return requested
-    return '/admin'
+    return role === 'editor' ? '/admin/personalizar/carrusel' : '/admin'
   }
   if (requested && !requested.startsWith('/admin')) return requested
   return '/perfil'
@@ -26,7 +26,7 @@ const error = ref('')
 
 onMounted(() => {
   if (isLoggedIn.value) {
-    navigateTo(destination(isAdmin.value ? 'admin' : 'donor'))
+    navigateTo(destination(isAdmin.value ? 'admin' : (isStaff.value ? 'editor' : 'donor')))
   }
 })
 
@@ -54,7 +54,9 @@ async function onSubmit() {
 
   try {
     const session = await login(email.value.trim(), password.value)
-    await navigateTo(destination(session.role === 'admin' ? 'admin' : 'donor'))
+    await navigateTo(destination(
+      session.role === 'admin' || session.role === 'editor' ? session.role : 'donor',
+    ))
   }
   catch (e: unknown) {
     const msg = (e as { data?: { statusMessage?: string } })?.data?.statusMessage
@@ -117,6 +119,12 @@ async function onSubmit() {
 
         <p v-if="error" class="text-sm text-red-600">
           {{ error }}
+        </p>
+
+        <p class="text-right text-sm">
+          <NuxtLink to="/olvidar-contrasena" class="font-medium text-brand hover:underline">
+            {{ t('login.forgotPassword') }}
+          </NuxtLink>
         </p>
 
         <button

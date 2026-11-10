@@ -1,7 +1,7 @@
 import type { PaymentMode, PaymentProvider } from '~/types'
 
 export default defineEventHandler(async (event) => {
-  requireAdmin(event)
+  await requireAdmin(event)
   const body = await readBody(event)
 
   const input: {

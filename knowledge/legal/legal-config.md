@@ -47,6 +47,7 @@ Textos de conservación referenciados en el aviso (sección 6) y en
 | `cuentaActiva` | Mientras la cuenta permanezca activa |
 | `trasCancelacion` | Baja de cuenta: perfil eliminado; donaciones anonimizadas |
 | `datosFiscales` | 5 años desde CFDI (Art. 30 CFF), cuando exista timbrado |
+| `identificacion` | Fotos INE mientras la cuenta esté activa |
 | `consentimientos` | 5 años como evidencia del consentimiento otorgado |
 
 # Cuándo actualizar

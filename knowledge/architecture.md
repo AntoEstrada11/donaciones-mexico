@@ -13,7 +13,7 @@ timestamp: 2026-09-07T00:00:00Z
 3. Perfil (`/api/me`): lee y escribe `users` + `donor_profiles` en PostgreSQL.
 4. Iglesias: Nitro (`GET /api/churches`) consulta Odoo IURD (`miembros.iurdsys.net`); si falla, sirve `server/data/churches.json`. El cliente usa `useChurches`. Las donaciones guardan el identificador externo.
 5. Campañas y donaciones: Nitro consulta PostgreSQL. `POST /api/donations` crea `pending`. Cobro tarjeta/PayPal: `POST /api/payments/checkout` → adaptador → redirect; webhooks firmados y sync al retorno (`/donaciones/gracias`). SPEI CLABE sigue manual vía `site_settings`. Ver [/decisions/pasarela-provider-agnostica.md](/decisions/pasarela-provider-agnostica.md).
-6. Pie y SPEI directo: `GET /api/site-settings`. Admin: `/admin/personalizar/pie` y **Cobros** (`/admin/personalizar/cobros`).
+6. Pie y SPEI directo: `GET /api/site-settings`. Admin: `/admin/personalizar/pie` y **Cobros** (`/admin/operadores/cobros`).
 7. Validación de formularios: `utils/fieldLimits.ts` en cliente y servidor (ver [/data/field-limits.md](/data/field-limits.md)).
 8. Privacidad: registro y donación exigen consentimiento expreso, que Nitro valida y guarda en `consents`. El titular ejerce sus derechos ARCO desde `/perfil` (ver [/data/personal-data-inventory.md](/data/personal-data-inventory.md)).
 
@@ -48,11 +48,12 @@ timestamp: 2026-09-07T00:00:00Z
 | `components/PrivacyNoticeShort.vue` | Aviso simplificado junto a cada formulario |
 | `components/LegalConsent.vue` | Casilla de consentimiento expreso, nunca premarcada |
 | `pages/admin/` | Panel operativo (stats, personalizar, donaciones, usuarios) |
-| `docker-compose.yml` | Servicio PostgreSQL con volumen persistente |
+| `server/utils/objectStorage.ts` | Cliente MinIO/S3: put/get/purge de objetos privados |
+| `docker-compose.yml` | Postgres + MinIO + Nuxt (Portainer). En local `db:up` levanta `db` y `minio`. |
 
 # Frontera de datos
 
-La única fuente de verdad de donantes y donaciones es PostgreSQL. Las iglesias son datos externos de solo lectura. `server/data/campaigns.json` es semilla de arranque, no fuente de verdad en runtime. Las pasarelas (MP/PayPal) son encargados de cobro: reciben monto e identificadores de orden; el sitio no almacena datos de tarjeta (checkout alojado).
+La única fuente de verdad de donantes y donaciones es PostgreSQL. Los binarios sensibles (INE, futuros CFDI) viven en MinIO (bucket privado, red interna). Las iglesias son datos externos de solo lectura. `server/data/campaigns.json` es semilla de arranque, no fuente de verdad en runtime. Las pasarelas (MP/PayPal) son encargados de cobro: reciben monto e identificadores de orden; el sitio no almacena datos de tarjeta (checkout alojado).
 
 # Decisiones relacionadas
 

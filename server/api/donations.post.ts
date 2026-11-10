@@ -6,6 +6,7 @@ export default defineEventHandler(async (event): Promise<DonationCreateResponse>
   await assertNotOperator(session)
   if (session) {
     await assertDonorAccountActive(session.sub)
+    await assertEmailVerified(session.sub)
   }
   const body = await readBody(event)
 
@@ -24,9 +25,12 @@ export default defineEventHandler(async (event): Promise<DonationCreateResponse>
     })
   }
 
-  const campaign = await findCampaignById(String(body.campaignId))
+  const campaign = await findAvailableCampaign(String(body.campaignId))
   if (!campaign) {
-    throw createError({ statusCode: 400, statusMessage: 'La campaña no existe' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Ese tipo de donación no está disponible',
+    })
   }
 
   if (body?.consent !== true) {
@@ -76,9 +80,11 @@ export default defineEventHandler(async (event): Promise<DonationCreateResponse>
 
   const amountRounded = Math.round(amount * 100) / 100
 
+  const names = await churchNamesWithoutRemoteFetch()
   const donation = await createDonation({
     userId: session?.sub ?? null,
     churchId: String(body.churchId).slice(0, 64),
+    churchName: names.get(String(body.churchId)) ?? null,
     campaignId: campaign.id,
     amount: amountRounded,
     method,

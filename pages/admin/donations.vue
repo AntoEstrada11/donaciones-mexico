@@ -1,28 +1,55 @@
 <script setup lang="ts">
-import type { AdminDonationRow, Donation } from '~/types'
+import type { AdminDonationRow, Donation, DonationMethod } from '~/types'
 
-definePageMeta({ middleware: 'admin' })
+definePageMeta({ layout: 'admin', middleware: 'admin' })
 
 const { t } = useI18n()
 const { adminHeaders } = useAuth()
+const route = useRoute()
+const { openDonor } = useAdminDonorDrawer()
 
 const donations = ref<AdminDonationRow[]>([])
 const loading = ref(true)
 const error = ref('')
 
 const filterStatus = ref<'all' | Donation['status']>('all')
+const filterMethod = ref<'all' | DonationMethod>('all')
 const filterChurch = ref('all')
 const filterType = ref('all')
-const groupBy = ref<'church' | 'type' | 'status'>('church')
+const dateFrom = ref('')
+const dateTo = ref('')
+const minAmount = ref('')
+const maxAmount = ref('')
+const groupBy = ref<'church' | 'type' | 'status' | 'method'>('church')
 
 const statuses: Donation['status'][] = ['pending', 'paid', 'failed', 'cancelled', 'refunded']
+const methods: DonationMethod[] = ['spei', 'card', 'paypal']
+
+function applyRouteDefaults() {
+  const q = route.query
+  if (typeof q.status === 'string' && statuses.includes(q.status as Donation['status'])) {
+    filterStatus.value = q.status as Donation['status']
+  }
+  if (typeof q.method === 'string' && methods.includes(q.method as DonationMethod)) {
+    filterMethod.value = q.method as DonationMethod
+  }
+}
 
 async function load() {
   loading.value = true
   error.value = ''
   try {
+    const query: Record<string, string> = { limit: '500' }
+    if (filterStatus.value !== 'all') query.status = filterStatus.value
+    if (filterMethod.value !== 'all') query.method = filterMethod.value
+    if (dateFrom.value) query.dateFrom = dateFrom.value
+    if (dateTo.value) query.dateTo = dateTo.value
+    if (minAmount.value) query.minAmount = minAmount.value
+    if (maxAmount.value) query.maxAmount = maxAmount.value
+
     donations.value = await $fetch<AdminDonationRow[]>('/api/admin/donations', {
       headers: adminHeaders(),
+      query,
     })
   }
   catch (e: unknown) {
@@ -34,7 +61,10 @@ async function load() {
   }
 }
 
-onMounted(load)
+onMounted(() => {
+  applyRouteDefaults()
+  load()
+})
 
 const churchOptions = computed(() => {
   const map = new Map<string, string>()
@@ -54,7 +84,6 @@ const typeOptions = computed(() => {
 
 const filtered = computed(() => {
   return donations.value.filter((row) => {
-    if (filterStatus.value !== 'all' && row.status !== filterStatus.value) return false
     if (filterChurch.value !== 'all' && row.churchId !== filterChurch.value) return false
     const typeKey = row.campaignType || row.campaignName || row.campaignId
     if (filterType.value !== 'all' && typeKey !== filterType.value) return false
@@ -99,6 +128,10 @@ const groups = computed<DonationGroup[]>(() => {
       key = row.campaignType || row.campaignId
       label = row.campaignName || row.campaignType || row.campaignId
     }
+    else if (groupBy.value === 'method') {
+      key = row.method
+      label = methodLabel(row.method)
+    }
     const current = map.get(key) || { key, label, items: [], amount: 0 }
     current.items.push(row)
     current.amount += row.amount
@@ -141,6 +174,12 @@ function formatDate(iso: string) {
 function formatMoney(amount: number) {
   return `$${amount.toLocaleString('es-MX')} MXN`
 }
+
+function methodLabel(method: DonationMethod) {
+  if (method === 'spei') return t('admin.donations.methodSpei')
+  if (method === 'card') return t('admin.donations.methodCard')
+  return t('admin.donations.methodPaypal')
+}
 </script>
 
 <template>
@@ -153,9 +192,6 @@ function formatMoney(amount: number) {
         {{ t('admin.donations.subtitle') }}
       </p>
     </header>
-
-    <AdminNav />
-
     <p v-if="error" class="mb-4 text-sm text-red-600">
       {{ error }}
     </p>
@@ -182,13 +218,22 @@ function formatMoney(amount: number) {
         </article>
       </div>
 
-      <div class="mb-6 flex flex-wrap gap-3">
+      <div class="mb-6 flex flex-wrap items-end gap-3">
         <label class="text-sm text-ink">
           {{ t('admin.donations.status') }}
           <select v-model="filterStatus" class="mt-1 block rounded border border-gray-300 px-2 py-1">
             <option value="all">{{ t('admin.donations.all') }}</option>
             <option v-for="status in statuses" :key="status" :value="status">
               {{ t(`donation.status${status.charAt(0).toUpperCase()}${status.slice(1)}`) }}
+            </option>
+          </select>
+        </label>
+        <label class="text-sm text-ink">
+          {{ t('admin.donations.method') }}
+          <select v-model="filterMethod" class="mt-1 block rounded border border-gray-300 px-2 py-1">
+            <option value="all">{{ t('admin.donations.all') }}</option>
+            <option v-for="method in methods" :key="method" :value="method">
+              {{ methodLabel(method) }}
             </option>
           </select>
         </label>
@@ -211,13 +256,33 @@ function formatMoney(amount: number) {
           </select>
         </label>
         <label class="text-sm text-ink">
+          {{ t('admin.donations.dateFrom') }}
+          <input v-model="dateFrom" type="date" class="mt-1 block rounded border border-gray-300 px-2 py-1">
+        </label>
+        <label class="text-sm text-ink">
+          {{ t('admin.donations.dateTo') }}
+          <input v-model="dateTo" type="date" class="mt-1 block rounded border border-gray-300 px-2 py-1">
+        </label>
+        <label class="text-sm text-ink">
+          {{ t('admin.donations.minAmount') }}
+          <input v-model="minAmount" type="number" min="0" step="1" class="mt-1 block w-28 rounded border border-gray-300 px-2 py-1">
+        </label>
+        <label class="text-sm text-ink">
+          {{ t('admin.donations.maxAmount') }}
+          <input v-model="maxAmount" type="number" min="0" step="1" class="mt-1 block w-28 rounded border border-gray-300 px-2 py-1">
+        </label>
+        <label class="text-sm text-ink">
           {{ t('admin.donations.groupBy') }}
           <select v-model="groupBy" class="mt-1 block rounded border border-gray-300 px-2 py-1">
             <option value="church">{{ t('admin.donations.church') }}</option>
             <option value="type">{{ t('admin.donations.type') }}</option>
             <option value="status">{{ t('admin.donations.status') }}</option>
+            <option value="method">{{ t('admin.donations.method') }}</option>
           </select>
         </label>
+        <button type="button" class="btn-secondary px-3 py-1.5 text-sm" @click="load">
+          {{ t('admin.donations.applyFilters') }}
+        </button>
       </div>
 
       <p v-if="filtered.length === 0" class="text-gray-500">
@@ -238,6 +303,7 @@ function formatMoney(amount: number) {
                 <th class="px-4 py-3">{{ t('admin.donations.donor') }}</th>
                 <th class="px-4 py-3">{{ t('admin.donations.church') }}</th>
                 <th class="px-4 py-3">{{ t('admin.donations.campaign') }}</th>
+                <th class="px-4 py-3">{{ t('admin.donations.method') }}</th>
                 <th class="px-4 py-3">{{ t('admin.donations.amount') }}</th>
                 <th class="px-4 py-3">{{ t('admin.donations.status') }}</th>
               </tr>
@@ -252,8 +318,16 @@ function formatMoney(amount: number) {
                   {{ formatDate(donation.createdAt) }}
                 </td>
                 <td class="px-4 py-3">
-                  <p class="font-medium text-ink">
+                  <button
+                    v-if="donation.userId"
+                    type="button"
+                    class="font-medium text-brand hover:underline"
+                    @click="openDonor(donation.userId)"
+                  >
                     {{ donation.userName || t('admin.donations.anonymous') }}
+                  </button>
+                  <p v-else class="font-medium text-ink">
+                    {{ t('admin.donations.anonymous') }}
                   </p>
                   <p class="text-xs text-gray-500">
                     {{ donation.userEmail || '—' }}
@@ -264,6 +338,9 @@ function formatMoney(amount: number) {
                 </td>
                 <td class="px-4 py-3 text-ink">
                   {{ donation.campaignName || donation.campaignId }}
+                </td>
+                <td class="px-4 py-3 text-ink">
+                  {{ methodLabel(donation.method) }}
                 </td>
                 <td class="whitespace-nowrap px-4 py-3 font-semibold text-brand">
                   {{ formatMoney(donation.amount) }}

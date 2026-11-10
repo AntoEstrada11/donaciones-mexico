@@ -21,7 +21,7 @@ timestamp: 2026-08-07T00:00:00Z
 |-------|------|--------|
 | `email` | string | requerido; máx. 255; formato válido; minúsculas |
 | `password` | string | requerido; 6–128 caracteres |
-| `name` | string | opcional; máx. 160; default = parte local del email |
+| `name` | string | **requerido**; letras; máx. 160 |
 | `consent` | boolean | **requerido y en `true`**; consentimiento expreso para datos sensibles |
 | `marketing` | boolean | opcional; consentimiento para comunicaciones |
 

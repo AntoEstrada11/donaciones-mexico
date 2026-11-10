@@ -22,7 +22,8 @@ aviso de privacidad. Los plazos declarados aquí deben coincidir con los de
 | Datos fiscales sin CFDI emitido | Se borran al desactivar el recibo deducible | Minimización |
 | Donaciones | Permanente, desvinculadas del titular tras la baja | Obligación contable |
 | Consentimientos | 5 años | Evidencia de que se otorgó |
-| Coordenadas | No se persisten | Solo memoria y caché de sesión del navegador |
+| Imágenes de identificación | Mientras la cuenta esté activa; se borran al cancelar | Expediente PLD / identificación |
+| Solicitudes de cumplimiento (`donor_requests`) | Mientras la cuenta esté activa (cascade) | Seguimiento operativo INE/fiscal/correo |
 
 # Qué pasa al dar de baja una cuenta
 
@@ -30,7 +31,7 @@ aviso de privacidad. Los plazos declarados aquí deben coincidir con los de
 
 | Tabla | Efecto |
 |-------|--------|
-| `donor_profiles` | `ON DELETE CASCADE`: se elimina el perfil con teléfono, domicilio y RFC |
+| `identity_documents` | `ON DELETE CASCADE` en BD; además `purgePrivateObjectsForUser` borra `identity/` y `cfdi/` en MinIO |
 | `donations` | `ON DELETE SET NULL`: la donación queda sin titular |
 | `consents` | `ON DELETE SET NULL`: la evidencia sobrevive anonimizada |
 

@@ -150,7 +150,7 @@ export const paypalAdapter: PaymentAdapter = {
 
   async verifyWebhook(rawBody: string, headers: WebhookHeaders, mode): Promise<boolean> {
     const creds = getPayPalCredentials(mode)
-    if (!creds) return false
+    if (!creds?.webhookId) return false
 
     const transmissionId = headers.get('paypal-transmission-id') || headers.get('Paypal-Transmission-Id')
     const transmissionTime = headers.get('paypal-transmission-time') || headers.get('Paypal-Transmission-Time')

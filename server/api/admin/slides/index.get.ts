@@ -1,4 +1,4 @@
 export default defineEventHandler(async (event) => {
-  requireAdmin(event)
+  await requireContentEditor(event)
   return await listAllHeroSlides()
 })

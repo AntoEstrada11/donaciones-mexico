@@ -81,19 +81,6 @@ export async function updatePaymentSettings(input: PaymentSettingsInput): Promis
   const paypalEnabled = input.paypalEnabled ?? current.paypalEnabled
   const speiManualEnabled = input.speiManualEnabled ?? current.speiManualEnabled
 
-  if (cardEnabled && !hasMercadoPagoCredentials(mode)) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'No puede habilitar tarjeta: faltan credenciales de MercadoPago en el entorno',
-    })
-  }
-  if (paypalEnabled && !hasPayPalCredentials(mode)) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'No puede habilitar PayPal: faltan credenciales en el entorno',
-    })
-  }
-
   const db = useDatabase()
   const [row] = await db
     .update(paymentSettings)

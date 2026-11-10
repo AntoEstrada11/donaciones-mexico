@@ -1,3 +1,5 @@
+import { isWellFormedRfc } from './rfc'
+
 /**
  * Límites y sanitización de campos de formulario.
  * Alineados al esquema PostgreSQL y a formatos habituales en México.
@@ -13,6 +15,7 @@ export const FIELD_LIMITS = {
   state: { max: 120 },
   zip: { length: 5 },
   rfc: { min: 12, max: 13 },
+  colony: { max: 120 },
   fiscalName: { min: 1, max: 160 },
   taxRegime: { max: 8 },
   cfdiUse: { max: 8 },
@@ -21,6 +24,10 @@ export const FIELD_LIMITS = {
   heroImage: {
     maxBytes: 3 * 1024 * 1024,
     maxAlt: 160,
+    mimeTypes: ['image/jpeg', 'image/png', 'image/webp'] as const,
+  },
+  identityImage: {
+    maxBytes: 3 * 1024 * 1024,
     mimeTypes: ['image/jpeg', 'image/png', 'image/webp'] as const,
   },
   site: {
@@ -35,6 +42,7 @@ export const FIELD_LIMITS = {
 
 /** RFC persona moral (12) o física (13). */
 const RFC_PATTERN = /^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$/
+const NAME_PATTERN = /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ][A-Za-zÁÉÍÓÚÜÑáéíóúüñ.'\-\s]*$/
 
 export function onlyDigits(value: string) {
   return value.replace(/\D/g, '')
@@ -57,7 +65,8 @@ export function sanitizeNameInput(value: string) {
 
 export function isValidName(value: string) {
   const name = value.trim()
-  return name.length >= FIELD_LIMITS.name.min && name.length <= FIELD_LIMITS.name.max
+  if (name.length < FIELD_LIMITS.name.min || name.length > FIELD_LIMITS.name.max) return false
+  return NAME_PATTERN.test(name)
 }
 
 export function sanitizePasswordInput(value: string) {
@@ -109,11 +118,16 @@ export function sanitizeRfcInput(value: string) {
     .slice(0, FIELD_LIMITS.rfc.max)
 }
 
+export function sanitizeColonyInput(value: string) {
+  return value.replace(/\s+/g, ' ').slice(0, FIELD_LIMITS.colony.max)
+}
+
 export function isValidRfc(value: string) {
   const rfc = value.trim().toUpperCase()
   if (!rfc) return true
   if (rfc.length < FIELD_LIMITS.rfc.min || rfc.length > FIELD_LIMITS.rfc.max) return false
-  return RFC_PATTERN.test(rfc)
+  if (!RFC_PATTERN.test(rfc)) return false
+  return isWellFormedRfc(rfc)
 }
 
 export function sanitizeSearchInput(value: string) {

@@ -3,6 +3,7 @@ import { and, eq, gt, isNull } from 'drizzle-orm'
 import { passwordResetTokens, users } from '../database/schema'
 import { hashPassword } from './auth'
 import { isValidPassword } from '../../utils/fieldLimits'
+import { sendMail, siteOriginFallback } from './mail'
 
 const RESET_TTL_MS = 24 * 60 * 60 * 1000
 
@@ -18,23 +19,10 @@ export function generateResetToken(): string {
   return randomBytes(32).toString('base64url')
 }
 
-export async function createPasswordResetLink(
+async function persistResetToken(
   targetUserId: string,
-  actorUserId: string,
-  origin: string,
-): Promise<{ resetUrl: string, expiresAt: string }> {
-  const user = await findUserById(targetUserId)
-  if (!user) {
-    throw createError({ statusCode: 404, statusMessage: 'Usuario no encontrado' })
-  }
-
-  if (user.role === 'admin') {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'No se puede enviar restablecimiento a cuentas de administrador',
-    })
-  }
-
+  actorUserId: string | null,
+): Promise<{ token: string, expiresAt: Date }> {
   const token = generateResetToken()
   const tokenHash = hashResetToken(token)
   const expiresAt = new Date(Date.now() + RESET_TTL_MS)
@@ -58,11 +46,54 @@ export async function createPasswordResetLink(
     })
   })
 
-  const base = origin.replace(/\/$/, '')
-  return {
-    resetUrl: `${base}/restablecer-contrasena?token=${encodeURIComponent(token)}`,
-    expiresAt: expiresAt.toISOString(),
+  return { token, expiresAt }
+}
+
+export async function createPasswordResetLink(
+  targetUserId: string,
+  actorUserId: string | null,
+  origin: string,
+): Promise<{ resetUrl: string, expiresAt: string, emailed: boolean }> {
+  const user = await findUserById(targetUserId)
+  if (!user) {
+    throw createError({ statusCode: 404, statusMessage: 'Usuario no encontrado' })
   }
+
+  if (user.role === 'admin') {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'No se puede enviar restablecimiento a cuentas de administrador global',
+    })
+  }
+
+  const { token, expiresAt } = await persistResetToken(targetUserId, actorUserId)
+  const base = siteOriginFallback(origin)
+  const resetUrl = `${base}/restablecer-contrasena?token=${encodeURIComponent(token)}`
+
+  const { sent } = await sendMail({
+    to: user.email,
+    subject: 'Restablecer contraseña — Donaciones IURD México',
+    text: `Use este enlace para restablecer su contraseña (válido 24 horas):\n\n${resetUrl}\n\nSi usted no lo solicitó, ignore este mensaje.`,
+    html: `<p>Restablezca su contraseña con este enlace (válido 24 horas):</p><p><a href="${resetUrl}">Restablecer contraseña</a></p><p>Si usted no lo solicitó, ignore este mensaje.</p>`,
+  })
+
+  return {
+    resetUrl,
+    expiresAt: expiresAt.toISOString(),
+    emailed: sent,
+  }
+}
+
+/** Olvidé mi contraseña: no revela si el correo existe. */
+export async function requestPasswordResetByEmail(
+  email: string,
+  origin: string,
+): Promise<{ ok: true }> {
+  const user = await findUserByEmail(email)
+  if (user && user.role !== 'admin') {
+    await createPasswordResetLink(user.id, null, origin)
+  }
+  return { ok: true }
 }
 
 export async function consumePasswordResetToken(

@@ -9,6 +9,7 @@ export interface AuthUser {
   email: string
   role: UserRole
   profileComplete: boolean
+  emailVerified: boolean
 }
 
 function roleFromToken(token: string): UserRole | null {
@@ -19,7 +20,9 @@ function roleFromToken(token: string): UserRole | null {
     const json = atob(padded + '='.repeat((4 - (padded.length % 4)) % 4))
     const payload = JSON.parse(json) as { role?: string, exp?: number }
     if (typeof payload.exp === 'number' && payload.exp < Date.now() / 1000) return null
-    if (payload.role === 'admin' || payload.role === 'donor') return payload.role
+    if (payload.role === 'admin' || payload.role === 'editor' || payload.role === 'donor') {
+      return payload.role
+    }
   }
   catch {
     return null
@@ -28,7 +31,8 @@ function roleFromToken(token: string): UserRole | null {
 }
 
 function resolveRole(user: AuthUser): UserRole {
-  return roleFromToken(user.token) || (user.role === 'admin' ? 'admin' : 'donor')
+  return roleFromToken(user.token)
+    || (user.role === 'admin' || user.role === 'editor' ? user.role : 'donor')
 }
 
 function readStoredUser(): AuthUser | null {
@@ -40,6 +44,7 @@ function readStoredUser(): AuthUser | null {
     return {
       ...parsed,
       role: resolveRole(parsed),
+      emailVerified: parsed.emailVerified !== false,
     }
   }
   catch {
@@ -78,18 +83,41 @@ export function useAuth() {
   const isAdmin = computed(() =>
     user.value ? user.value.role === 'admin' : roleCookie.value === 'admin',
   )
+  const isEditor = computed(() =>
+    user.value ? user.value.role === 'editor' : roleCookie.value === 'editor',
+  )
+  const isStaff = computed(() => isAdmin.value || isEditor.value)
 
   function setSession(response: AuthResponse) {
+    const role: UserRole = response.role === 'admin' || response.role === 'editor'
+      ? response.role
+      : 'donor'
     const next: AuthUser = {
       token: response.token,
       id: response.id,
       name: response.name,
       email: response.email,
-      role: response.role === 'admin' ? 'admin' : 'donor',
+      role,
       profileComplete: response.profileComplete,
+      emailVerified: role === 'admin' || role === 'editor'
+        ? true
+        : Boolean(response.emailVerified),
     }
     next.role = resolveRole(next)
     user.value = next
+    persistUser(user.value, roleCookie)
+  }
+
+  async function resendVerification() {
+    return await $fetch<{ ok: boolean, sent: boolean, verifyUrl?: string, message: string }>(
+      '/api/auth/resend-verification',
+      { method: 'POST', headers: authHeaders(requireToken()) },
+    )
+  }
+
+  function markEmailVerified() {
+    if (!user.value) return
+    user.value = { ...user.value, emailVerified: true }
     persistUser(user.value, roleCookie)
   }
 
@@ -216,6 +244,8 @@ export function useAuth() {
     user,
     isLoggedIn,
     isAdmin,
+    isEditor,
+    isStaff,
     register,
     login,
     adminLogin,
@@ -229,5 +259,8 @@ export function useAuth() {
     fetchConsents,
     setConsent,
     deleteAccount,
+    requireToken,
+    resendVerification,
+    markEmailVerified,
   }
 }

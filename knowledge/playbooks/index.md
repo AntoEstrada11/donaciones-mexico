@@ -1,12 +1,17 @@
 # Playbooks
 
+* [Semilla demo](seed-demo.md) - Usuarios y ~1000 donaciones ficticias (`npm run db:seed-demo`).
 * [Carga masiva de contactos de prueba](dev-bulk-contacts.md) - JSON ficticio contra `POST /api/dev/contacts` (solo `nuxt dev`).
+* [Desplegar en Portainer](portainer.md) - Docker Hub + Traefik en `AllanNet`, como Luau.
+* [MinIO privado](minio-private-storage.md) - Bucket para INE/CFDI, variables y checklist de seguridad.
+* [Correo transaccional](transactional-email.md) - SMTP, verificar cuenta y restablecer contraseña.
+* [Timbrar CFDI](cfdi-timbrado.md) - Requisitos PAC/CSD y estado del endpoint de factura.
 * [Migraciones de base de datos](db-migrations.md) - Drizzle, esquema e importación del store legado.
 * [Carrusel tras instalación nueva](hero-slides-restore.md) - Copiar JPG no restaura el reel; hay que subirlos en `/admin/personalizar/carrusel`.
 * [Promover administrador](promote-admin.md) - Asignar role admin por correo.
 * [Cambiar contraseña](set-password.md) - Resetear hash de una cuenta o crear el primer admin.
 * [Respaldo y restauración](db-backup.md) - `pg_dump`, `pg_restore` y respaldo programado.
-* [Desplegar](deploy.md) - Build de producción y orden de migraciones.
+* [Desplegar](deploy.md) - Orden de migraciones si se publica a mano (sin Portainer).
 * [Auth Hub](auth-hub.md) - Probar api-hub, web-hub y login de este sitio.
 * [Personalizar pie y carrusel](personalize.md) - JSON de `site_settings` y medidas del hero.
 * [Atender una solicitud ARCO](arco-request.md) - Acceso, rectificación, cancelación u oposición en 20 días hábiles.

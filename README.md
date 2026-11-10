@@ -19,7 +19,7 @@ npm run dev
 
 En Windows, `DATABASE_URL` debe usar `127.0.0.1` (ya viene así en `.env.example`). Abra [http://localhost:3000](http://localhost:3000).
 
-Postgres vive en Docker (`donaciones-db`). Vercel **no** usa este contenedor: allá hace falta otra `DATABASE_URL` (Neon u otro host). Ver [`knowledge/playbooks/run-local.md`](knowledge/playbooks/run-local.md) y [`knowledge/playbooks/vercel.md`](knowledge/playbooks/vercel.md).
+Postgres vive en Docker (`donaciones-db`). El sitio público se publica en Portainer. Ver [`knowledge/playbooks/run-local.md`](knowledge/playbooks/run-local.md) y [`knowledge/playbooks/portainer.md`](knowledge/playbooks/portainer.md).
 
 ## Scripts de base de datos
 
@@ -29,6 +29,7 @@ Postgres vive en Docker (`donaciones-db`). Vercel **no** usa este contenedor: al
 | `npm run db:up` / `db:down` | Arrancar o parar Postgres |
 | `npm run db:migrate` | Aplica las migraciones pendientes |
 | `npm run db:seed` | Siembra las campañas desde `server/data/campaigns.json` |
+| `npm run db:seed-demo` | Donantes y ~1000 donaciones ficticias para probar el panel |
 | `npm run db:import-users` | Migración única del store legado `server/data/users.json` |
 | `npm run db:promote-admin` | Asigna `role=admin` a un correo existente |
 | `npm run db:set-password` | Cambia la contraseña de un usuario (`NEW_PASSWORD`, opcional `--create`) |
@@ -79,8 +80,9 @@ La base de conocimiento del proyecto vive en [`knowledge/`](knowledge/index.md):
 
 ## Notas
 
-- Sin pasarelas de pago reales: las donaciones quedan en estado `pending`.
-- Sin emisión de CFDI todavía; el RFC ya se captura en el perfil.
-- Donación recurrente: pendiente (el home muestra «Próximamente»).
+- Pasarelas: código listo; hace falta cuenta empresarial y secretos en env.
+- CFDI: constancia HTML + solicitud `cfdi_invoices`; timbrado PAC pendiente (ver playbook).
+- Donación recurrente: UI + SPEI; cobro automático tarjeta/PayPal pendiente de Preapproval.
+- Correo: configure `NUXT_SMTP_*` (ver `.env.example`).
 - Pendientes agrupados en [`knowledge/roadmap.md`](knowledge/roadmap.md).
 - Carrusel del home: en instalación nueva o tras recrear la base, copiar los JPG a `public/uploads/hero/` no basta; hay que volver a subirlos en `/admin/personalizar/carrusel`. Detalle en [`knowledge/playbooks/hero-slides-restore.md`](knowledge/playbooks/hero-slides-restore.md).

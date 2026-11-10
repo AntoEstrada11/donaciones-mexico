@@ -17,12 +17,14 @@ Constantes y helpers en `utils/fieldLimits.ts`. Misma fuente para páginas Vue y
 |-------|-------------|
 | Correo | máx. 255; formato `local@dominio.tld`; normalizado a minúsculas |
 | Contraseña | 6–128 caracteres |
-| Nombre | 1–160 caracteres |
+| Nombre | 1–160; letras, espacios, acentos, apóstrofo y guion |
 | Teléfono | opcional; 10–15 dígitos (México / E.164); display máx. 20 |
 | Dirección | máx. 200 |
 | Ciudad / Estado | máx. 120 |
 | C.P. | opcional; exactamente 5 dígitos |
-| RFC | opcional; solo si factura; 12 o 13 |
+| RFC | opcional; solo si factura; 12 o 13; fecha YYMMDD válida |
+| Colonia | máx. 120; sugerida por C.P. |
+| Imagen INE | JPG/PNG/WebP; máx. 3 MB por lado |
 | Razón social fiscal | 1–160; solo si factura |
 | Régimen fiscal / uso CFDI | catálogo en `utils/cfdiCatalog.ts` |
 | Consentimiento (`consent`) | boolean; **obligatorio `true`** en registro y donación (validación servidor) |

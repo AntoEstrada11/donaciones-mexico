@@ -7,6 +7,7 @@ import { eq } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import { users } from './schema.ts'
+import { isInstitutionalStaffEmail, STAFF_EMAIL_DOMAIN } from '../../utils/staffEmail.ts'
 
 const url = process.env.DATABASE_URL
 if (!url) {
@@ -14,12 +15,19 @@ if (!url) {
   process.exit(1)
 }
 
-const emailArg = process.argv[2]?.trim().toLowerCase()
+const args = process.argv.slice(2)
+const allowAny = args.includes('--allow-any')
+const emailArg = args.find(arg => !arg.startsWith('--'))?.trim().toLowerCase()
 const email = emailArg || process.env.ADMIN_EMAIL?.trim().toLowerCase()
 
 if (!email) {
-  console.error('Pase un correo: npm run db:promote-admin -- correo@ejemplo.com')
+  console.error('Pase un correo: npm run db:promote-admin -- correo@mx.universal.org')
   console.error('O defina ADMIN_EMAIL en .env')
+  process.exit(1)
+}
+
+if (!allowAny && !isInstitutionalStaffEmail(email)) {
+  console.error(`Solo correos @${STAFF_EMAIL_DOMAIN} (use --allow-any solo en emergencia local).`)
   process.exit(1)
 }
 

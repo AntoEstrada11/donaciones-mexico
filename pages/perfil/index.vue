@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ConsentType, DonorProfile } from '~/types'
+import type { ConsentType, DonorProfile, DonorRequest, IdentityStatus } from '~/types'
 import { CFDI_USES, TAX_REGIMES, isValidCfdiUse, isValidTaxRegime } from '~/utils/cfdiCatalog'
 
 definePageMeta({ middleware: 'donor' })
@@ -13,6 +13,7 @@ const {
   fetchConsents,
   setConsent,
   deleteAccount,
+  requireToken,
 } = useAuth()
 
 const profile = ref<DonorProfile | null>(null)
@@ -29,6 +30,7 @@ const form = reactive({
   city: '',
   state: '',
   zip: '',
+  colony: '',
   rfc: '',
   fiscalName: '',
   taxRegime: '',
@@ -40,6 +42,15 @@ const marketingSaving = ref(false)
 const marketingMessage = ref('')
 const marketingError = ref('')
 
+const identity = ref<IdentityStatus>({ front: false, back: false, complete: false })
+const openRequests = ref<DonorRequest[]>([])
+const identityConsent = ref(false)
+const identityError = ref('')
+const identityBusy = ref<'front' | 'back' | null>(null)
+const cameraOpen = ref(false)
+const cameraSide = ref<'front' | 'back'>('front')
+const colonies = ref<string[]>([])
+const zipHint = ref('')
 const exportError = ref('')
 const showDeleteConfirm = ref(false)
 const deletePassword = ref('')
@@ -55,15 +66,31 @@ function applyProfile(me: DonorProfile) {
   form.city = me.city || ''
   form.state = me.state || ''
   form.zip = me.zip || ''
+  form.colony = me.colony || ''
   form.rfc = me.rfc || ''
   form.fiscalName = me.fiscalName || me.name || ''
   form.taxRegime = me.taxRegime || ''
   form.cfdiUse = me.cfdiUse || 'D04'
 }
 
+function requestLabel(type: DonorRequest['type']) {
+  if (type === 'identity') return t('profile.requestIdentity')
+  if (type === 'fiscal') return t('profile.requestFiscal')
+  return t('profile.requestEmail')
+}
+
+function requestHref(type: DonorRequest['type']) {
+  if (type === 'identity') return '#bloque-identidad'
+  if (type === 'fiscal') return '#bloque-fiscal'
+  return '/verificar-correo'
+}
+
 onMounted(async () => {
   try {
     applyProfile(await fetchProfile())
+    const headers = { Authorization: `Bearer ${requireToken()}` }
+    identity.value = await $fetch<IdentityStatus>('/api/me/identity', { headers })
+    openRequests.value = await $fetch<DonorRequest[]>('/api/me/requests', { headers })
 
     const consents = await fetchConsents()
     marketing.value = consents.marketing === true
@@ -96,12 +123,60 @@ function onStateInput(event: Event) {
   form.state = sanitizeStateInput((event.target as HTMLInputElement).value)
 }
 
-function onZipInput(event: Event) {
+async function onZipInput(event: Event) {
   form.zip = sanitizeZipInput((event.target as HTMLInputElement).value)
+  zipHint.value = ''
+  colonies.value = []
+  if (!isValidZip(form.zip) || form.zip.length !== 5) return
+  try {
+    const result = await $fetch<{ state: string | null, colonies: string[] }>(`/api/zip/${form.zip}`)
+    colonies.value = result.colonies
+    if (result.state) form.state = result.state
+    if (result.colonies.length === 1) form.colony = result.colonies[0]
+    if (!result.colonies.length) zipHint.value = t('profile.zipUnknown')
+  }
+  catch {
+    zipHint.value = t('profile.zipLookupError')
+  }
 }
 
 function onRfcInput(event: Event) {
   form.rfc = sanitizeRfcInput((event.target as HTMLInputElement).value)
+}
+
+function openIdentityCamera(side: 'front' | 'back') {
+  if (!identityConsent.value) {
+    identityError.value = t('profile.identityConsentRequired')
+    return
+  }
+  identityError.value = ''
+  cameraSide.value = side
+  cameraOpen.value = true
+}
+
+async function onIdentityCaptured(file: File) {
+  const side = cameraSide.value
+  identityBusy.value = side
+  identityError.value = ''
+  try {
+    const body = new FormData()
+    body.set('side', side)
+    body.set('consent', 'true')
+    body.set('file', file)
+    identity.value = await $fetch<IdentityStatus>('/api/me/identity', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${requireToken()}` },
+      body,
+    })
+    cameraOpen.value = false
+  }
+  catch (e: unknown) {
+    const msg = (e as { data?: { statusMessage?: string } })?.data?.statusMessage
+    identityError.value = msg || t('profile.identityError')
+  }
+  finally {
+    identityBusy.value = null
+  }
 }
 
 function validateForm(): string | null {
@@ -240,6 +315,23 @@ async function onDelete() {
 
     <template v-else>
       <div
+        v-if="openRequests.length"
+        class="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-4 text-sm text-amber-950"
+        role="status"
+      >
+        <p class="font-semibold">
+          {{ t('profile.requestBannerTitle') }}
+        </p>
+        <ul class="mt-2 space-y-1">
+          <li v-for="req in openRequests" :key="req.id">
+            <a :href="requestHref(req.type)" class="font-medium text-brand hover:underline">
+              {{ requestLabel(req.type) }}
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div
         v-if="success || route.query.guardado"
         class="mb-8 rounded-lg border border-green-200 bg-green-50 px-4 py-4 text-sm text-green-900"
         role="status"
@@ -314,7 +406,7 @@ async function onDelete() {
         </div>
 
         <!-- Minimización: los datos fiscales solo se piden si hacen falta. -->
-        <div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
+        <div id="bloque-fiscal" class="scroll-mt-24 rounded-lg border border-gray-200 bg-gray-50 p-4">
           <label class="flex cursor-pointer items-start gap-3 text-sm font-medium text-ink">
             <input
               v-model="form.wantsReceipt"
@@ -450,8 +542,88 @@ async function onDelete() {
                 class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
                 @input="onZipInput"
               >
+              <p v-if="zipHint" class="mt-1 text-xs text-gray-500">
+                {{ zipHint }}
+              </p>
+            </div>
+            <div>
+              <label for="colony" class="mb-1 block text-sm font-medium text-ink">
+                {{ t('profile.colony') }}
+              </label>
+              <select
+                v-if="colonies.length"
+                id="colony"
+                v-model="form.colony"
+                class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+              >
+                <option value="">{{ t('profile.select') }}</option>
+                <option v-for="item in colonies" :key="item" :value="item">
+                  {{ item }}
+                </option>
+              </select>
+              <input
+                v-else
+                id="colony"
+                :value="form.colony"
+                type="text"
+                :maxlength="FIELD_LIMITS.colony.max"
+                class="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+                @input="form.colony = sanitizeColonyInput(($event.target as HTMLInputElement).value)"
+              >
             </div>
           </div>
+        </div>
+
+        <div id="bloque-identidad" class="rounded-lg border border-gray-200 p-4 scroll-mt-24">
+          <h2 class="mb-1 text-sm font-semibold text-ink">
+            {{ t('profile.identityTitle') }}
+          </h2>
+          <p class="mb-3 text-xs text-gray-600">
+            {{ t('profile.identityHint') }}
+          </p>
+          <label class="mb-3 flex cursor-pointer items-start gap-2 text-xs text-ink">
+            <input v-model="identityConsent" type="checkbox" class="mt-0.5">
+            <span>{{ t('profile.identityConsent') }}</span>
+          </label>
+          <div class="grid gap-3 sm:grid-cols-2">
+            <div class="rounded-lg border border-gray-100 bg-gray-50/80 p-3">
+              <p class="text-sm font-medium text-ink">
+                {{ t('profile.identityFront') }}
+                <span v-if="identity.front" class="ml-1 text-green-700">✓</span>
+              </p>
+              <button
+                type="button"
+                class="btn-primary mt-2 w-full text-sm"
+                :disabled="!!identityBusy"
+                @click="openIdentityCamera('front')"
+              >
+                {{ identityBusy === 'front' ? t('profile.identityCameraUploading') : t('profile.identityTakeFront') }}
+              </button>
+            </div>
+            <div class="rounded-lg border border-gray-100 bg-gray-50/80 p-3">
+              <p class="text-sm font-medium text-ink">
+                {{ t('profile.identityBack') }}
+                <span v-if="identity.back" class="ml-1 text-green-700">✓</span>
+              </p>
+              <button
+                type="button"
+                class="btn-primary mt-2 w-full text-sm"
+                :disabled="!!identityBusy"
+                @click="openIdentityCamera('back')"
+              >
+                {{ identityBusy === 'back' ? t('profile.identityCameraUploading') : t('profile.identityTakeBack') }}
+              </button>
+            </div>
+          </div>
+          <p v-if="identityError" class="mt-2 text-sm text-red-600">
+            {{ identityError }}
+          </p>
+          <IdentityCameraCapture
+            v-model:open="cameraOpen"
+            :side="cameraSide"
+            :busy="identityBusy === cameraSide"
+            @captured="onIdentityCaptured"
+          />
         </div>
 
         <p v-if="error" id="perfil-error" class="text-sm text-red-600">

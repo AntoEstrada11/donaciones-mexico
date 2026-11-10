@@ -4,11 +4,15 @@ import type { Donation } from '~/types'
 definePageMeta({ middleware: 'donor' })
 
 const { t } = useI18n()
-const { fetchDonations } = useAuth()
+const { fetchDonations, optionalAuthHeaders } = useAuth()
 
 const donations = ref<Donation[]>([])
 const authReady = ref(false)
 const loadError = ref('')
+const receiptBusy = ref<string | null>(null)
+const receiptHint = ref('')
+const invoiceBusy = ref<string | null>(null)
+const invoiceHint = ref('')
 
 onMounted(async () => {
   try {
@@ -20,16 +24,6 @@ onMounted(async () => {
   finally {
     authReady.value = true
   }
-})
-
-const { data: campaigns } = await useCampaigns()
-
-const campaignMap = computed(() => {
-  const map = new Map<string, string>()
-  for (const c of campaigns.value ?? []) {
-    map.set(c.id, c.name)
-  }
-  return map
 })
 
 const statusLabels: Record<Donation['status'], string> = {
@@ -57,6 +51,58 @@ function formatDate(iso: string) {
     minute: '2-digit',
   })
 }
+
+function churchLabel(donation: Donation) {
+  return donation.churchName || donation.churchId
+}
+
+function campaignLabel(donation: Donation) {
+  return donation.campaignName || donation.campaignId
+}
+
+async function downloadReceipt(id: string) {
+  receiptBusy.value = id
+  receiptHint.value = ''
+  try {
+    const html = await $fetch<string>(`/api/donations/${id}/receipt`, {
+      headers: optionalAuthHeaders(),
+      responseType: 'text',
+    })
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `constancia-${id.slice(0, 8)}.html`
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+  catch (e: unknown) {
+    const msg = (e as { data?: { statusMessage?: string } })?.data?.statusMessage
+    receiptHint.value = msg || t('history.receiptError')
+  }
+  finally {
+    receiptBusy.value = null
+  }
+}
+
+async function requestInvoice(id: string) {
+  invoiceBusy.value = id
+  invoiceHint.value = ''
+  try {
+    await $fetch(`/api/donations/${id}/invoice`, {
+      method: 'POST',
+      headers: optionalAuthHeaders(),
+    })
+    invoiceHint.value = t('history.invoiceOk')
+  }
+  catch (e: unknown) {
+    const msg = (e as { data?: { statusMessage?: string } })?.data?.statusMessage
+    invoiceHint.value = msg || t('history.invoiceError')
+  }
+  finally {
+    invoiceBusy.value = null
+  }
+}
 </script>
 
 <template>
@@ -78,6 +124,12 @@ function formatDate(iso: string) {
       <p v-if="loadError" class="mb-4 text-center text-sm text-red-600">
         {{ loadError }}
       </p>
+      <p v-if="receiptHint" class="mb-4 text-sm text-amber-800">
+        {{ receiptHint }}
+      </p>
+      <p v-if="invoiceHint" class="mb-4 text-sm text-amber-800">
+        {{ invoiceHint }}
+      </p>
 
       <div v-if="donations.length === 0" class="card py-12 text-center">
         <p class="text-gray-500">
@@ -96,13 +148,16 @@ function formatDate(iso: string) {
         >
           <div>
             <p class="font-semibold text-ink">
-              {{ campaignMap.get(donation.campaignId) ?? donation.campaignId }}
+              {{ campaignLabel(donation) }}
+            </p>
+            <p class="text-sm text-gray-600">
+              {{ churchLabel(donation) }}
             </p>
             <p class="text-sm text-gray-500">
               {{ formatDate(donation.createdAt) }} · {{ donation.method.toUpperCase() }}
             </p>
           </div>
-          <div class="flex items-center gap-4">
+          <div class="flex flex-wrap items-center gap-3">
             <span class="font-bold text-brand">
               ${{ donation.amount.toLocaleString('es-MX') }} MXN
             </span>
@@ -112,6 +167,24 @@ function formatDate(iso: string) {
             >
               {{ t(statusLabels[donation.status]) }}
             </span>
+            <button
+              v-if="donation.status === 'paid'"
+              type="button"
+              class="btn-secondary text-sm"
+              :disabled="receiptBusy === donation.id"
+              @click="downloadReceipt(donation.id)"
+            >
+              {{ receiptBusy === donation.id ? t('history.receiptBusy') : t('history.receipt') }}
+            </button>
+            <button
+              v-if="donation.status === 'paid'"
+              type="button"
+              class="btn-secondary text-sm"
+              :disabled="invoiceBusy === donation.id"
+              @click="requestInvoice(donation.id)"
+            >
+              {{ invoiceBusy === donation.id ? t('history.invoiceBusy') : t('history.invoice') }}
+            </button>
           </div>
         </article>
       </div>

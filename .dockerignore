@@ -1,0 +1,29 @@
+# Git y caches
+.git
+.github
+.agents
+.cursor
+.nuxt
+.output
+.data
+.nitro
+.node
+.cache
+.vercel
+node_modules
+agent-transcripts
+
+# Secretos y dumps
+.env
+.env.*
+!.env.example
+*.dump
+*.sql.gz
+
+# Docs y herramientas que no hacen falta en la imagen
+knowledge
+tmp-carta
+.tmp-img-edit
+
+# Subidas: volumen en runtime
+public/uploads

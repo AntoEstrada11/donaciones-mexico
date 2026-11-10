@@ -51,6 +51,22 @@ Separar el perfil de la cuenta acota el manejo de PII: la tabla de acceso no con
 | `name`, `description`, `type` | texto | |
 | `sort_order` | integer | orden de despliegue en la UI |
 | `active` | boolean | filtra lo que expone la API |
+| `starts_at` / `ends_at` | timestamptz nullable | ventana de vigencia; nulo = sin límite en ese extremo |
+
+El público solo ve filas `active` dentro de la ventana. Admin lista todas en `/admin/campanas`.
+
+## `donor_requests` — solicitudes admin → donante
+
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `id` | uuid PK | |
+| `user_id` | uuid FK | cascade al borrar cuenta |
+| `type` | enum | `identity`, `fiscal`, `email_verify` |
+| `status` | enum | `open`, `resolved`, `cancelled` |
+| `created_by_user_id` | uuid FK nullable | operador que envió |
+| `sent_at` / `resolved_at` | timestamptz | |
+
+No guarda el cuerpo del correo. Se resuelve al completar INE/fiscal/verificar correo o a mano en la ficha.
 
 ## `donations` — movimientos
 
@@ -59,6 +75,7 @@ Separar el perfil de la cuenta acota el manejo de PII: la tabla de acceso no con
 | `id` | uuid PK | |
 | `user_id` | uuid FK nullable | → `users.id`, `ON DELETE SET NULL`; nulo si no había sesión |
 | `church_external_id` | varchar(64) | id de la API de WordPress; no hay tabla local de iglesias |
+| `church_name` | varchar(200) | nombre de la iglesia al donar |
 | `campaign_id` | uuid FK | → `campaigns.id` |
 | `amount` | numeric(12,2) | exacto; nunca punto flotante |
 | `currency` | varchar(3) | default `MXN` |
@@ -71,6 +88,17 @@ Separar el perfil de la cuenta acota el manejo de PII: la tabla de acceso no con
 | `created_at` / `updated_at` | timestamptz | |
 
 Índices: `donations_user_created_idx`, `donations_campaign_idx`, `donations_provider_ref_idx`.
+
+## `identity_documents` — INE
+
+| Columna | Tipo | Notas |
+|---------|------|-------|
+| `user_id` + `side` | unique | `front` / `back` |
+| `object_key` | varchar(512) | clave en MinIO (`identity/{userId}/…`); altas nuevas |
+| `bytes` | bytea nullable | legado previo a MinIO; no escribir en altas nuevas |
+| `mime` | varchar(32) | jpeg/png/webp |
+
+`ON DELETE CASCADE` con la cuenta. El binario se borra también con `purgePrivateObjectsForUser`.
 
 ## `payment_events` — idempotencia de webhooks
 
@@ -96,7 +124,7 @@ Sin body PII. Unique: `payment_events_provider_event_key`.
 | `card_enabled` / `paypal_enabled` / `spei_manual_enabled` | boolean | |
 | `updated_at` | timestamptz | |
 
-Admin: `/admin/personalizar/cobros`.
+Admin: `/admin/operadores/cobros`.
 
 ## `consents` — evidencia de consentimiento
 
